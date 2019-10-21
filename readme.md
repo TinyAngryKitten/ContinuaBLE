@@ -1,0 +1,1 @@
+to start this project open iosApp/iosApp.xcodeproj in xcode and run the app on a physical device.
