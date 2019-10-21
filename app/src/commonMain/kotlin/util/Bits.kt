@@ -89,3 +89,11 @@ fun Byte.rightMostNibble() = (0..3).fold(0) {
     if(positiveBitAt(i)) acc+ 2f.pow(i).toInt()
     else acc
 }
+
+/**
+ * Turns a leftmost nible into a signed int,
+ * this is needed because negative numbers lose their signs (10100000 become 00001010) etc.
+ */
+fun nibleToSignedInt(nible : Int) =
+    if(nible.toByte().positiveBitAt(3)) nible.xor(-16)
+    else nible

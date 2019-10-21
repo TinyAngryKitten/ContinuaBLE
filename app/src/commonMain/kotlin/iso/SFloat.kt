@@ -2,6 +2,7 @@ package iso
 
 import sample.logger
 import util.leftMostNibble
+import util.nibleToSignedInt
 import util.rightMostNibble
 import kotlin.math.pow
 
@@ -11,17 +12,20 @@ sealed class SFloat{
     object ReservedForFutureUse : SFloat()
     object PlussInfinity : SFloat()
     object MinusInfinity : SFloat()
-    class Value(val floatValue: Float) : SFloat()
+    class Value(val floatValue: Float) : SFloat() {
+        override fun toString() ="value(val: $floatValue"
+    }
 
     //TODO: SEEMS TO NOT WORK CORRECTLY
     companion object {
         fun fromBytes(byte1 : Byte, byte2 : Byte) : SFloat {
-            val exponent = byte2.leftMostNibble()
-            val mantissaHex = byte1.toString(16) + byte2.rightMostNibble().toByte().toString(16)
-            val mantissa = mantissaHex.toInt(16)
+            val exponent = nibleToSignedInt(byte2.leftMostNibble())
 
-            logger.debug("exponent: $exponent")
-            logger.debug("mantissa: $mantissa")
+            val mantissa = byte1.toInt().or(byte2.rightMostNibble().shl(8))
+
+            println(exponent)
+            println(mantissa)
+            println("SFLOAT: "+10f.pow(exponent) * mantissa)
 
             return when(val value = (10f.pow(exponent) * mantissa) ) {
                 0x07FF.toFloat() -> NaN

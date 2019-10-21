@@ -15,12 +15,44 @@ import util.strRepresentation
 
 private var glucoseFeatures = mapOf<String,GlucoseFeatures>()
 
+//TODO: cleanup
 fun parseGlucoseReading(reading : BLEReading) : DataSample {
+    if(reading.data.size < 10) {
+        logger.debug("glucose measurement is missing required bytes")
+        return EmptyReading
+    }
+
     var unparsedBytes = reading.data
+    val flags = parseMeasurementFlags(unparsedBytes.get(0))
+    unparsedBytes = unparsedBytes.sliceArray(1..unparsedBytes.size-1)
+    println("flags: $flags")
 
-    logger.debug("glucose:" + parseUInt16(unparsedBytes[11],unparsedBytes[12]).toString())
+    val sequenceNumber = parseUInt16(unparsedBytes[0],unparsedBytes[1])
+    unparsedBytes = unparsedBytes.sliceArray(2..unparsedBytes.size-1)
+    println("sequence number: $sequenceNumber")
 
-    //  logger.error("glucose measurement received without concentration, an error likely occured.")
+    //cant parse date_time yet
+    unparsedBytes = unparsedBytes.sliceArray(7..unparsedBytes.size-1)
+
+    //same for offset time
+    if(flags.timeOffset) unparsedBytes = unparsedBytes.sliceArray(2..unparsedBytes.size-1)
+
+    if(flags.concentrationTypeAndSample) {
+        val glucose = SFloat.fromBytes(unparsedBytes[0],unparsedBytes[1])
+        unparsedBytes = unparsedBytes.sliceArray(2..unparsedBytes.size-1)
+
+        if (glucose is SFloat.Value) logger.debug("glucose concentration: " + glucose.floatValue)
+        else logger.debug("error: $glucose")
+
+        return GlucoseReading(
+            glucoseUnitFromFlag(flags.concentrationUnit),
+            glucose,
+            sequenceNumber,
+            null
+        )
+    }
+
+    logger.error("glucose measurement received without concentration, an error likely occured.")
     return EmptyReading
 }
 
@@ -45,25 +77,27 @@ fun parseGlucoseFeatures(reading : BLEReading) : DataSample {
     if(reading.data.size < 1) {
         logger.error("attempted to parse glucose features with empty data field: $reading")
     } else {
-        val flagByte = reading.data[0]
+        val flagByte1 = reading.data[0]
+        val flagByte2 = reading.data[1]
+
 
         logger.debug("parsing reading: $reading")
 
         val features = GlucoseFeatures(
-            flagByte.positiveBitAt(0),
-            flagByte.positiveBitAt(1),
-            flagByte.positiveBitAt(2),
-            flagByte.positiveBitAt(3),
-            flagByte.positiveBitAt(4),
-            flagByte.positiveBitAt(5),
-            flagByte.positiveBitAt(6),
-            flagByte.positiveBitAt(7),
-            flagByte.positiveBitAt(8),
-            flagByte.positiveBitAt(9),
-            flagByte.positiveBitAt(10)
+            flagByte1.positiveBitAt(0),
+            flagByte1.positiveBitAt(1),
+            flagByte1.positiveBitAt(2),
+            flagByte1.positiveBitAt(3),
+            flagByte1.positiveBitAt(4),
+            flagByte1.positiveBitAt(5),
+            flagByte1.positiveBitAt(6),
+            flagByte1.positiveBitAt(7),
+            flagByte2.positiveBitAt(0),
+            flagByte2.positiveBitAt(1),
+            flagByte2.positiveBitAt(2)
         )
 
-        logger.debug("features of newly connected devices: \n" + features.toString())
+        logger.debug("features of newly connected device: \n" + features.toString())
     }
     return EmptyReading
 }
