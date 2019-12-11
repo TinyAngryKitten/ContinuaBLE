@@ -10,11 +10,14 @@ import sample.logger
 
 class PeripheralController(
     val characteristicUUIDs : List<CBUUID>,
-    val readingReceived : (BLEReading) -> Unit = {v-> logger.debug(v.toString())}
+    val readingReceived : (BLEReading) -> Unit = {v-> logger.debug(v.toString()) }
 ): NSObject(), CBPeripheralDelegateProtocol {
 
     override fun peripheral(peripheral: CBPeripheral, didDiscoverServices: NSError?) {
         peripheral.services?.let { services ->//type information are erased from servies due to the kotlin-swift-obj bridge
+            logger.printLine(services.joinToString(", ") )
+            services.map { logger.printLine("UUID: " + (it as CBService).UUID) }
+            services.map { (it as CBService).includedServices?.map { logger.printLine("Nested service:"+ (it as CBService).UUID) } }
             services.map{peripheral.discoverCharacteristics(characteristicUUIDs,it as CBService)}
         }
     }
@@ -29,6 +32,7 @@ class PeripheralController(
             characteristics.map {
                 if(it != null) {
                     val char = it as CBCharacteristic
+                    logger.printLine("$char")
                     if(char.isNotifying) peripheral.setNotifyValue(true,char)
                     else peripheral.readValueForCharacteristic(it)
                 }

@@ -3,23 +3,22 @@ package iso
 import bledata.BLEReading
 import bledata.GlucoseFeatures
 import data.BloodGlucoseMeasurement
-import data.DataSample
-import data.EmptyReading
-import data.GlucoseReading
+import data.DataRecord
+import data.EmptyRecord
+import data.GlucoseRecord
 import sample.logger
 import util.parseUInt16
 import util.positiveBitAt
-import util.readValueInRange
-import util.strRepresentation
 
 
 private var glucoseFeatures = mapOf<String,GlucoseFeatures>()
 
-//TODO: cleanup
-fun parseGlucoseReading(reading : BLEReading) : DataSample {
+//verbose version of parseGlucoseReading
+/*
+fun parseGlucoseReading(reading : BLEReading) : DataRecord {
     if(reading.data.size < 10) {
         logger.debug("glucose measurement is missing required bytes")
-        return EmptyReading
+        return EmptyRecord
     }
 
     var unparsedBytes = reading.data
@@ -44,7 +43,7 @@ fun parseGlucoseReading(reading : BLEReading) : DataSample {
         if (glucose is SFloat.Value) logger.debug("glucose concentration: " + glucose.floatValue)
         else logger.debug("error: $glucose")
 
-        return GlucoseReading(
+        return GlucoseRecord(
             glucoseUnitFromFlag(flags.concentrationUnit),
             glucose,
             sequenceNumber,
@@ -53,19 +52,24 @@ fun parseGlucoseReading(reading : BLEReading) : DataSample {
     }
 
     logger.error("glucose measurement received without concentration, an error likely occured.")
-    return EmptyReading
-}
+    return EmptyRecord
+}*/
 
-private fun glucoseUnitFromFlag(flag :Boolean) = if(flag) BloodGlucoseMeasurement.MMOL else BloodGlucoseMeasurement.DL
+fun parseGlucoseReading(reading : BLEReading) : DataRecord =
+    parse(reading.data) {
+        flags(0..1)
 
-private fun parseMeasurementFlags(byte : Byte) : GlucoseMeasurementFlags =
-    GlucoseMeasurementFlags(
-        byte.positiveBitAt(0),
-        byte.positiveBitAt(1),
-        byte.positiveBitAt(2),
-        byte.positiveBitAt(3),
-        byte.positiveBitAt(4)
-    )
+        GlucoseRecord.fromISOValues(
+            unit = boolean( flag(2) ),
+            sequenceNumber = uint16(),
+            //ignore date and time of measurement
+            amount = dropThen(8) {onCondition(flag(1), sfloat)},
+            context = null
+        ) ?: EmptyRecord
+    }
+
+fun parseGlucoseContextReading() : DataRecord = EmptyRecord
+
 
 /**
  * Glucose features should be saved for each device
@@ -73,31 +77,24 @@ private fun parseMeasurementFlags(byte : Byte) : GlucoseMeasurementFlags =
  *
  * always returns a empty reading because the information is only useful for this class
  */
-fun parseGlucoseFeatures(reading : BLEReading) : DataSample {
-    if(reading.data.size < 1) {
-        logger.error("attempted to parse glucose features with empty data field: $reading")
-    } else {
-        val flagByte1 = reading.data[0]
-        val flagByte2 = reading.data[1]
+fun parseGlucoseFeatures(reading : BLEReading) : DataRecord =
+    parse(reading.data) {
+        flags(0..2)
 
-
-        logger.debug("parsing reading: $reading")
-
+        //idk what to do with this information
         val features = GlucoseFeatures(
-            flagByte1.positiveBitAt(0),
-            flagByte1.positiveBitAt(1),
-            flagByte1.positiveBitAt(2),
-            flagByte1.positiveBitAt(3),
-            flagByte1.positiveBitAt(4),
-            flagByte1.positiveBitAt(5),
-            flagByte1.positiveBitAt(6),
-            flagByte1.positiveBitAt(7),
-            flagByte2.positiveBitAt(0),
-            flagByte2.positiveBitAt(1),
-            flagByte2.positiveBitAt(2)
+            flag(0),
+            flag(1),
+            flag(2),
+            flag(3),
+            flag(4),
+            flag(5),
+            flag(6),
+            flag(7),
+            flag(8),
+            flag(9),
+            flag(10)
         )
 
-        logger.debug("features of newly connected device: \n" + features.toString())
+        EmptyRecord
     }
-    return EmptyReading
-}

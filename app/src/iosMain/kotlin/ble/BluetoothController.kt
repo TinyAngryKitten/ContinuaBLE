@@ -64,7 +64,6 @@ class BluetoothController(serviesToLookFor : List<String>, characteristicsToLook
         RSSI: NSNumber
     ) {
         logger.debug("discovered: "+didDiscoverPeripheral.name)
-
         central.connectPeripheral(didDiscoverPeripheral,null)
 
     }

@@ -76,7 +76,9 @@ fun parseUInt16(byte1 : Byte, byte2 : Byte) = (0..15).map {
     if(it<8 && byte1.positiveBitAt(it)) 2f.pow(it.toFloat())
     else if(it>=8 && byte2.positiveBitAt(it%8)) 2f.pow(it.toFloat())
     else 0f
-}.fold(0) {acc,v -> acc+v.toInt()}
+}.fold(0u) {acc,v -> acc+v.toUInt()}
+
+fun parseUInt16(byteArray : ByteArray) = parseUInt16(byteArray[0],byteArray[1])
 
 fun Byte.leftMostNibble() = (4..7).fold(0) {
     acc,i ->

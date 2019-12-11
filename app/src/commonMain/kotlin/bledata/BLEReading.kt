@@ -17,6 +17,4 @@ data class BLEReading(
     data = ${data.strRepresentation()}
     )
     """.trimIndent()
-
-
 }
