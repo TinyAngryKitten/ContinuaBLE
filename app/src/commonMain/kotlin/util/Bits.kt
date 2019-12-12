@@ -1,8 +1,5 @@
 package util
 
-import iso.FlagPosition
-import iso.MessagePosition
-import iso.ValuePosition
 import kotlin.experimental.and
 import kotlin.math.ceil
 import kotlin.math.pow
@@ -35,21 +32,6 @@ fun ByteArray?.toHexString() : String {
         else strBuilder.append(hexRepresentation)
     }
     return strBuilder.toString()
-}
-
-fun ByteArray.readFlagAt(position : FlagPosition) : Boolean =
-    get(position.bytePosition)
-        .positiveBitAt(position.bitPosition)
-
-fun ByteArray.readValueInRange(position : ValuePosition) : ByteArray =
-    sliceArray(position.getRangeOfBytes())
-        .updateLast { it.and(Byte.fill(1)) }
-
-fun Byte.Companion.fill(nrOfBits : Int) : Byte = ( 2f.pow(nrOfBits%9) -1).toByte()
-
-fun readBitsOfByteArray(array : ByteArray,position : ValuePosition) : String {
-    val bytes = array.sliceArray(IntRange(position.bytePosition, position.bytePosition + position.length)).toHexString()
-    return ""
 }
 
 fun ByteArray.update(index: Int, newItem: Byte): ByteArray = mapIndexed {
