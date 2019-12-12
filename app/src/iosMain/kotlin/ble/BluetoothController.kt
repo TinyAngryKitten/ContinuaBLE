@@ -1,9 +1,9 @@
 package ble
-import iso.parse
+import iso.ServiceUUID
+import iso.parseBLEReading
 import platform.CoreBluetooth.*
 import platform.Foundation.*
 import platform.darwin.NSObject
-import sample.Logger
 import sample.logger
 
 
@@ -20,7 +20,7 @@ private val hexToStr ={v : String -> CBUUID.UUIDWithString(v)}
  * heavy use of overloading with named parameters instead of
  * changing method names.
  */
-class BluetoothController(serviesToLookFor : List<String>, characteristicsToLookFor : List<String>) :
+class BluetoothController(serviesToLookFor : List<ServiceUUID>, characteristicsToLookFor : List<String>) :
     NSObject(),
     CBCentralManagerDelegateProtocol,
     CBPeripheralDelegateProtocol {
@@ -29,11 +29,11 @@ class BluetoothController(serviesToLookFor : List<String>, characteristicsToLook
 
     val peripheralController = PeripheralController(characteristicsToLookFor.map(hexToStr)) {
         logger.debug("raw bluetooth reading received: \n"+it.toString())
-        parse(it)
+        parseBLEReading(it)
     }
 
     val serviceUUIDS = serviesToLookFor
-        .map { CBUUID.UUIDWithString(it) }
+        .map { CBUUID.UUIDWithString(it.id) }
 
     var discoveredDevices = listOf<CBPeripheral>()
     var connectedDevices = listOf<CBPeripheral>()
@@ -92,12 +92,14 @@ class BluetoothController(serviesToLookFor : List<String>, characteristicsToLook
     override fun peripheral(
         peripheral: CBPeripheral,
         didDiscoverServices: NSError?
-    ) = peripheralController.peripheral(peripheral,didDiscoverServices = didDiscoverServices)
-
-    //characteristics discovered
-    override fun peripheral(
-        peripheral: CBPeripheral,
-        didDiscoverCharacteristicsForService: CBService,
-        error: NSError?
-    ) = peripheralController.peripheral(peripheral,didDiscoverCharacteristicsForService = didDiscoverCharacteristicsForService,error = error)
+    ) {
+        peripheral.services?.map { logger.printLine(it.toString()) }
+        peripheralController.peripheral(peripheral, didDiscoverServices = didDiscoverServices)
+    }
+        //characteristics discovered
+        override fun peripheral(
+            peripheral: CBPeripheral,
+            didDiscoverCharacteristicsForService: CBService,
+            error: NSError?
+        ) = peripheralController.peripheral(peripheral,didDiscoverCharacteristicsForService = didDiscoverCharacteristicsForService,error = error)
 }

@@ -10,14 +10,14 @@ actual class Sample {
 
         BluetoothController(
             listOf(
-                glucoseServiceUUID,
-                weightServiceUUID,
-                deviceInformationServiceUUID,
-                batteryServiceUUID,
-                healthServiceUUID,
-                stepServiceUUID,
-                sleepServiceUUID,
-                enhancedHeartRateServiceUUID
+                ServiceUUID.glucoseServiceUUID,
+                ServiceUUID.weightServiceUUID,
+                ServiceUUID.deviceInformationServiceUUID,
+                ServiceUUID.batteryServiceUUID,
+                ServiceUUID.healthServiceUUID,
+                ServiceUUID.stepServiceUUID,
+                ServiceUUID.sleepServiceUUID,
+                ServiceUUID.enhancedHeartRateServiceUUID
             ),
             listOf(
                 glucoseFeatureCharacteristic,

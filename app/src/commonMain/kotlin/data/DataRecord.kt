@@ -30,4 +30,44 @@ data class GlucoseRecord(
     }
 }
 
-class GlucoseRecordContext() : DataRecord()
+
+//These are all UTF8 strings
+sealed class DeviceInfo : DataRecord() {
+    class ModelNumber(
+        value : String,
+        device : PeripheralDescription
+    ) : DeviceInfo()
+    class SerialNumber(
+        value : String,
+        device : PeripheralDescription
+    ) : DeviceInfo()
+    class FirmwareRevision(
+        value : String,
+        device : PeripheralDescription
+    ) : DeviceInfo()
+    class HardwareRevision(
+        value : String,
+        device : PeripheralDescription
+    ) : DeviceInfo()
+    class SoftwareRevision(
+        value : String,
+        device : PeripheralDescription
+    ) : DeviceInfo()
+    class ManufacturerName(
+        value : String,
+        device : PeripheralDescription
+    ) : DeviceInfo()
+}
+
+class BatteryLevel(
+    level : Int,
+    device : PeripheralDescription
+) : DataRecord() {
+    constructor(level: ISOValue.UInt8, device: PeripheralDescription) : this(level.value.toInt(), device)
+}
+
+
+
+//TODO: support this maybe? unknown if any glucose meter actually support it or if it would be useful
+class GlucoseRecordContext() : DataRecord() {}
+

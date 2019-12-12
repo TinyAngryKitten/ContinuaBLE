@@ -55,11 +55,17 @@ class ISOParser(var bytes : ByteArray) {
         )
     }
 
+
     /**
      * turn a byte into an unsigned integer
      */
     val uint8 = {
             ISOValue.UInt8(take(1).first().toUInt())
+    }
+
+    val utf8 = {
+        nrOfBytes : Int ->
+        ISOValue.UTF8(take(nrOfBytes))
     }
 
     /**

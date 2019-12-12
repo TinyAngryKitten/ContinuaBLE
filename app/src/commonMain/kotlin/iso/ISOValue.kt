@@ -10,7 +10,7 @@ sealed class ISOValue {
     data class SInt8(val value : Int) : ISOValue()
     data class SInt16(val value : Int) : ISOValue()
 
-    data class UInt8 @ExperimentalUnsignedTypes constructor( val value : UInt) : ISOValue()
+    data class UInt8 @ExperimentalUnsignedTypes constructor(val value : UInt) : ISOValue()
     data class UInt16 @ExperimentalUnsignedTypes constructor(val value : UInt) : ISOValue()
 
     sealed class SFloat() : ISOValue() {
@@ -49,6 +49,13 @@ sealed class ISOValue {
     class Flags(val value : List<Boolean>) : ISOValue()
 
     class Flag(val value : Boolean) : ISOValue()
+
+    class UTF8(val rawBytes : ByteArray) {
+        //default characterset is allways UTF-8 for String <-> Byte
+        val encodedString = String(
+            CharArray(rawBytes.size) { it.toChar() }
+        )
+    }
 
     object Empty : ISOValue() {
         val value = null

@@ -4,6 +4,7 @@ import bledata.BLEReading
 import data.CharacteristicDescription
 import data.GlucoseRecord
 import data.PeripheralDescription
+import iso.services.parseGlucoseReading
 import util.strRepresentation
 import kotlin.math.pow
 import kotlin.test.Test

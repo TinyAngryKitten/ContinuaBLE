@@ -4,6 +4,7 @@ package iso
 //https://www.bluetooth.com/specifications/gatt/characteristics/
 
 //glucose characteristics
+
 val glucoseFeatureCharacteristic = "0x2A51"
 val glucoseMeasurementCharacteristic = "0x2A18"
 val glucoseMeasurementContextCharacteristic = "0x2A34"
