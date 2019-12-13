@@ -8,7 +8,7 @@ sealed class DataRecord
 object EmptyRecord : DataRecord()
 
 data class GlucoseRecord(
-    val unit : BloodGlucoseMeasurement,
+    val unit : BloodGlucoseUnit,
     val amount : Float,
     val sequenceNumber : UInt,
     val context : GlucoseRecordContext?
@@ -21,7 +21,7 @@ data class GlucoseRecord(
             context : GlucoseRecord?
         ) : GlucoseRecord? {
             return GlucoseRecord(
-                if(unit.value) BloodGlucoseMeasurement.MMOL else BloodGlucoseMeasurement.DL,
+                if(unit.value) BloodGlucoseUnit.MMOL else BloodGlucoseUnit.DL,
                 if(amount is ISOValue.SFloat.Value) amount.value else return null,
                 sequenceNumber.value,
                 null
@@ -29,7 +29,6 @@ data class GlucoseRecord(
         }
     }
 }
-
 
 //These are all UTF8 strings
 sealed class DeviceInfo : DataRecord() {
@@ -66,8 +65,58 @@ class BatteryLevel(
     constructor(level: ISOValue.UInt8, device: PeripheralDescription) : this(level.value.toInt(), device)
 }
 
+class BloodPressureFeatures(
+    val bodyMovementDetection : Boolean,
+    val cuffFitDetection : Boolean,
+    val irregularPulseDetection : Boolean,
+    val pulseRateRangeDetection : Boolean,
+    val measurementPositionDetection : Boolean,
+    val multipleBondSupport : Boolean
+)
+
+class BloodPressureRecord(
+    val systolic : Float,
+    val diastolic : Float,
+    val meanArtieralPressure : Float,
+    val unit : BloodPressureUnit,
+    val timeStamp : ISOValue.DateTime?,
+    val bpm : Float?,
+    val userId : Int?,
+    val status : MeasurementStatus?
+) : DataRecord(){
+
+    companion object {
+        fun fromISO(
+            systolic: ISOValue.SFloat,
+            diastolic: ISOValue.SFloat,
+            meanArtieralPressure: ISOValue.SFloat,
+            unit: BloodPressureUnit,
+            timeStamp: ISOValue.DateTime?,
+            bpm: ISOValue.SFloat?,
+            userId: ISOValue.UInt8?,
+            status: MeasurementStatus?
+        ): BloodPressureRecord? {
+            if (systolic !is ISOValue.SFloat.Value) return null
+            if (diastolic !is ISOValue.SFloat.Value) return null
+            if (meanArtieralPressure !is ISOValue.SFloat.Value) return null
+            if (bpm != null && bpm !is ISOValue.SFloat.Value) return null
+
+            return BloodPressureRecord(
+                systolic.value,
+                diastolic.value,
+                meanArtieralPressure.value,
+                unit,
+                timeStamp,
+                (bpm as ISOValue.SFloat.Value).value,
+                userId?.value?.toInt(),
+                status
+            )
+        }
+    }
+}
+
+class MeasurementStatus()
 
 
 //TODO: support this maybe? unknown if any glucose meter actually support it or if it would be useful
 class GlucoseRecordContext() : DataRecord() {}
-

@@ -82,9 +82,20 @@ class ISOParser(var bytes : ByteArray) {
     /**
      * used to add a boolean as iso value
      */
-    val boolean : (Boolean) -> ISOValue.Flag = {
+    val flag : (Boolean) -> ISOValue.Flag = {
             bool : Boolean ->
         ISOValue.Flag(bool)
+    }
+
+    val dateTime : () -> ISOValue.DateTime? = {
+        ISOValue.DateTime(
+            year = uint16(),
+            month = uint8(),
+            day = uint8(),
+            hours = uint8(),
+            minutes = uint8(),
+            seconds = uint8()
+        )
     }
 
     /**

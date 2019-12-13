@@ -1,5 +1,6 @@
 package bledata
 
+import iso.ISOValue
 import kotlin.time.Clock
 
 data class CurrentTime(
@@ -13,36 +14,19 @@ data class ExactTime(
     val dayDateTime : DayDateTime,
     val fractions : UInt
 ) {
+    constructor(
+        dayDateTime: DayDateTime,
+        fractions: ISOValue.UInt8
+    ) : this(dayDateTime,fractions.value)
+
     fun toByteArray() = dayDateTime.toByteArray() + fractions.toByte()
 }
 
 data class DayDateTime(
-    val dateTime : DateTime,
+    val dateTime : ISOValue.DateTime,
     val dayOfWeek : DayOfWeekEnum
 ) {
     fun toByteArray() = dateTime.toByteArray() + (dayOfWeek.ordinal + 1).toByte()
-}
-
-data class DateTime(
-    val year : UInt,
-    val month : UInt,
-    val day : UInt,
-    val hours : UInt,
-    val minutes : UInt,
-    val seconds : UInt
-) {
-    fun toByteArray() = ByteArray(7) {
-        when(it) {
-            6 -> seconds
-            5 -> minutes
-            4 -> hours
-            3 -> day
-            2 -> month
-            1 -> (year xor Byte.MAX_VALUE.toUInt())//second part of the year value
-            0 -> (year and Byte.MAX_VALUE.toUInt())//first part of the year value
-            else -> seconds//TODO: does it start at 0 or 1?
-        }.toByte()
-    }
 }
 
 enum class DayOfWeekEnum {
@@ -52,7 +36,22 @@ enum class DayOfWeekEnum {
     Thursday,
     Friday,
     Saturday,
-    Sunday
+    Sunday,
+    ValueOutOfRange;
+
+    companion object {
+        fun fromValue(v: Int) = when(v) {
+            0->Monday
+            1->Tuesday
+            2->Wednsday
+            3->Thursday
+            4->Friday
+            5->Saturday
+            6->Sunday
+            else->ValueOutOfRange
+        }
+        fun fromUInt8(v : ISOValue.UInt8) = fromValue(v.value.toInt())
+    }
 }
 
 data class AdjustReason(
@@ -61,6 +60,18 @@ data class AdjustReason(
     val changeOfTimeZone : Boolean,
     val changeOfDST : Boolean
 ){
+    constructor(
+        manualTimeUpdate: ISOValue.Flag,
+        externalReferenceTimeUpdate: ISOValue.Flag,
+        changeOfTimeZone: ISOValue.Flag,
+        changeOfDST: ISOValue.Flag
+    ) : this(
+        manualTimeUpdate.value,
+        externalReferenceTimeUpdate.value,
+        changeOfTimeZone.value,
+        changeOfDST.value
+    )
+
     fun toByte() = (0
                 or if (manualTimeUpdate) 1 else 0
                 or if(externalReferenceTimeUpdate) 2 else 0

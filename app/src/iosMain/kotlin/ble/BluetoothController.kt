@@ -1,4 +1,5 @@
 package ble
+import iso.CharacteristicUUIDs
 import iso.ServiceUUID
 import iso.parseBLEReading
 import platform.CoreBluetooth.*
@@ -7,7 +8,7 @@ import platform.darwin.NSObject
 import sample.logger
 
 
-private val hexToStr ={v : String -> CBUUID.UUIDWithString(v)}
+private val hexToStr ={v : CharacteristicUUIDs -> CBUUID.UUIDWithString(v.id)}
 
 /**
     * This class delegates bluetooth events to a central manager
@@ -20,7 +21,7 @@ private val hexToStr ={v : String -> CBUUID.UUIDWithString(v)}
  * heavy use of overloading with named parameters instead of
  * changing method names.
  */
-class BluetoothController(serviesToLookFor : List<ServiceUUID>, characteristicsToLookFor : List<String>) :
+class BluetoothController(serviesToLookFor : List<ServiceUUID>, characteristicsToLookFor : List<CharacteristicUUIDs>) :
     NSObject(),
     CBCentralManagerDelegateProtocol,
     CBPeripheralDelegateProtocol {

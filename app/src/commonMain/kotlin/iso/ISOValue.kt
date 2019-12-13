@@ -1,5 +1,6 @@
 package iso
 
+import util.bitAt
 import util.leftMostNibble
 import util.nibleToSignedInt
 import util.rightMostNibble
@@ -13,12 +14,52 @@ sealed class ISOValue {
     data class UInt8 @ExperimentalUnsignedTypes constructor(val value : UInt) : ISOValue()
     data class UInt16 @ExperimentalUnsignedTypes constructor(val value : UInt) : ISOValue()
 
+    data class DateTime(
+        val year : UInt,
+        val month : UInt,
+        val day : UInt,
+        val hours : UInt,
+        val minutes : UInt,
+        val seconds : UInt
+    ) : ISOValue() {
+
+        constructor(
+            year: UInt16,
+            month: UInt8,
+            day: UInt8,
+            hours: UInt8,
+            minutes: UInt8,
+            seconds: UInt8
+        ) : this(
+            year.value,
+            month.value,
+            day.value,
+            hours.value,
+            minutes.value,
+            seconds.value
+        )
+
+        fun toByteArray() = ByteArray(7) {
+            when(it) {
+                6 -> seconds
+                5 -> minutes
+                4 -> hours
+                3 -> day
+                2 -> month
+                1 -> (year xor Byte.MAX_VALUE.toUInt())//second part of the year value
+                0 -> (year and Byte.MAX_VALUE.toUInt())//first part of the year value
+                else -> seconds//TODO: does it start at 0 or 1?
+            }.toByte()
+        }
+    }
+
     sealed class SFloat() : ISOValue() {
         object NaN : SFloat()
         object NRes : SFloat()
         object ReservedForFutureUse : SFloat()
         object PlussInfinity : SFloat()
         object MinusInfinity : SFloat()
+
         data class Value(val value: kotlin.Float) : SFloat() {
             override fun toString() ="value(val: $value"
         }
@@ -44,8 +85,6 @@ sealed class ISOValue {
         }
     }
 
-    class Float(val value : kotlin.Float) : ISOValue()
-
     class Flags(val value : List<Boolean>) : ISOValue()
 
     class Flag(val value : Boolean) : ISOValue()
@@ -57,7 +96,5 @@ sealed class ISOValue {
         )
     }
 
-    object Empty : ISOValue() {
-        val value = null
-    }
+    object Empty : ISOValue()
 }

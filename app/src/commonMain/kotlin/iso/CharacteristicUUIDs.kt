@@ -5,16 +5,38 @@ package iso
 
 //glucose characteristics
 
-val glucoseFeatureCharacteristic = "0x2A51"
-val glucoseMeasurementCharacteristic = "0x2A18"
-val glucoseMeasurementContextCharacteristic = "0x2A34"
+sealed class CharacteristicUUIDs(val id : String) {
+    //GLUCOSE
+    object glucoseFeature : CharacteristicUUIDs("0x2A51")
+    object glucoseMeasurement : CharacteristicUUIDs("0x2A18")
+    object glucoseMeasurementContext : CharacteristicUUIDs("0x2A34")
 
-val modelNumber = "0x2A24"
-val manufacturerName = "0x2A29"
+    //HEART RATE
+    object heartRateMeasurement : CharacteristicUUIDs("0x2A37")
+    object bodySensorLocation : CharacteristicUUIDs("2A38")
+    object heartRateControlPoint : CharacteristicUUIDs("2A39")
 
-val currentTime = "0x2A2B"
-val batteryLevel = "0x2A19"
+    //BLOOD PRESSURE
+    object bloodPressureFeature : CharacteristicUUIDs("0x2A49")
+    object bloodPressureMeasurement : CharacteristicUUIDs("0x2A35")
+    //object IntermediateCuffPressure : CharacteristicUUIDs("0x2A36")
 
-val ehancedHeartRate = "0x0101"
-val enhancedHeartRateFeature = "0x0102"
 
+
+    //DEVICE INFO
+    object modelNumber : CharacteristicUUIDs("0x2A24")
+    object serialNumber : CharacteristicUUIDs("0x2A25")
+    object firmwareRevision : CharacteristicUUIDs("0x2A26")
+    object hardwareRevision : CharacteristicUUIDs("0x2A27")
+    object softwareRevision : CharacteristicUUIDs("0x2A28")
+    object manufacturerName :CharacteristicUUIDs("0x2A29")
+
+    //CURRENT TIME
+    object currentTime : CharacteristicUUIDs("0x2A2B")
+    //BATTERY LEVEL
+    object batteryLevel : CharacteristicUUIDs("0x2A19")
+
+    //SAMSUNG HEALTH
+    object ehancedHeartRate : CharacteristicUUIDs("0x0101")
+    object enhancedHeartRateFeature : CharacteristicUUIDs("0x0102")
+}

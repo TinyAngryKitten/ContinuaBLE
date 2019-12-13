@@ -15,7 +15,7 @@ fun parseGlucoseReading(reading : BLEReading) : DataRecord =
         flags(0..1)
 
         GlucoseRecord.fromISOValues(
-            unit = boolean(flag(2)),
+            unit = flag(flag(2)),
             sequenceNumber = uint16(),
             //ignore date and time of measurement
             amount = dropThen(8) { onCondition(flag(1), sfloat) },

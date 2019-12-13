@@ -2,12 +2,12 @@ package dsl
 import data.*
 
 class GlucoseRecordDSL {
-    private var unit: BloodGlucoseMeasurement? = null
+    private var unit: BloodGlucoseUnit? = null
     private var amount: Float? = null
     private var glucoseContext: GlucoseRecordContext? = null
     private var nr: UInt? = null
 
-    fun unit(fn: () -> BloodGlucoseMeasurement) {
+    fun unit(fn: () -> BloodGlucoseUnit) {
         unit = fn()
     }
 

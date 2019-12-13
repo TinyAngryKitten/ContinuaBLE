@@ -2,7 +2,6 @@ package sample
 
 import ble.BluetoothController
 import iso.*
-import kotlin.native.concurrent.freeze
 
 actual class Sample {
     actual fun checkMe(fn : (String) -> Unit) {
@@ -10,25 +9,25 @@ actual class Sample {
 
         BluetoothController(
             listOf(
-                ServiceUUID.glucoseServiceUUID,
-                ServiceUUID.weightServiceUUID,
-                ServiceUUID.deviceInformationServiceUUID,
-                ServiceUUID.batteryServiceUUID,
-                ServiceUUID.healthServiceUUID,
-                ServiceUUID.stepServiceUUID,
-                ServiceUUID.sleepServiceUUID,
-                ServiceUUID.enhancedHeartRateServiceUUID
+                ServiceUUID.glucose,
+                ServiceUUID.weight,
+                ServiceUUID.deviceInformation,
+                ServiceUUID.battery,
+                ServiceUUID.health,
+                ServiceUUID.step,
+                ServiceUUID.sleep,
+                ServiceUUID.enhancedHeartRate
             ),
             listOf(
-                glucoseFeatureCharacteristic,
-                glucoseMeasurementCharacteristic,
-                glucoseMeasurementContextCharacteristic,
-                modelNumber,
-                manufacturerName,
-                currentTime,
-                batteryLevel,
-                ehancedHeartRate,
-                enhancedHeartRateFeature
+                CharacteristicUUIDs.glucoseFeature,
+                CharacteristicUUIDs.glucoseMeasurement,
+                CharacteristicUUIDs.glucoseMeasurementContext,
+                CharacteristicUUIDs.modelNumber,
+                CharacteristicUUIDs.manufacturerName,
+                CharacteristicUUIDs.currentTime,
+                CharacteristicUUIDs.batteryLevel,
+                CharacteristicUUIDs.ehancedHeartRate,
+                CharacteristicUUIDs.enhancedHeartRateFeature
             )
         )
     }
