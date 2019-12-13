@@ -2,31 +2,25 @@ package bledata
 
 import kotlin.time.Clock
 
-private fun toByteArray(
-    value : UInt
-) = arrayOf(value.toByte()).toByteArray()
-
-private fun toByteArray(value : Byte) = arrayOf(value).toByteArray()
-
 data class CurrentTime(
     val exactTime: ExactTime,
     val adjustReason : AdjustReason
 ) {
-    fun toByteArray() = toByteArray(adjustReason.toByte()) + exactTime.toByteArray()
+    fun toByteArray() = exactTime.toByteArray() + adjustReason.toByte()
 }
 
 data class ExactTime(
     val dayDateTime : DayDateTime,
     val fractions : UInt
 ) {
-    fun toByteArray() = toByteArray(fractions) + dayDateTime.toByteArray()
+    fun toByteArray() = dayDateTime.toByteArray() + fractions.toByte()
 }
 
 data class DayDateTime(
     val dateTime : DateTime,
     val dayOfWeek : DayOfWeekEnum
 ) {
-    fun toByteArray() = toByteArray((dayOfWeek.ordinal + 1).toUInt()) + dateTime.toByteArray()
+    fun toByteArray() = dateTime.toByteArray() + (dayOfWeek.ordinal + 1).toByte()
 }
 
 data class DateTime(
@@ -39,13 +33,13 @@ data class DateTime(
 ) {
     fun toByteArray() = ByteArray(7) {
         when(it) {
-            0 -> seconds
-            1 -> minutes
-            2 -> hours
+            6 -> seconds
+            5 -> minutes
+            4 -> hours
             3 -> day
-            4 -> month
-            5 -> (year and Byte.MAX_VALUE.toUInt())//first part of the year value
-            6 -> (year xor Byte.MAX_VALUE.toUInt())//second part of the year value
+            2 -> month
+            1 -> (year xor Byte.MAX_VALUE.toUInt())//second part of the year value
+            0 -> (year and Byte.MAX_VALUE.toUInt())//first part of the year value
             else -> seconds//TODO: does it start at 0 or 1?
         }.toByte()
     }
