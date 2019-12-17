@@ -5,7 +5,7 @@ import iso.parse
 import iso.services.heightResolution
 import iso.services.weightResolution
 
-fun weightServiceParser(reading : BLEReading) =
+fun parseWeightReading(reading : BLEReading) =
     parse(reading.data) {
         flags(0..1)
 
@@ -20,7 +20,7 @@ fun weightServiceParser(reading : BLEReading) =
         ) ?: EmptyRecord
     }
 
-fun weightScaleFeatureParser(reading : BLEReading) =
+fun parseWeightScaleFeature(reading : BLEReading) =
     parse(reading.data) {
         flags(0..4)
 

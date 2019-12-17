@@ -259,5 +259,48 @@ sealed class HeightMeasurementResolution(val increments : Float) {
     }
 }
 
+data class HeartRateRecord(
+    val measurementValue : UInt,
+    val energyExpended : UInt?,
+    val sensorContact : SensorContact,
+    val rrInterval : UInt?
+
+) : DataRecord() {
+    constructor(
+        measurementValue: ISOValue.UInt8,
+        energyExpended: ISOValue.UInt16?,
+        sensorContact: SensorContact,
+        rrInterval: ISOValue.UInt16?
+    ) : this(measurementValue.value,energyExpended?.value,sensorContact,rrInterval?.value)
+
+    constructor(
+        measurementValue: ISOValue.UInt16,
+        energyExpended: ISOValue.UInt16?,
+        sensorContact: SensorContact,
+        rrInterval: ISOValue.UInt16?
+    ) : this(measurementValue.value,energyExpended?.value,sensorContact,rrInterval?.value)
+}
+
+sealed class SensorContact {
+    object NotSupported : SensorContact()
+    object ContactNotDetected : SensorContact()
+    object ContactDetected : SensorContact()
+}
+
+data class BodySensorLocationRecord(
+    val location : BodySensorLocation,
+    val device: PeripheralDescription
+) : DataRecord()
+
+sealed class BodySensorLocation {
+    object Other : BodySensorLocation()
+    object Chest : BodySensorLocation()
+    object Wrist : BodySensorLocation()
+    object Finger : BodySensorLocation()
+    object Hand : BodySensorLocation()
+    object EarLobe : BodySensorLocation()
+    object Foot : BodySensorLocation()
+}
+
 //TODO: support this maybe? unknown if any glucose meter actually support it or if it would be useful
 class GlucoseRecordContext : DataRecord() {}

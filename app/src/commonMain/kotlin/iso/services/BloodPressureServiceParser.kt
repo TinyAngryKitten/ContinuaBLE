@@ -8,7 +8,7 @@ import data.EmptyRecord
 import iso.parse
 
 
-fun bloodPressureFeatureParser(reading : BLEReading) =
+fun parseBloodPressureFeature(reading : BLEReading) =
     parse(reading.data) {
         flags(0..2)
 
@@ -22,7 +22,7 @@ fun bloodPressureFeatureParser(reading : BLEReading) =
         )
     }
 
-fun bloodPressureMeasurementParser(reading : BLEReading) =
+fun parseBloodPressureMeasurement(reading : BLEReading) =
     parse(reading.data) {
         flags(0..1)
 
