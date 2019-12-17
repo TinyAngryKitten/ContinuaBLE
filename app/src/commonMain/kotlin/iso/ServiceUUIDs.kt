@@ -7,42 +7,47 @@ package iso
  */
 sealed class ServiceUUID(val id : String) {
     val nr = id.substring(2)
+    abstract val name : String
 
     object glucose : ServiceUUID("0x1808") {
-        val name = "Glucose Service"
+        override val name = "Glucose Service"
     }
 
     object weight: ServiceUUID("0x181D") {
-        val name = "Weight Service"
+        override val name = "Weight Service"
+    }
+
+    object bodyComposition : ServiceUUID("0x180F") {
+        override val name = "Body Composition Service"
     }
 
     object deviceInformation : ServiceUUID("0x180A") {
-        val name = "Device Information Service"
+        override val name = "Device Information Service"
     }
 
     object battery : ServiceUUID( "0x180F") {
-        val name = "Battery Service"
+        override val name = "Battery Service"
     }
 
     object bloodPressure : ServiceUUID("0x1810"){
-        val name = "Blood Pressure Service"
+        override val name = "Blood Pressure Service"
     }
 
     //additional samsung health devices
     object health : ServiceUUID("0xFE00") {
-        val name = "Health Service"
+        override val name = "Health Service"
     }
 
     object sleep : ServiceUUID("0x0300") {
-        val name = "Sleep Service"
+        override val name = "Sleep Service"
     }
 
     object step : ServiceUUID("0x0200") {
-        val name = "Step Service"
+        override val name = "Step Service"
     }
 
     object enhancedHeartRate : ServiceUUID("0x0100") {
-        val name = "Enhanced Heart Rate Service"
+        override val name = "Enhanced Heart Rate Service"
     }
 
 }

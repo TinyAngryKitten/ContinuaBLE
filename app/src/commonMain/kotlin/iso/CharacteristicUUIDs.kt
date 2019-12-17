@@ -6,6 +6,7 @@ package iso
 //glucose characteristics
 
 sealed class CharacteristicUUIDs(val id : String) {
+    val nr = id.substring(2)
     //GLUCOSE
     object glucoseFeature : CharacteristicUUIDs("0x2A51")
     object glucoseMeasurement : CharacteristicUUIDs("0x2A18")
@@ -21,7 +22,9 @@ sealed class CharacteristicUUIDs(val id : String) {
     object bloodPressureMeasurement : CharacteristicUUIDs("0x2A35")
     //object IntermediateCuffPressure : CharacteristicUUIDs("0x2A36")
 
-
+    //BODY WEIGHT
+    object weightFeature : CharacteristicUUIDs("0x2A9E")
+    object weightMeasurement : CharacteristicUUIDs("0x2A9D")
 
     //DEVICE INFO
     object modelNumber : CharacteristicUUIDs("0x2A24")

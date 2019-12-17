@@ -20,8 +20,6 @@ fun bloodPressureFeatureParser(reading : BLEReading) =
             flag(4),
             flag(5)
         )
-
-        EmptyRecord
     }
 
 fun bloodPressureMeasurementParser(reading : BLEReading) =
