@@ -1,17 +1,23 @@
 import bledata.BLEReading
-import data.HeightMeasurementResolution
-import data.WeightFeatures
-import data.WeightMeasurementResolution
-import data.WeightRecord
+import data.*
+import iso.ISOParser
 import iso.parse
+import iso.services.heightResolution
+import iso.services.weightResolution
 
 fun weightServiceParser(reading : BLEReading) =
     parse(reading.data) {
         flags(0..1)
 
-        WeightRecord(
-
-        )
+        WeightRecord.fromISOValues(
+            weight = uint16(),
+            weightUnit = if(flag(0)) WeightUnit.LB else WeightUnit.KG,
+            timeStamp = onCondition(flag(1),dateTime),
+            userId = onCondition(flag(2),uint8),
+            BMI = onCondition(flag(3),uint16),
+            height = onCondition(flag(3),uint16),
+            heightUnit = if(flag(0)) LengthUnit.Inch else LengthUnit.M
+        ) ?: EmptyRecord
     }
 
 fun weightScaleFeatureParser(reading : BLEReading) =
@@ -22,18 +28,7 @@ fun weightScaleFeatureParser(reading : BLEReading) =
             flag(0),
             flag(1),
             flag(2),
-            WeightMeasurementResolution.fromInt(
-                       flag(3) * 1
-                        + flag(4) * 2
-                        + flag(5) * 4
-                        + flag(6) * 8
-            ),
-            HeightMeasurementResolution.fromInt(
-                flag(7) * 1
-                + flag(8) * 2
-                + flag(9) * 2
-            )
+            weightResolution(3),
+            heightResolution(7)
         )
     }
-
-private operator fun Boolean.times(i : Int) = if(this) i else 0

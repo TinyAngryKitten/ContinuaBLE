@@ -1,6 +1,5 @@
 package iso
 
-import util.bitAt
 import util.leftMostNibble
 import util.nibleToSignedInt
 import util.rightMostNibble
@@ -53,14 +52,14 @@ sealed class ISOValue {
         }
     }
 
-    sealed class SFloat() : ISOValue() {
+    sealed class SFloat : ISOValue() {
         object NaN : SFloat()
         object NRes : SFloat()
         object ReservedForFutureUse : SFloat()
         object PlussInfinity : SFloat()
         object MinusInfinity : SFloat()
 
-        data class Value(val value: kotlin.Float) : SFloat() {
+        data class Value(val value: Float) : SFloat() {
             override fun toString() ="value(val: $value"
         }
 

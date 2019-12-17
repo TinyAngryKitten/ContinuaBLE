@@ -86,7 +86,7 @@ class BloodPressureRecord(
 ) : DataRecord(){
 
     companion object {
-        fun fromISO(
+        fun fromISOValues(
             systolic: ISOValue.SFloat,
             diastolic: ISOValue.SFloat,
             meanArtieralPressure: ISOValue.SFloat,
@@ -117,6 +117,60 @@ class BloodPressureRecord(
 
 class MeasurementStatus()
 
+data class BodyCompositionFeature(
+    val timeStamp : Boolean,
+    val multipleUsers : Boolean,
+    val basalMetabolism : Boolean,
+    val musclePercent : Boolean,
+    val muscleMass : Boolean,
+    val fatFreeMass : Boolean,
+    val softLeanMass : Boolean,
+    val bodyWaterMass : Boolean,
+    val impedance : Boolean,
+    val weight : Boolean,
+    val height : Boolean,
+    val massMeasurementResolution: WeightMeasurementResolution,
+    val heightMeasurementResolution: HeightMeasurementResolution
+) : DataRecord()
+
+data class BodyCompositionRecord(
+   val bodyFatPercent : UInt,
+   val dateTime: ISOValue.DateTime?,
+   val userId: UInt?,
+   val basalMetabolism : UInt?,
+   val musclePercent : UInt?,
+   val muscleMass : UInt?,
+   val fatFreeMass : UInt?,
+   val softLeanMass : UInt?,
+   val bodyWaterMass : UInt?,
+   val impedance: UInt?
+   //val weight : UInt,
+   //val height : UInt
+) : DataRecord() {
+    constructor(bodyFatPercent : ISOValue.UInt16,
+                dateTime: ISOValue.DateTime?,
+                userId: ISOValue.UInt8?,
+                basalMetabolism : ISOValue.UInt16?,
+                musclePercent : ISOValue.UInt16?,
+                muscleMass : ISOValue.UInt16?,
+                fatFreeMass : ISOValue.UInt16?,
+                softLeanMass : ISOValue.UInt16?,
+                bodyWaterMass : ISOValue.UInt16?,
+                impedance: ISOValue.UInt16?)
+            : this(bodyFatPercent.value,
+                dateTime,
+                userId?.value,
+                basalMetabolism?.value,
+                musclePercent?.value,
+                muscleMass?.value,
+                fatFreeMass?.value,
+                softLeanMass?.value,
+                bodyWaterMass?.value,
+                impedance?.value)
+}
+
+
+
 data class WeightRecord(
     val weight: UInt,
     val weightUnit: WeightUnit,
@@ -125,8 +179,30 @@ data class WeightRecord(
     val BMI : UInt?,
     val height: UInt?,
     val heightUnit: LengthUnit?
-
-) : DataRecord()
+) : DataRecord() {
+    companion object{
+        fun fromISOValues(
+            weight : ISOValue.UInt16,
+            weightUnit: WeightUnit,
+            timeStamp: ISOValue.DateTime?,
+            userId: ISOValue.UInt8?,
+            BMI: ISOValue.UInt16?,
+            height: ISOValue.UInt16?,
+            heightUnit: LengthUnit?
+        ) : WeightRecord? {
+            if(height != null && heightUnit == null) return null
+            return WeightRecord(
+                weight.value,
+                weightUnit,
+                timeStamp,
+                userId?.value,
+                BMI?.value,
+                height?.value,
+                heightUnit
+            )
+        }
+    }
+}
 
 data class WeightFeatures(
     val timeStamp : Boolean,
@@ -184,4 +260,4 @@ sealed class HeightMeasurementResolution(val increments : Float) {
 }
 
 //TODO: support this maybe? unknown if any glucose meter actually support it or if it would be useful
-class GlucoseRecordContext() : DataRecord() {}
+class GlucoseRecordContext : DataRecord() {}

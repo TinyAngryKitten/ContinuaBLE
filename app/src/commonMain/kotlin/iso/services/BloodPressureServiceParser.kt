@@ -26,7 +26,7 @@ fun bloodPressureMeasurementParser(reading : BLEReading) =
     parse(reading.data) {
         flags(0..1)
 
-        BloodPressureRecord.fromISO(
+        BloodPressureRecord.fromISOValues(
             systolic = sfloat(),
             diastolic = sfloat(),
             meanArtieralPressure = sfloat(),

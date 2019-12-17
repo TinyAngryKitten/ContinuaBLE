@@ -2,6 +2,7 @@ package iso
 
 import data.DataRecord
 import data.EmptyRecord
+import iso.services.weightResolution
 import sample.logger
 import util.*
 import kotlin.math.floor
