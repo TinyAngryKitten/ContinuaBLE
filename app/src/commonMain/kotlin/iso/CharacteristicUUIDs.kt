@@ -1,45 +1,96 @@
 package iso
 
+import bledata.BLEReading
+import data.DataRecord
+import data.EmptyRecord
+import iso.services.*
+import parseWeightMeasurement
+import parseWeightScaleFeature
+
 //IDs for characteristics defined in the bluetooth specification at:
 //https://www.bluetooth.com/specifications/gatt/characteristics/
 
 //glucose characteristics
 
-sealed class CharacteristicUUIDs(val id : String) {
+sealed class CharacteristicUUIDs(val id : String,val parse : (BLEReading) -> DataRecord) {
     val nr = id.substring(2)
+
     //GLUCOSE
-    object glucoseFeature : CharacteristicUUIDs("0x2A51")
-    object glucoseMeasurement : CharacteristicUUIDs("0x2A18")
-    object glucoseMeasurementContext : CharacteristicUUIDs("0x2A34")
+    object glucoseFeature : CharacteristicUUIDs("0x2A51", ::parseGlucoseFeatures)
+    object glucoseMeasurement : CharacteristicUUIDs("0x2A18", ::parseGlucoseReading)
+    object glucoseMeasurementContext : CharacteristicUUIDs("0x2A34",{EmptyRecord})
 
     //HEART RATE
-    object heartRateMeasurement : CharacteristicUUIDs("0x2A37")
-    object bodySensorLocation : CharacteristicUUIDs("2A38")
-    object heartRateControlPoint : CharacteristicUUIDs("2A39")
+    object heartRateMeasurement : CharacteristicUUIDs("0x2A37",::parseHeartRateMeasurement)
+    object bodySensorLocation : CharacteristicUUIDs("2A38",::parseBodySensorLocation)
+    //object heartRateControlPoint : CharacteristicUUIDs("2A39",)
 
     //BLOOD PRESSURE
-    object bloodPressureFeature : CharacteristicUUIDs("0x2A49")
-    object bloodPressureMeasurement : CharacteristicUUIDs("0x2A35")
+    object bloodPressureFeature : CharacteristicUUIDs("0x2A49",::parseBloodPressureFeature)
+    object bloodPressureMeasurement : CharacteristicUUIDs("0x2A35",::parseBloodPressureMeasurement)
     //object IntermediateCuffPressure : CharacteristicUUIDs("0x2A36")
 
     //BODY WEIGHT
-    object weightFeature : CharacteristicUUIDs("0x2A9E")
-    object weightMeasurement : CharacteristicUUIDs("0x2A9D")
+    object weightFeature : CharacteristicUUIDs("0x2A9E", ::parseWeightScaleFeature)
+    object weightMeasurement : CharacteristicUUIDs("0x2A9D",::parseWeightMeasurement)
 
     //DEVICE INFO
-    object modelNumber : CharacteristicUUIDs("0x2A24")
-    object serialNumber : CharacteristicUUIDs("0x2A25")
-    object firmwareRevision : CharacteristicUUIDs("0x2A26")
-    object hardwareRevision : CharacteristicUUIDs("0x2A27")
-    object softwareRevision : CharacteristicUUIDs("0x2A28")
-    object manufacturerName :CharacteristicUUIDs("0x2A29")
+    object modelNumber : CharacteristicUUIDs("0x2A24",::parseModelNumber)
+    object serialNumber : CharacteristicUUIDs("0x2A25",::parseSerialNumber)
+    object firmwareRevision : CharacteristicUUIDs("0x2A26",::parseFirmwareRevision)
+    object hardwareRevision : CharacteristicUUIDs("0x2A27",::parseHardwareRevision)
+    object softwareRevision : CharacteristicUUIDs("0x2A28",::parseSoftwareRevision)
+    object manufacturerName :CharacteristicUUIDs("0x2A29",::parseManufacturerName)
 
     //CURRENT TIME
-    object currentTime : CharacteristicUUIDs("0x2A2B")
+    //object currentTime : CharacteristicUUIDs("0x2A2B",::parseCurrentTime)
     //BATTERY LEVEL
-    object batteryLevel : CharacteristicUUIDs("0x2A19")
+    object batteryLevel : CharacteristicUUIDs("0x2A19",::parseBatteryLevel)
 
-    //SAMSUNG HEALTH
-    object ehancedHeartRate : CharacteristicUUIDs("0x0101")
-    object enhancedHeartRateFeature : CharacteristicUUIDs("0x0102")
+    class UnsupportedCharacteristic(id: String) : CharacteristicUUIDs(id,{EmptyRecord}) {
+        override fun equals(other: Any?): Boolean {
+            return if(other is UnsupportedCharacteristic) id.equals(other.id,ignoreCase = true)
+            else false
+        }
+
+        override fun hashCode(): Int {
+            return this::class.hashCode()
+        }
+
+        override fun toString(): String {
+            return "Unsupported Characteristic, UUID: $id"
+        }
+    }
+
+    companion object {
+        fun getAll() : List<CharacteristicUUIDs> = listOf(
+                glucoseFeature,
+                glucoseMeasurement,
+                glucoseMeasurementContext,
+
+                heartRateMeasurement,
+                bodySensorLocation,
+                //heartRateControlPoint,
+
+                bloodPressureFeature,
+                bloodPressureMeasurement,
+
+                weightFeature,
+                weightMeasurement,
+
+                modelNumber,
+                serialNumber,
+                firmwareRevision,
+                hardwareRevision,
+                softwareRevision,
+                manufacturerName,
+
+                //currentTime,
+                batteryLevel
+            )
+
+        fun fromNr(nr : String) = getAll().find { it.nr.equals(nr,ignoreCase = true) } ?: UnsupportedCharacteristic("0x$nr")
+        fun fromId(id : String) = getAll().find { it.id.equals(id,ignoreCase = true) } ?: UnsupportedCharacteristic(id)
+    }
 }
+

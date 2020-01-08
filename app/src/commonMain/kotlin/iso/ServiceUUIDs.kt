@@ -33,21 +33,19 @@ sealed class ServiceUUID(val id : String) {
         override val name = "Blood Pressure Service"
     }
 
-    //additional samsung health devices
-    object health : ServiceUUID("0xFE00") {
-        override val name = "Health Service"
-    }
 
-    object sleep : ServiceUUID("0x0300") {
-        override val name = "Sleep Service"
-    }
+    companion object {
+        fun getAll() = listOf(
+            glucose,
+            weight,
+            bodyComposition,
+            deviceInformation,
+            battery,
+            bloodPressure
+        )
 
-    object step : ServiceUUID("0x0200") {
-        override val name = "Step Service"
-    }
+        fun fromNr(nr : String) = getAll().find { it.nr.equals(nr,ignoreCase = true) }
+        fun fromId(id : String) = getAll().find { it.id.equals(id,ignoreCase = true) }
 
-    object enhancedHeartRate : ServiceUUID("0x0100") {
-        override val name = "Enhanced Heart Rate Service"
     }
-
 }

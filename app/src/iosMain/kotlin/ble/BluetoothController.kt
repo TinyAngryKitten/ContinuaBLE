@@ -1,17 +1,18 @@
 package ble
-import iso.CharacteristicUUIDs
+import bledata.BLEReading
+import co.touchlab.stately.collections.frozenCopyOnWriteList
+import data.DeviceInfo
 import iso.ServiceUUID
-import iso.parseBLEReading
 import platform.CoreBluetooth.*
 import platform.Foundation.*
 import platform.darwin.NSObject
 import sample.logger
 
 
-private val hexToStr ={v : CharacteristicUUIDs -> CBUUID.UUIDWithString(v.id)}
+//private val hexToStr ={v : CharacteristicUUIDs -> CBUUID.UUIDWithString(v.id)}
 
 /**
-    * This class delegates bluetooth events to a central manager
+ * sThis class delegates bluetooth events to a central manager
  * that handles peripheral connections
  * and a peripheralDelegate that handles other interactions with
  * peripherals like reading characteristics.
@@ -21,39 +22,63 @@ private val hexToStr ={v : CharacteristicUUIDs -> CBUUID.UUIDWithString(v.id)}
  * heavy use of overloading with named parameters instead of
  * changing method names.
  */
-class BluetoothController(serviesToLookFor : List<ServiceUUID>, characteristicsToLookFor : List<CharacteristicUUIDs>) :
+class BluetoothController(private val resultCallback : (BLEReading) -> Unit)://serviesToLookFor : List<ServiceUUID>, characteristicsToLookFor : List<CharacteristicUUIDs>) :
     NSObject(),
     CBCentralManagerDelegateProtocol,
     CBPeripheralDelegateProtocol {
 
     val centralManager = CBCentralManager(this,null)
 
-    val peripheralController = PeripheralController(characteristicsToLookFor.map(hexToStr)) {
-        logger.debug("raw bluetooth reading received: \n"+it.toString())
-        parseBLEReading(it)
-    }
+    //funky solution for sharing a
+    var state : BLEState
+        get() = stateList.first()
+        set(v) {
+            logger.debug(v.toString())
+            stateList.set(0,v)
+        }
 
-    val serviceUUIDS = serviesToLookFor
-        .map { CBUUID.UUIDWithString(it.id) }
+    val stateList = frozenCopyOnWriteList<BLEState>(listOf(BLEState.UnknownErrorState))
 
-    var discoveredDevices = listOf<CBPeripheral>()
-    var connectedDevices = listOf<CBPeripheral>()
+    val peripheralController = PeripheralController(null,resultCallback)//characteristicsToLookFor.map(hexToStr))
+
+    val discoveredDevices : MutableList<CBPeripheral> = frozenCopyOnWriteList(listOf())
+    val connectedDevices : MutableList<CBPeripheral> = frozenCopyOnWriteList(listOf())
+
+    val serviceUUIDS = listOf(
+        ServiceUUID.battery,
+        ServiceUUID.bloodPressure,
+        ServiceUUID.glucose,
+        ServiceUUID.weight,
+        ServiceUUID.deviceInformation
+    ).map { CBUUID.UUIDWithString(it.id) }
 
     override fun centralManagerDidUpdateState(central: CBCentralManager) {
         when(central.state) {
-            CBManagerStatePoweredOff -> logger.debug("powered off")
-            CBManagerStateUnsupported -> logger.debug("unsupported"  )
-            CBManagerStateResetting -> logger.debug("resetting")
-            CBManagerStateUnauthorized -> logger.debug("unauthorized")
+            CBManagerStatePoweredOff -> {
+                state = BLEState.Off
+                logger.debug("Bluetooth powered off")
+            }
+            CBManagerStateUnsupported ->{
+                state = BLEState.NotSupported
+                logger.debug("Bluetooth unsupported"  )
+            }
+            CBManagerStateResetting -> {
+                state = BLEState.Resetting
+                logger.debug("Bluetooth resetting")
+            }
+            CBManagerStateUnauthorized -> {
+                state = BLEState.NotAuthorized
+                logger.debug("Bluetooth unauthorized")
+            }
 
             CBManagerStatePoweredOn -> {
-                logger.debug("powered on")
-
-                centralManager.scanForPeripheralsWithServices(
-                    serviceUUIDS,null
-                )
+                state = BLEState.On
+                logger.debug("bluetooth on")
             }
-            else -> logger.debug("unknown bluetooth state")//state unknown is a valid state
+            else -> {
+                state = BLEState.UnknownErrorState
+                logger.debug("Unknown bluetooth state")
+            }//state unknown is a valid state
         }
     }
 
@@ -65,14 +90,16 @@ class BluetoothController(serviesToLookFor : List<ServiceUUID>, characteristicsT
         RSSI: NSNumber
     ) {
         logger.debug("discovered: "+didDiscoverPeripheral.name)
-        central.connectPeripheral(didDiscoverPeripheral,null)
-
+        logger.debug("ID: "+didDiscoverPeripheral.identifier.UUIDString)
+        discoveredDevices.add(didDiscoverPeripheral)
+        //central.connectPeripheral(didDiscoverPeripheral,null)
     }
 
     //on connected to peripheral
     override fun centralManager(central: CBCentralManager, didConnectPeripheral: CBPeripheral) {
-        logger.debug("connected to peripheral: "+ didConnectPeripheral.description)
+        logger.debug("connected to peripheral: " + didConnectPeripheral.description)
         didConnectPeripheral.delegate = this
+        connectedDevices.add(didConnectPeripheral)
         didConnectPeripheral.discoverServices(null)
     }
 
@@ -94,7 +121,14 @@ class BluetoothController(serviesToLookFor : List<ServiceUUID>, characteristicsT
         peripheral: CBPeripheral,
         didDiscoverServices: NSError?
     ) {
-        peripheral.services?.map { logger.printLine(it.toString()) }
+        peripheral.services?.map {
+            logger.printLine(
+                """
+                    Service:
+                ${it.toString()}
+            """
+            )
+        }
         peripheralController.peripheral(peripheral, didDiscoverServices = didDiscoverServices)
     }
         //characteristics discovered

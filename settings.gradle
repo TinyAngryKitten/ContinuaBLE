@@ -1,3 +1,4 @@
+enableFeaturePreview("GRADLE_METADATA")
 rootProject.name = 'BLETest'
 
 include ':app'

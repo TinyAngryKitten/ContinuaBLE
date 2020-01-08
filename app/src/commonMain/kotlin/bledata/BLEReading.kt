@@ -1,12 +1,12 @@
 package bledata
 
-import data.CharacteristicDescription
 import data.PeripheralDescription
+import iso.CharacteristicUUIDs
 import util.strRepresentation
 
 data class BLEReading(
     val device: PeripheralDescription,
-    val characteristic :CharacteristicDescription,
+    val characteristic :CharacteristicUUIDs,
     val data : ByteArray
     ) {
 

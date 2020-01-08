@@ -4,6 +4,8 @@ import data.HeightMeasurementResolution
 import data.WeightMeasurementResolution
 import iso.ISOParser
 
+//methods for parsing weight and height resolution, defined as extensions on ISOParser
+
 val weightResolution : ISOParser.(startIndex : Int) -> WeightMeasurementResolution = {
         startIndex->
     WeightMeasurementResolution.fromInt(

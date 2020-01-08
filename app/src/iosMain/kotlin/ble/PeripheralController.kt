@@ -4,12 +4,11 @@ import bledata.BLEReading
 import platform.CoreBluetooth.*
 import platform.Foundation.NSError
 import platform.darwin.NSObject
-import sample.Logger
 import sample.logger
 
 
 class PeripheralController(
-    val characteristicUUIDs : List<CBUUID>,
+    val characteristicUUIDs : List<CBUUID>?,
     val readingReceived : (BLEReading) -> Unit = {v-> logger.debug(v.toString()) }
 ): NSObject(), CBPeripheralDelegateProtocol {
 
@@ -32,7 +31,6 @@ class PeripheralController(
             characteristics.map {
                 if(it != null) {
                     val char = it as CBCharacteristic
-                    logger.printLine("$char")
                     if(char.isNotifying) peripheral.setNotifyValue(true,char)
                     else peripheral.readValueForCharacteristic(it)
                 }

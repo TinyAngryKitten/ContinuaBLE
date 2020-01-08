@@ -1,19 +1,22 @@
 package iso
 
 import bledata.BLEReading
+import data.DataRecord
+import data.EmptyRecord
+import iso.services.parseBatteryLevel
 import iso.services.parseGlucoseFeatures
 import iso.services.parseGlucoseReading
 import sample.logger
 
+//look for a supported characteristic with the same nr(hex id without the leading 0x) as the reading have
+//if found, use the assosiated parse method to parse the reading, if not found return empty reading
+fun parseBLEReading(reading : BLEReading): DataRecord =
+    CharacteristicUUIDs.getAll().fold(EmptyRecord as DataRecord){
+    acc,characteristic ->
 
-fun parseBLEReading(reading : BLEReading) {
-    when(reading.characteristic.UUID) {
-        CharacteristicUUIDs.glucoseFeature.nr -> parseGlucoseFeatures(reading)
-        CharacteristicUUIDs.glucoseMeasurement.nr -> parseGlucoseReading(reading)
-        CharacteristicUUIDs.glucoseMeasurementContext.nr -> logger.info("Glucose context ignored")
-
-        else -> {
-            logger.error("\nERROR: Unknown UUID: "+reading.characteristic.UUID)
-        }
+    if(characteristic == reading.characteristic) {
+        logger.debug("parse")
+        return characteristic.parse(reading)
     }
+    else acc
 }

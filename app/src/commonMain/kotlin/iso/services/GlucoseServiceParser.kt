@@ -1,14 +1,13 @@
 package iso.services
 
 import bledata.BLEReading
-import bledata.GlucoseFeatures
 import data.DataRecord
 import data.EmptyRecord
+import data.GlucoseFeatures
 import data.GlucoseRecord
 import iso.parse
 
 
-private var glucoseFeatures = mapOf<String,GlucoseFeatures>()
 
 fun parseGlucoseReading(reading : BLEReading) : DataRecord =
     parse(reading.data) {
@@ -32,12 +31,12 @@ fun parseGlucoseContextReading(reading: BLEReading) : DataRecord = EmptyRecord
  *
  * always returns a empty reading because the information is only useful for this class
  */
-fun parseGlucoseFeatures(reading : BLEReading) : DataRecord =
+fun parseGlucoseFeatures(reading : BLEReading) =
     parse(reading.data) {
         flags(0..2)
 
         //idk what to do with this information
-        val features = GlucoseFeatures(
+        GlucoseFeatures(
             flag(0),
             flag(1),
             flag(2),
@@ -50,6 +49,4 @@ fun parseGlucoseFeatures(reading : BLEReading) : DataRecord =
             flag(9),
             flag(10)
         )
-
-        EmptyRecord
     }

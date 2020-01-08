@@ -1,7 +1,6 @@
 package iso
 
 import bledata.BLEReading
-import data.CharacteristicDescription
 import data.GlucoseRecord
 import data.PeripheralDescription
 import iso.services.parseGlucoseReading

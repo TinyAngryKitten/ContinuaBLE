@@ -1,8 +1,9 @@
 package ble
 
 import bledata.BLEReading
-import data.CharacteristicDescription
+import data.EmptyRecord
 import data.PeripheralDescription
+import iso.CharacteristicUUIDs
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.readBytes
 import kotlinx.cinterop.reinterpret
@@ -18,9 +19,7 @@ fun packageBleReading(data : NSData?, device: CBPeripheral,characteristic: CBCha
             device.identifier.UUIDString,
             device.name
         ),
-        CharacteristicDescription(
-            characteristic.UUID.UUIDString
-        ),
+        CharacteristicUUIDs.fromId(characteristic.UUID.UUIDString),
         nsDataToByteArray(data)
     )
 

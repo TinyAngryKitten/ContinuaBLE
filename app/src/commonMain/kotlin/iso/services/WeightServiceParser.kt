@@ -5,7 +5,7 @@ import iso.parse
 import iso.services.heightResolution
 import iso.services.weightResolution
 
-fun parseWeightReading(reading : BLEReading) =
+fun parseWeightMeasurement(reading : BLEReading) =
     parse(reading.data) {
         flags(0..1)
 
