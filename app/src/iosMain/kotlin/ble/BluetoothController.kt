@@ -1,7 +1,6 @@
 package ble
 import bledata.BLEReading
 import co.touchlab.stately.collections.frozenCopyOnWriteList
-import data.DeviceInfo
 import iso.ServiceUUID
 import platform.CoreBluetooth.*
 import platform.Foundation.*

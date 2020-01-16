@@ -46,32 +46,41 @@ data class GlucoseFeatures (
 ) : DataRecord()
 
 //These are all UTF8 strings
-sealed class DeviceInfo : DataRecord() {
+sealed class DeviceInfoComponent : DataRecord() {
     class ModelNumber(
         value : String,
         device : PeripheralDescription
-    ) : DeviceInfo()
+    ) : DeviceInfoComponent()
     class SerialNumber(
         value : String,
         device : PeripheralDescription
-    ) : DeviceInfo()
+    ) : DeviceInfoComponent()
     class FirmwareRevision(
         value : String,
         device : PeripheralDescription
-    ) : DeviceInfo()
+    ) : DeviceInfoComponent()
     class HardwareRevision(
         value : String,
         device : PeripheralDescription
-    ) : DeviceInfo()
+    ) : DeviceInfoComponent()
     class SoftwareRevision(
         value : String,
         device : PeripheralDescription
-    ) : DeviceInfo()
+    ) : DeviceInfoComponent()
     class ManufacturerName(
         value : String,
         device : PeripheralDescription
-    ) : DeviceInfo()
+    ) : DeviceInfoComponent()
 }
+
+sealed class DeviceInfo (
+    val modelNumber : String = "",
+    val serialNumber : String = "",
+    val firmwareRevision: String = "",
+    val hardwareRevision : String = "",
+    val softwareRevision : String = "",
+    val manufacturerName: String = ""
+) :  DataRecord()
 
 class BatteryLevel(
     level : Int,
@@ -317,5 +326,164 @@ sealed class BodySensorLocation {
     object Foot : BodySensorLocation()
 }
 
-//TODO: support this maybe? unknown if any glucose meter actually support it or if it would be useful
-class GlucoseRecordContext : DataRecord() {}
+data class GlucoseRecordContext(
+    val sequenceNumber : UInt,
+    val carbohydrateType: CarbohydrateType?,
+    val mealWeightKg : Float?,//int KG
+    val mealContext: MealContext?,
+    val tester : Tester?,
+    val health : Health?,
+    val exerciseDuration : UInt?,
+    val exerciseIntensityPercent : UInt?,
+    val medicationID: MedicationID?,
+    val medicationInKg : Float?,
+    val medicationInLiter : Float?,
+    val HbA1cPercent : Float?
+) : DataRecord() {
+    companion object {
+        fun fromISOValues(
+            sequenceNumber: ISOValue.UInt16,
+            carbohydrateType: ISOValue.UInt8?,
+            mealWeight: ISOValue.SFloat?,
+            mealContext: ISOValue.UInt8?,
+            tester: ISOValue.UInt8?,
+            health: ISOValue.UInt8?,
+            exerciseDuration: ISOValue.UInt16?,
+            exerciseIntensityPercent: ISOValue.UInt8?,
+            medicationID: ISOValue.UInt8?,
+            medicationInKg: ISOValue.SFloat?,
+            medicationInLiter: ISOValue.SFloat?,
+            HbA1cPercent: ISOValue.SFloat?
+        ) : GlucoseRecordContext? {
+            if (mealWeight !is ISOValue.SFloat.Value) return null
+            if (medicationInKg !is ISOValue.SFloat.Value) return null
+            if (medicationInLiter !is ISOValue.SFloat.Value) return null
+            if (HbA1cPercent !is ISOValue.SFloat.Value) return null
+
+            return GlucoseRecordContext(
+                sequenceNumber.value,
+                CarbohydrateType.fromUInt(carbohydrateType?.value),
+                mealWeight.value,
+                MealContext.fromUint(mealContext?.value),
+                Tester.fromUint(tester?.value),
+                Health.fromUInt(health?.value),
+                exerciseDuration?.value,
+                exerciseIntensityPercent?.value,
+                MedicationID.fromUInt(medicationID?.value),
+                medicationInKg.value,
+                medicationInLiter.value,
+                HbA1cPercent.value
+            )
+        }
+    }
+}
+
+sealed class CarbohydrateType(val value : UInt) {
+    object ReservedForFutureUse : CarbohydrateType(0u)
+    object Breakfast : CarbohydrateType(1u)
+    object Lunch : CarbohydrateType(2u)
+    object Dinner : CarbohydrateType(3u)
+    object Snack : CarbohydrateType(4u)
+    object Drink : CarbohydrateType(5u)
+    object Supper : CarbohydrateType(6u)
+    object Brunch : CarbohydrateType(7u)
+
+    companion object {
+        fun fromUInt(i : UInt?) = when(i) {
+            null -> null
+            1u -> Breakfast
+            2u -> Lunch
+            3u -> Dinner
+            4u -> Snack
+            5u -> Drink
+            6u -> Supper
+            7u -> Brunch
+            else -> ReservedForFutureUse
+        }
+    }
+}
+
+sealed class MealContext(val value : UInt) {
+    object ReservedForFutureUse : MealContext(0u)
+    object Preprandial : MealContext(1u)
+    object Postprandial : MealContext(2u)
+    object Fasting : MealContext(3u)
+    object Casual : MealContext(4u) // casual drink / snack etc.
+    object Bedtime : MealContext(5u)
+
+    companion object{
+        fun fromUint(i : UInt?) = when(i) {
+            null -> null
+            1u -> Preprandial
+            2u -> Postprandial
+            3u -> Fasting
+            4u -> Casual
+            5u -> Bedtime
+            else -> ReservedForFutureUse
+        }
+    }
+}
+
+sealed class Tester(val value : UInt) {
+    object ReservedForFutureUse : Tester(0u)
+    object Self : Tester(1u)
+    object HealthCareProfessional : Tester(2u)
+    object LabTest : Tester(3u)
+    object NotAvailable : Tester(15u)
+
+    companion object {
+        fun fromUint(i : UInt?) = when(i) {
+            null -> null
+            1u -> Self
+            2u -> HealthCareProfessional
+            3u -> LabTest
+            15u -> NotAvailable
+            else -> ReservedForFutureUse
+        }
+    }
+}
+
+sealed class Health(val value : UInt) {
+    object ReservedForFutureUse : Health(0u)
+    object MinorHealthIssues : Health(1u)
+    object MajorHealthIssues : Health(2u)
+    object DuringMenses : Health(3u)
+    object UnderStress : Health(4u)
+    object NoHealthIssues : Health(5u)
+    object NotAvailable : Health(15u)
+
+    companion object {
+        fun fromUInt(i : UInt?) = when(i) {
+            null -> null
+            1u -> MinorHealthIssues
+            2u -> MajorHealthIssues
+            3u -> DuringMenses
+            4u -> UnderStress
+            5u -> NoHealthIssues
+            15u -> NotAvailable
+            else -> ReservedForFutureUse
+        }
+    }
+}
+
+sealed class MedicationID(val value : UInt) {
+    object ReservedForFutureUse : MedicationID(0u)
+    object RapidActingInsulin : MedicationID(1u)
+    object ShortActingInsuling : MedicationID(2u)
+    object IntermediateActingInsulin : MedicationID(3u)
+    object LongActingInsulin : MedicationID(4u)
+    object PremixedInsulin : MedicationID(5u)
+
+    companion object{
+        fun fromUInt(i : UInt?) = when(i) {
+            null -> null
+            1u -> RapidActingInsulin
+            2u -> ShortActingInsuling
+            3u -> IntermediateActingInsulin
+            4u -> LongActingInsulin
+            5u -> PremixedInsulin
+            else -> ReservedForFutureUse
+        }
+    }
+}
+

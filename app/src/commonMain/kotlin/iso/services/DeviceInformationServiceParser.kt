@@ -1,14 +1,12 @@
 package iso.services
 
 import bledata.BLEReading
-import data.DeviceInfo
-import iso.ISOParser
-import iso.ISOValue
+import data.DeviceInfoComponent
 import iso.parse
 
 fun parseModelNumber(reading : BLEReading) =
     parse(reading.data) {
-        DeviceInfo.ModelNumber(
+        DeviceInfoComponent.ModelNumber(
             value = utf8(reading.data.size).encodedString,
             device = reading.device
         )
@@ -16,7 +14,7 @@ fun parseModelNumber(reading : BLEReading) =
 
 fun parseSerialNumber(reading : BLEReading) =
     parse(reading.data) {
-        DeviceInfo.SerialNumber(
+        DeviceInfoComponent.SerialNumber(
             value = utf8(reading.data.size).encodedString,
             device = reading.device
         )
@@ -24,7 +22,7 @@ fun parseSerialNumber(reading : BLEReading) =
 
 fun parseFirmwareRevision(reading : BLEReading) =
     parse(reading.data) {
-        DeviceInfo.FirmwareRevision(
+        DeviceInfoComponent.FirmwareRevision(
             value = utf8(reading.data.size).encodedString,
             device = reading.device
         )
@@ -32,7 +30,7 @@ fun parseFirmwareRevision(reading : BLEReading) =
 
 fun parseHardwareRevision(reading : BLEReading) =
     parse(reading.data) {
-        DeviceInfo.HardwareRevision(
+        DeviceInfoComponent.HardwareRevision(
             value = utf8(reading.data.size).encodedString,
             device = reading.device
         )
@@ -40,7 +38,7 @@ fun parseHardwareRevision(reading : BLEReading) =
 
 fun parseSoftwareRevision(reading : BLEReading) =
     parse(reading.data) {
-        DeviceInfo.SoftwareRevision(
+        DeviceInfoComponent.SoftwareRevision(
             value = utf8(reading.data.size).encodedString,
             device = reading.device
         )
@@ -48,7 +46,7 @@ fun parseSoftwareRevision(reading : BLEReading) =
 
 fun parseManufacturerName(reading : BLEReading) =
     parse(reading.data) {
-        DeviceInfo.ManufacturerName(
+        DeviceInfoComponent.ManufacturerName(
             value = utf8(reading.data.size).encodedString,
             device = reading.device
         )

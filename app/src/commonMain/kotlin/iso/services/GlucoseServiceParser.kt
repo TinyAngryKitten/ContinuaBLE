@@ -1,12 +1,11 @@
 package iso.services
 
 import bledata.BLEReading
-import data.DataRecord
-import data.EmptyRecord
-import data.GlucoseFeatures
-import data.GlucoseRecord
+import data.*
+import iso.ISOValue
 import iso.parse
-
+import util.leftMostNibble
+import util.rightMostNibble
 
 
 fun parseGlucoseReading(reading : BLEReading) : DataRecord =
@@ -22,20 +21,42 @@ fun parseGlucoseReading(reading : BLEReading) : DataRecord =
         ) ?: EmptyRecord
     }
 
-fun parseGlucoseContextReading(reading: BLEReading) : DataRecord = EmptyRecord
+fun parseGlucoseContextReading(reading: BLEReading) : DataRecord =
+    parse(reading.data) {
+        flags(0..1)
 
+        var tester : ISOValue.UInt8? = null
+        var health : ISOValue.UInt8? = null
 
-/**
- * Glucose features should be saved for each device
- * because it describes how measurements should be parsed
- *
- * always returns a empty reading because the information is only useful for this class
- */
+        GlucoseRecordContext.fromISOValues(
+            sequenceNumber = uint16(),
+            carbohydrateType = onCondition(flag(0),uint8),
+            mealWeight = onCondition(flag(0),sfloat),
+            mealContext = onCondition(flag(1),uint8),
+
+            //a wonky way to deal with nibbles, should be implemented in ISOParser, but not worth the work for a single use case
+            tester = onCondition(flag(2)) {
+                val byte = uint8()
+                tester = ISOValue.UInt8(byte.value.toByte().rightMostNibble().toUInt())
+                health = ISOValue.UInt8(byte.value.toByte().leftMostNibble().toUInt())
+                tester
+            },
+            health = onCondition(flag(2)) {health},
+
+            exerciseDuration = onCondition(flag(3),uint16),
+            exerciseIntensityPercent = onCondition(flag(3),uint8),
+
+            medicationID = onCondition(flag(4),uint8),
+            medicationInKg = onCondition(flag(4) && !flag(5),sfloat),
+            medicationInLiter = onCondition(flag(4) && flag(5),sfloat),
+            HbA1cPercent = onCondition(flag(6),sfloat)
+        ) ?: EmptyRecord
+    }
+
 fun parseGlucoseFeatures(reading : BLEReading) =
     parse(reading.data) {
         flags(0..2)
 
-        //idk what to do with this information
         GlucoseFeatures(
             flag(0),
             flag(1),

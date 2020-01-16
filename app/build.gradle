@@ -5,6 +5,9 @@ repositories {
     google()
     jcenter()
     mavenCentral()
+    maven {
+        url  "https://dl.bintray.com/badoo/maven"
+    }
 }
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android-extensions'
@@ -55,6 +58,7 @@ kotlin {
                 implementation kotlin('stdlib-common')
                 implementation "co.touchlab:stately:0.9.4"
                 implementation "co.touchlab:stately-collections:0.9.4"
+                implementation "com.badoo.reaktive:reaktive:1.1.6"
 
                 //implementation("dev.bluefalcon:library:0.5.4")
             }
@@ -63,11 +67,13 @@ kotlin {
             dependencies {
         		implementation kotlin('test-common')
         		implementation kotlin('test-annotations-common')
+                implementation 'com.badoo.reaktive:reaktive-testing:1.1.6'
             }
         }
         androidMain {
             dependencies {
                 implementation kotlin('stdlib')
+                //implementation "com.badoo.reaktive:reaktive-android:1.1.6"
             }
         }
         androidTest {
@@ -77,6 +83,7 @@ kotlin {
             }
         }
         iosMain {
+            //implementation "com.badoo.reaktive:reaktive-ios64:1.1.6"
         }
         iosTest {
         }

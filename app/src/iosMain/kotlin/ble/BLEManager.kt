@@ -1,8 +1,7 @@
 package ble
 
-import data.DeviceInfo
+import com.badoo.reaktive.utils.atomic.AtomicReference
 import data.PeripheralDescription
-import iso.CharacteristicUUIDs
 import iso.ServiceUUID
 import iso.parseBLEReading
 import platform.CoreBluetooth.CBUUID

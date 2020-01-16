@@ -1,11 +1,7 @@
 package ble
 
 import android.bluetooth.BluetoothAdapter
-import bledata.BLEReading
-import data.DeviceInfo
 import data.PeripheralDescription
-import iso.CharacteristicUUIDs
-import iso.ServiceUUID
 
 actual object BLEManager {
     var controller : BluetoothController? = null
