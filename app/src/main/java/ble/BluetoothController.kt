@@ -9,6 +9,7 @@ import android.content.Context
 import android.os.Handler
 import android.support.v4.content.ContextCompat.getSystemService
 import bledata.BLEReading
+import data.PeripheralDescription
 import iso.CharacteristicUUIDs
 import iso.ServiceUUID
 import iso.identifier
@@ -16,14 +17,18 @@ import iso.parseBLEReading
 import sample.logger
 import util.strRepresentation
 import java.util.*
+import java.util.concurrent.atomic.AtomicReference
 
 
 class BluetoothController(
     val manager: BluetoothManager,
     val adapter: BluetoothAdapter,
-    val context: Context,
-    val resultCallback : (BLEReading) -> Unit
+    val context: Context
 ) {
+    val resultCallback = AtomicReference<(BLEReading) -> Unit> {_->}
+    val discoverCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
+    val connectCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
+
     private val commandQueue: Queue<Runnable> = ArrayDeque()
     private var commandQueueBusy = false
     private val bleHandler = Handler()
@@ -33,13 +38,13 @@ class BluetoothController(
         UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
     companion object {
-        fun create(context: Context, callback : (BLEReading) -> Unit): BluetoothController? {
+        fun create(context: Context): BluetoothController? {
             val manager = getSystemService(context, BluetoothManager::class.java)
             val adapter = manager?.adapter//BluetoothAdapter.getDefaultAdapter()
             return if (manager == null || adapter == null) {
                 null
-            };
-            else BluetoothController(manager, adapter, context,callback)
+            }
+            else BluetoothController(manager, adapter, context)
         }
     }
 
@@ -61,7 +66,16 @@ class BluetoothController(
                         connectToDevice(it.device.address)
                         logger.debug("discovered: ${it.device}")
                         it.device
-                    }.toMutableList();
+                    }.toMutableList()
+
+                    discoveredDevices.forEach {
+                        discoverCallback.get()(
+                            PeripheralDescription.fromNullable(
+                                it.address,
+                                it.name
+                            )
+                        )
+                    }
 
                 }
             }
@@ -72,6 +86,12 @@ class BluetoothController(
                     logger.debug("discovered. ${result.device.name}")
 
                     discoveredDevices.add(result.device)
+                    discoverCallback.get()(
+                        PeripheralDescription.fromNullable(
+                            result.device.address,
+                            result.device.name
+                        )
+                    )
                 }
             }
 
@@ -95,13 +115,24 @@ class BluetoothController(
     }
 
     private val gattCallback = object : BluetoothGattCallback() {
+
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
             if (gatt != null && status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_CONNECTED) {
                 logger.debug("device connected successfully: ${gatt?.device?.name} ")
 
-                connectedDevices.add(gatt.device)
-                gatt.discoverServices()
+                bleHandler.post {
+
+                    connectedDevices.add(gatt.device)
+                    connectCallback.get()(
+                        PeripheralDescription.fromNullable(
+                            gatt.device.address,
+                            gatt.device.name
+                        )
+                    )
+                    gatt.discoverServices()
+                }
+
             }
         }
 
@@ -268,7 +299,7 @@ class BluetoothController(
                             gatt.device,
                             characteristic
                         )
-                    resultCallback(result)
+                    resultCallback.get()(result)
                 }
             } else logger.error("GATT ERROR STATUS")
             completedCommand()
@@ -295,7 +326,7 @@ class BluetoothController(
                         characteristic
                     )
 
-                resultCallback(result)
+                resultCallback.get()(result)
             }
         }
     }

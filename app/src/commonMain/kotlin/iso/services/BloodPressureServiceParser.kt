@@ -18,7 +18,8 @@ fun parseBloodPressureFeature(reading : BLEReading) =
             flag(2),
             flag(3),
             flag(4),
-            flag(5)
+            flag(5),
+            reading.device
         )
     }
 
@@ -34,8 +35,9 @@ fun parseBloodPressureMeasurement(reading : BLEReading) =
             unit = if(flag(0)) BloodPressureUnit.kPa else BloodPressureUnit.mmHg,
             bpm = onCondition(flag(2), sfloat),
             userId = onCondition(flag(3),uint8),
-            status = null//onCondition(flag(4), ISOValue.Flags())
-        ) ?: EmptyRecord
+            status = null,//onCondition(flag(4), ISOValue.Flags())
+            device = reading.device
+        ) ?: EmptyRecord(reading.device)
     }
 
 //TODO: find out if this is something i should support

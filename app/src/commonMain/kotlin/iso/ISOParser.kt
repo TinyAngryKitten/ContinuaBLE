@@ -2,6 +2,7 @@ package iso
 
 import data.DataRecord
 import data.EmptyRecord
+import data.PeripheralDescription
 import iso.services.weightResolution
 import sample.logger
 import util.*
@@ -13,7 +14,7 @@ fun parse(bytes: ByteArray, fn : ISOParser.()->DataRecord) : DataRecord = try {
     ISOParser(bytes).run(fn)
 } catch (e : Exception) {
     logger.error("an error occured while parsing a BLEReading: " + (e.message ?: e.toString()) )
-    EmptyRecord
+    EmptyRecord(PeripheralDescription("unknown"))
 }
 
 /**

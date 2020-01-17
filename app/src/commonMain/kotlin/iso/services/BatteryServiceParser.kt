@@ -1,11 +1,11 @@
 package iso.services
 
 import bledata.BLEReading
-import data.BatteryLevel
+import data.BatteryLevelRecord
 import iso.parse
 
 fun parseBatteryLevel(reading : BLEReading) = parse(reading.data){
-    BatteryLevel(
+    BatteryLevelRecord(
         uint8(),
         reading.device
     )

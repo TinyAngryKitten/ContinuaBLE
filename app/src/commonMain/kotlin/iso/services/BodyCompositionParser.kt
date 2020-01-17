@@ -22,7 +22,8 @@ fun parseBodyCompositionFeature(reading : BLEReading) =
             flag(9),
             flag(10),
             weightResolution(11),
-            heightResolution(15)
+            heightResolution(15),
+            reading.device
         )
     }
 
@@ -41,6 +42,7 @@ fun parseBodyCompositionMeasurement(reading: BLEReading) =
             uint16(),
             uint16(),
             uint16(),
-            uint16()
+            uint16(),
+            reading.device
         )
     }

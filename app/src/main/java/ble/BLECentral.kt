@@ -1,10 +1,10 @@
 package ble
 
 import android.bluetooth.BluetoothAdapter
+import bledata.BLEReading
 import data.PeripheralDescription
 
-actual object BLEManager {
-    var controller : BluetoothController? = null
+actual class BLECentral(val controller : BluetoothController? = null ) {
 
     val discoveredDevices : List<PeripheralDescription>
         get() = controller?.discoveredDevices?.map { PeripheralDescription(it.address,it.name) } ?: listOf()
@@ -32,6 +32,15 @@ actual object BLEManager {
             BluetoothAdapter.STATE_OFF, BluetoothAdapter.STATE_TURNING_OFF,BluetoothAdapter.STATE_TURNING_ON->BLEState.Off
             else -> BLEState.UnknownErrorState
         }
+    }
+
+    actual fun changeResultCallback(callback: (BLEReading) -> Unit) {
+    }
+
+    actual fun changeOnDiscoverCallback(callback: (PeripheralDescription) -> Unit) {
+    }
+
+    actual fun changeOnConnectCallback(callback: (PeripheralDescription) -> Unit) {
     }
 
 

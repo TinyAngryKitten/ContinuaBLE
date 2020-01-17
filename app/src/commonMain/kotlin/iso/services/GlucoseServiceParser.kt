@@ -17,8 +17,9 @@ fun parseGlucoseReading(reading : BLEReading) : DataRecord =
             sequenceNumber = uint16(),
             //ignore date and time of measurement
             amount = dropThen(8) { onCondition(flag(1), sfloat) },
-            context = null
-        ) ?: EmptyRecord
+            contextFollows = flag(4),
+            device = reading.device
+        ) ?: EmptyRecord(reading.device)
     }
 
 fun parseGlucoseContextReading(reading: BLEReading) : DataRecord =
@@ -49,8 +50,9 @@ fun parseGlucoseContextReading(reading: BLEReading) : DataRecord =
             medicationID = onCondition(flag(4),uint8),
             medicationInKg = onCondition(flag(4) && !flag(5),sfloat),
             medicationInLiter = onCondition(flag(4) && flag(5),sfloat),
-            HbA1cPercent = onCondition(flag(6),sfloat)
-        ) ?: EmptyRecord
+            HbA1cPercent = onCondition(flag(6),sfloat),
+            device = reading.device
+        ) ?: EmptyRecord(reading.device)
     }
 
 fun parseGlucoseFeatures(reading : BLEReading) =
@@ -68,6 +70,7 @@ fun parseGlucoseFeatures(reading : BLEReading) =
             flag(7),
             flag(8),
             flag(9),
-            flag(10)
+            flag(10),
+            reading.device
         )
     }

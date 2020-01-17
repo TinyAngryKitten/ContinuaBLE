@@ -1,7 +1,8 @@
 package ble
 import bledata.BLEReading
 import co.touchlab.stately.collections.frozenCopyOnWriteList
-import iso.ServiceUUID
+import co.touchlab.stately.concurrency.AtomicReference
+import data.PeripheralDescription
 import platform.CoreBluetooth.*
 import platform.Foundation.*
 import platform.darwin.NSObject
@@ -21,35 +22,33 @@ import sample.logger
  * heavy use of overloading with named parameters instead of
  * changing method names.
  */
-class BluetoothController(private val resultCallback : (BLEReading) -> Unit)://serviesToLookFor : List<ServiceUUID>, characteristicsToLookFor : List<CharacteristicUUIDs>) :
+class BluetoothController :
     NSObject(),
     CBCentralManagerDelegateProtocol,
     CBPeripheralDelegateProtocol {
+
+    val discoverCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
+    val connectCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
+    val stateChangedCallback = AtomicReference<(BLEState) -> Unit> {}
 
     val centralManager = CBCentralManager(this,null)
 
     //funky solution for sharing a
     var state : BLEState
-        get() = stateList.first()
-        set(v) {
-            logger.debug(v.toString())
-            stateList.set(0,v)
+        get() = bleState.get()
+        set(s) {
+            logger.debug("BLE STATE CHANGED: "+s.toString())
+            bleState.set(s)
+            stateChangedCallback.get()(s)
         }
 
-    val stateList = frozenCopyOnWriteList<BLEState>(listOf(BLEState.UnknownErrorState))
+    private val bleState = AtomicReference(BLEState.UnknownErrorState as BLEState)
 
-    val peripheralController = PeripheralController(null,resultCallback)//characteristicsToLookFor.map(hexToStr))
+    val peripheralController = PeripheralController(null) {}
 
     val discoveredDevices : MutableList<CBPeripheral> = frozenCopyOnWriteList(listOf())
     val connectedDevices : MutableList<CBPeripheral> = frozenCopyOnWriteList(listOf())
 
-    val serviceUUIDS = listOf(
-        ServiceUUID.battery,
-        ServiceUUID.bloodPressure,
-        ServiceUUID.glucose,
-        ServiceUUID.weight,
-        ServiceUUID.deviceInformation
-    ).map { CBUUID.UUIDWithString(it.id) }
 
     override fun centralManagerDidUpdateState(central: CBCentralManager) {
         when(central.state) {
@@ -91,7 +90,12 @@ class BluetoothController(private val resultCallback : (BLEReading) -> Unit)://s
         logger.debug("discovered: "+didDiscoverPeripheral.name)
         logger.debug("ID: "+didDiscoverPeripheral.identifier.UUIDString)
         discoveredDevices.add(didDiscoverPeripheral)
-        //central.connectPeripheral(didDiscoverPeripheral,null)
+        discoverCallback.get()(
+            PeripheralDescription(
+            didDiscoverPeripheral.identifier.UUIDString,
+            didDiscoverPeripheral.name ?: "unknown"
+        )
+        )
     }
 
     //on connected to peripheral
@@ -100,6 +104,11 @@ class BluetoothController(private val resultCallback : (BLEReading) -> Unit)://s
         didConnectPeripheral.delegate = this
         connectedDevices.add(didConnectPeripheral)
         didConnectPeripheral.discoverServices(null)
+
+        connectCallback.get()(PeripheralDescription(
+            didConnectPeripheral.identifier.UUIDString,
+            didConnectPeripheral.name ?: "unknown"
+        ))
     }
 
     override fun centralManager(central: CBCentralManager, didFailToConnectPeripheral: CBPeripheral, error: NSError?) {

@@ -1,5 +1,6 @@
 package ble
 
+import bledata.BLEReading
 import com.badoo.reaktive.utils.atomic.AtomicReference
 import data.PeripheralDescription
 import iso.ServiceUUID
@@ -7,11 +8,8 @@ import iso.parseBLEReading
 import platform.CoreBluetooth.CBUUID
 import sample.logger
 
-actual object BLEManager {
-    val controller = BluetoothController{
-        logger.debug("received reading: $it")
-        parseBLEReading(it)
-    }
+actual class BLECentral {
+    val controller = BluetoothController()
 
     actual fun bleState() = controller.state;
 
@@ -37,6 +35,18 @@ actual object BLEManager {
             logger.debug("Connecting to peripheral: $it")
             controller.centralManager.connectPeripheral(it,null)
         } ?: logger.error("Attempted to connect to a peripheral that does not exist or are not in range: $deviceDescription")
+    }
+
+    actual fun changeOnDiscoverCallback(callback: (PeripheralDescription)->Unit) {
+        controller.discoverCallback.set(callback)
+    }
+
+    actual fun changeOnConnectCallback(callback : (PeripheralDescription)-> Unit) {
+
+    }
+
+    actual fun changeResultCallback(callback: (BLEReading) -> Unit) {
+        controller.peripheralController.readingReceivedCallback.set(callback)
     }
 
 }

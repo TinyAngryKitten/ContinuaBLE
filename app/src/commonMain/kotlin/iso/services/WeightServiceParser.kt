@@ -16,8 +16,9 @@ fun parseWeightMeasurement(reading : BLEReading) =
             userId = onCondition(flag(2),uint8),
             BMI = onCondition(flag(3),uint16),
             height = onCondition(flag(3),uint16),
-            heightUnit = if(flag(0)) LengthUnit.Inch else LengthUnit.M
-        ) ?: EmptyRecord
+            heightUnit = if(flag(0)) LengthUnit.Inch else LengthUnit.M,
+            device = reading.device
+        ) ?: EmptyRecord(reading.device)
     }
 
 fun parseWeightScaleFeature(reading : BLEReading) =
@@ -29,6 +30,7 @@ fun parseWeightScaleFeature(reading : BLEReading) =
             flag(1),
             flag(2),
             weightResolution(3),
-            heightResolution(7)
+            heightResolution(7),
+            reading.device
         )
     }

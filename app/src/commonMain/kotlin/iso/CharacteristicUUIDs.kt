@@ -3,6 +3,7 @@ package iso
 import bledata.BLEReading
 import data.DataRecord
 import data.EmptyRecord
+import data.PeripheralDescription
 import iso.services.*
 import parseWeightMeasurement
 import parseWeightScaleFeature
@@ -18,7 +19,7 @@ sealed class CharacteristicUUIDs(val id : String,val parse : (BLEReading) -> Dat
     //GLUCOSE
     object glucoseFeature : CharacteristicUUIDs("0x2A51", ::parseGlucoseFeatures)
     object glucoseMeasurement : CharacteristicUUIDs("0x2A18", ::parseGlucoseReading)
-    object glucoseMeasurementContext : CharacteristicUUIDs("0x2A34",{EmptyRecord})
+    object glucoseMeasurementContext : CharacteristicUUIDs("0x2A34",::parseGlucoseContextReading)
 
     //HEART RATE
     object heartRateMeasurement : CharacteristicUUIDs("0x2A37",::parseHeartRateMeasurement)
@@ -47,7 +48,7 @@ sealed class CharacteristicUUIDs(val id : String,val parse : (BLEReading) -> Dat
     //BATTERY LEVEL
     object batteryLevel : CharacteristicUUIDs("0x2A19",::parseBatteryLevel)
 
-    class UnsupportedCharacteristic(id: String) : CharacteristicUUIDs(id,{EmptyRecord}) {
+    class UnsupportedCharacteristic(id: String,device : PeripheralDescription) : CharacteristicUUIDs(id,{EmptyRecord(device)}) {
         override fun equals(other: Any?): Boolean {
             return if(other is UnsupportedCharacteristic) id.equals(other.id,ignoreCase = true)
             else false
@@ -89,8 +90,9 @@ sealed class CharacteristicUUIDs(val id : String,val parse : (BLEReading) -> Dat
                 batteryLevel
             )
 
-        fun fromNr(nr : String) = getAll().find { it.nr.equals(nr,ignoreCase = true) } ?: UnsupportedCharacteristic("0x$nr")
-        fun fromId(id : String) = getAll().find { it.id.equals(id,ignoreCase = true) } ?: UnsupportedCharacteristic(id)
+        fun fromNr(nr : String) = getAll().find { it.nr.equals(nr,ignoreCase = true) } ?: UnsupportedCharacteristic("0x$nr",PeripheralDescription("unknown"))
+        fun fromId(id : String) = getAll().find { it.id.equals(id,ignoreCase = true) } ?: UnsupportedCharacteristic(id,PeripheralDescription("unknown")
+        )
     }
 }
 
