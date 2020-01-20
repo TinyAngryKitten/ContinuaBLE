@@ -1,12 +1,12 @@
 package ble
-import bledata.BLEReading
 import co.touchlab.stately.collections.frozenCopyOnWriteList
-import co.touchlab.stately.concurrency.AtomicReference
+import co.touchlab.stately.freeze
 import data.PeripheralDescription
 import platform.CoreBluetooth.*
 import platform.Foundation.*
 import platform.darwin.NSObject
 import sample.logger
+import kotlin.native.concurrent.AtomicReference
 
 
 //private val hexToStr ={v : CharacteristicUUIDs -> CBUUID.UUIDWithString(v.id)}
@@ -27,24 +27,25 @@ class BluetoothController :
     CBCentralManagerDelegateProtocol,
     CBPeripheralDelegateProtocol {
 
-    val discoverCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
-    val connectCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
-    val stateChangedCallback = AtomicReference<(BLEState) -> Unit> {}
+
+    val discoverCallback = AtomicReference({_:PeripheralDescription -> }.freeze())
+    val connectCallback = AtomicReference ({_:PeripheralDescription -> }.freeze())
+    val stateChangedCallback = AtomicReference({_:BLEState -> }.freeze())
 
     val centralManager = CBCentralManager(this,null)
 
     //funky solution for sharing a
     var state : BLEState
-        get() = bleState.get()
+        get() = bleState.value
         set(s) {
             logger.debug("BLE STATE CHANGED: "+s.toString())
-            bleState.set(s)
-            stateChangedCallback.get()(s)
+            bleState.compareAndSet(bleState.value,s)
+            stateChangedCallback.value(s)
         }
 
     private val bleState = AtomicReference(BLEState.UnknownErrorState as BLEState)
 
-    val peripheralController = PeripheralController(null) {}
+    val peripheralController = PeripheralController(null)
 
     val discoveredDevices : MutableList<CBPeripheral> = frozenCopyOnWriteList(listOf())
     val connectedDevices : MutableList<CBPeripheral> = frozenCopyOnWriteList(listOf())
@@ -90,7 +91,7 @@ class BluetoothController :
         logger.debug("discovered: "+didDiscoverPeripheral.name)
         logger.debug("ID: "+didDiscoverPeripheral.identifier.UUIDString)
         discoveredDevices.add(didDiscoverPeripheral)
-        discoverCallback.get()(
+        discoverCallback.value(
             PeripheralDescription(
             didDiscoverPeripheral.identifier.UUIDString,
             didDiscoverPeripheral.name ?: "unknown"
@@ -105,7 +106,7 @@ class BluetoothController :
         connectedDevices.add(didConnectPeripheral)
         didConnectPeripheral.discoverServices(null)
 
-        connectCallback.get()(PeripheralDescription(
+        connectCallback.value(PeripheralDescription(
             didConnectPeripheral.identifier.UUIDString,
             didConnectPeripheral.name ?: "unknown"
         ))

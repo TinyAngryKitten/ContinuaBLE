@@ -19,7 +19,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         val controller = BluetoothController.create(this)
-        val deviceCentral = DeviceCentral(BLECentral(controller))
+        val deviceCentral = DeviceCentral(BLECentral(controller!!))
 
         //controller?.adapter?.bluetoothLeScanner.startScan()
         //initiate the bluetooth controller

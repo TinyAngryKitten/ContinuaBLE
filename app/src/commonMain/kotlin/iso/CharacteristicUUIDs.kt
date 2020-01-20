@@ -23,7 +23,7 @@ sealed class CharacteristicUUIDs(val id : String,val parse : (BLEReading) -> Dat
 
     //HEART RATE
     object heartRateMeasurement : CharacteristicUUIDs("0x2A37",::parseHeartRateMeasurement)
-    object bodySensorLocation : CharacteristicUUIDs("2A38",::parseBodySensorLocation)
+    object bodySensorLocation : CharacteristicUUIDs("0x2A38",::parseBodySensorLocation)
     //object heartRateControlPoint : CharacteristicUUIDs("2A39",)
 
     //BLOOD PRESSURE
@@ -43,8 +43,11 @@ sealed class CharacteristicUUIDs(val id : String,val parse : (BLEReading) -> Dat
     object softwareRevision : CharacteristicUUIDs("0x2A28",::parseSoftwareRevision)
     object manufacturerName :CharacteristicUUIDs("0x2A29",::parseManufacturerName)
 
+    object temperatureMeasurement : CharacteristicUUIDs("0x2A1C", ::parseTemperatureMeasurement)
+
     //CURRENT TIME
     //object currentTime : CharacteristicUUIDs("0x2A2B",::parseCurrentTime)
+
     //BATTERY LEVEL
     object batteryLevel : CharacteristicUUIDs("0x2A19",::parseBatteryLevel)
 
@@ -86,13 +89,24 @@ sealed class CharacteristicUUIDs(val id : String,val parse : (BLEReading) -> Dat
                 softwareRevision,
                 manufacturerName,
 
+                temperatureMeasurement,
+
                 //currentTime,
                 batteryLevel
             )
 
-        fun fromNr(nr : String) = getAll().find { it.nr.equals(nr,ignoreCase = true) } ?: UnsupportedCharacteristic("0x$nr",PeripheralDescription("unknown"))
-        fun fromId(id : String) = getAll().find { it.id.equals(id,ignoreCase = true) } ?: UnsupportedCharacteristic(id,PeripheralDescription("unknown")
-        )
+        fun fromNr(nr : String) = getAll().find { it.nr.equals(nr,ignoreCase = true) } ?: UnsupportedCharacteristic("${unsupportedCharacteristicName("0x$nr")}",PeripheralDescription("unknown"))
+        fun fromId(id : String) = getAll().find { it.id.equals(id,ignoreCase = true) } ?: UnsupportedCharacteristic(
+            unsupportedCharacteristicName(id),PeripheralDescription("unknown"))
+
+        fun unsupportedCharacteristicName(id : String) = when(id){
+            "0x2A2B" -> "$id (Current time)"
+            "0x2A23" -> "$id (System ID)"
+            "0x2A50" -> "$id (PnP ID)"
+            "0x2A08" -> "$id (Date Time)"
+            "0x2A52" -> "$id (Record Access control point)"
+            else -> id
+        }
     }
 }
 

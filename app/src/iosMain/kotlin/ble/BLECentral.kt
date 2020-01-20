@@ -1,10 +1,8 @@
 package ble
 
 import bledata.BLEReading
-import com.badoo.reaktive.utils.atomic.AtomicReference
 import data.PeripheralDescription
 import iso.ServiceUUID
-import iso.parseBLEReading
 import platform.CoreBluetooth.CBUUID
 import sample.logger
 
@@ -32,21 +30,26 @@ actual class BLECentral {
 
     actual fun connectToDevice(deviceDescription: PeripheralDescription) {
         controller.discoveredDevices.find { it.identifier.UUIDString == deviceDescription.UUID }?.let {
+            if(controller.centralManager.isScanning) controller.centralManager.stopScan()
             logger.debug("Connecting to peripheral: $it")
             controller.centralManager.connectPeripheral(it,null)
         } ?: logger.error("Attempted to connect to a peripheral that does not exist or are not in range: $deviceDescription")
     }
 
     actual fun changeOnDiscoverCallback(callback: (PeripheralDescription)->Unit) {
-        controller.discoverCallback.set(callback)
+        controller.discoverCallback.compareAndSet(controller.discoverCallback.value,callback)
     }
 
     actual fun changeOnConnectCallback(callback : (PeripheralDescription)-> Unit) {
-
+        controller.connectCallback.compareAndSet(controller.connectCallback.value,callback)
     }
 
     actual fun changeResultCallback(callback: (BLEReading) -> Unit) {
-        controller.peripheralController.readingReceivedCallback.set(callback)
+        controller.peripheralController.readingReceivedCallback.compareAndSet(controller.peripheralController.readingReceivedCallback.value,callback)
+    }
+
+    actual fun changeStateChangeCallback(callback: (BLEState) -> Unit) {
+        controller.stateChangedCallback.compareAndSet(controller.stateChangedCallback.value,callback)
     }
 
 }

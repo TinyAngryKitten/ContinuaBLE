@@ -1,18 +1,19 @@
 package ble
 
 import bledata.BLEReading
-import co.touchlab.stately.concurrency.AtomicReference
 import platform.CoreBluetooth.*
 import platform.Foundation.NSError
 import platform.darwin.NSObject
 import sample.logger
+import kotlin.native.concurrent.AtomicReference
+import kotlin.native.concurrent.freeze
 
 
 class PeripheralController(
     val characteristicUUIDs : List<CBUUID>?,
-    readingReceived : (BLEReading) -> Unit = {v-> logger.debug(v.toString()) }
+    readingReceived : (BLEReading) -> Unit = {v:BLEReading-> logger.debug(v.toString()) }.freeze()
 ): NSObject(), CBPeripheralDelegateProtocol {
-    val readingReceivedCallback = AtomicReference(readingReceived)
+    val readingReceivedCallback = AtomicReference(readingReceived.freeze())
 
     override fun peripheral(peripheral: CBPeripheral, didDiscoverServices: NSError?) {
         peripheral.services?.let { services ->//type information are erased from servies due to the kotlin-swift-obj bridge
@@ -45,11 +46,11 @@ class PeripheralController(
         peripheral: CBPeripheral,
         didUpdateValueForCharacteristic: CBCharacteristic,
         error: NSError?
-    ) = readingReceivedCallback.get()(
+    ) = readingReceivedCallback.value(
             packageBleReading(
                 didUpdateValueForCharacteristic.value,
                 peripheral,
                 didUpdateValueForCharacteristic
-            )
+            ).freeze()
         )
 }

@@ -19,7 +19,7 @@ fun packageBleReading(data : NSData?, device: CBPeripheral,characteristic: CBCha
             device.identifier.UUIDString,
             device.name
         ),
-        CharacteristicUUIDs.fromId(characteristic.UUID.UUIDString),
+        CharacteristicUUIDs.fromNr  (characteristic.UUID.UUIDString),
         nsDataToByteArray(data)
     )
 

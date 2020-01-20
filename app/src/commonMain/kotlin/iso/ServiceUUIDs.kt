@@ -32,6 +32,15 @@ sealed class ServiceUUID(val id : String) {
     object bloodPressure : ServiceUUID("0x1810"){
         override val name = "Blood Pressure Service"
     }
+    object heartRate : ServiceUUID("0x180D") {
+        override val name = "Heart Rate Service"
+    }
+    object thermometer : ServiceUUID("0x1809") {
+        override val name = "Health Thermometer Service"
+    }
+    object pulseOximeter : ServiceUUID("0x1822") {
+        override val name = "Pulse Oximeter Service"
+    }
 
 
     companion object {
@@ -41,7 +50,8 @@ sealed class ServiceUUID(val id : String) {
             bodyComposition,
             deviceInformation,
             battery,
-            bloodPressure
+            bloodPressure,
+            heartRate
         )
 
         fun fromNr(nr : String) = getAll().find { it.nr.equals(nr,ignoreCase = true) }

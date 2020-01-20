@@ -28,6 +28,7 @@ class BluetoothController(
     val resultCallback = AtomicReference<(BLEReading) -> Unit> {_->}
     val discoverCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
     val connectCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
+    val stateChangedCallback = AtomicReference<(BLEState) -> Unit> {}//TODO: implement statechangedCallbacks
 
     private val commandQueue: Queue<Runnable> = ArrayDeque()
     private var commandQueueBusy = false

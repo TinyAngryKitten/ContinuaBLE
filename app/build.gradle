@@ -73,7 +73,6 @@ kotlin {
         androidMain {
             dependencies {
                 implementation kotlin('stdlib')
-                //implementation "com.badoo.reaktive:reaktive-android:1.1.6"
             }
         }
         androidTest {
@@ -83,7 +82,6 @@ kotlin {
             }
         }
         iosMain {
-            //implementation "com.badoo.reaktive:reaktive-ios64:1.1.6"
         }
         iosTest {
         }

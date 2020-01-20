@@ -1,9 +1,12 @@
 package ble
 
+import co.touchlab.stately.collections.frozenCopyOnWriteList
 import co.touchlab.stately.collections.frozenHashMap
+import co.touchlab.stately.concurrency.AtomicReference
 import co.touchlab.stately.freeze
 import data.*
 import sample.logger
+import kotlin.native.concurrent.ThreadLocal
 
 class RecordCentral(val onCompleteRecord : (DataRecord) -> Unit) {
 
@@ -15,7 +18,7 @@ class RecordCentral(val onCompleteRecord : (DataRecord) -> Unit) {
 
     fun addRecord(record : DataRecord) =
         when(record) {
-            is EmptyRecord -> logger.debug("empty record received")
+            is EmptyRecord -> logger.debug("empty record added to record central")
 
             is GlucoseRecord -> when(record.context) {
                 is HasGlucoseContext.Context -> glucoseRecords[record.device.UUID] = record
@@ -117,51 +120,53 @@ class RecordCentral(val onCompleteRecord : (DataRecord) -> Unit) {
 
 }
 
+//TODO: Deal with the fact that some fields might not be sendt?
+@ThreadLocal
 class DeviceInfoBuilder(val device : PeripheralDescription) {
-    var modelNumber : String? = null
-    var serialNumber : String? = null
-    var firmwareRevision : String? = null
-    var hardwareRevision : String? = null
-    var softwareRevision : String? = null
-    var manufacturerName : String? = null
-    var changedFields = mutableListOf(true,true,true,true,true,true)
+    var modelNumber = AtomicReference(null as String?)
+    var serialNumber = AtomicReference(null as String?)
+    var firmwareRevision = AtomicReference(null as String?)
+    //var hardwareRevision = AtomicReference(null as String?)
+    //var softwareRevision = AtomicReference(null as String?)
+    var manufacturerName = AtomicReference(null as String?)
+    var changedFields = frozenCopyOnWriteList(listOf(false,false,false,false))
 
     fun addComponent(record : DeviceInfoComponent) = when(record) {
         is DeviceInfoComponent.ModelNumber -> {
-            modelNumber = record.value
+            modelNumber.set(record.value)
             changedFields[0] = true
         }
         is DeviceInfoComponent.SerialNumber -> {
-            serialNumber = record.value
+            serialNumber.set(record.value)
             changedFields[1] = true
         }
         is DeviceInfoComponent.FirmwareRevision -> {
-            firmwareRevision = record.value
+            firmwareRevision.set(record.value)
             changedFields[2] = true
         }
         is DeviceInfoComponent.HardwareRevision -> {
-            hardwareRevision = record.value
-            changedFields[3] = true
+            //hardwareRevision.set(record.value)
+            //changedFields[3] = true
         }
         is DeviceInfoComponent.SoftwareRevision -> {
-            softwareRevision = record.value
-            changedFields[4] = true
+            //softwareRevision.set(record.value)
+            //changedFields[4] = true
         }
         is DeviceInfoComponent.ManufacturerName -> {
-            manufacturerName = record.value
-            changedFields[5] = true
+            manufacturerName.set(record.value)
+            changedFields[3] = true
         }
     }
 
     //build deviceInfoRecord if all fields are set
     fun build() = if(changedFields.all { it }) {
         DeviceInfoRecord(
-            modelNumber?:"",
-            serialNumber?:"",
-            firmwareRevision?:"",
-            hardwareRevision?:"",
-            softwareRevision?:"",
-            manufacturerName?:"",
+            modelNumber.get()?:"",//
+            serialNumber.get()?:"",//
+            firmwareRevision.get()?:"",//
+            "",//hardwareRevision.get()?:"",
+            "",//softwareRevision.get()?:"",
+            manufacturerName.get()?:"",//
             device
         )
     } else null
