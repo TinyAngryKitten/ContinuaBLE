@@ -7,10 +7,10 @@ import kotlin.native.concurrent.freeze
 
 actual object logger {
     @SharedImmutable
-    val additionalAction : AtomicReference<(String) -> Unit> = AtomicReference({_:String->println("ATOMIC REF NOT CHANGED")}.freeze())
+    val additionalAction : AtomicReference<(String) -> Unit> = AtomicReference({_:String->/*String->println("ATOMIC REF NOT CHANGED")*/}.freeze())
 
     actual fun printLine(str: String) {
-        println(str)
+        //println(str)
         additionalAction.value(str)
     }
 

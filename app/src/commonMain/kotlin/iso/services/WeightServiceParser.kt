@@ -6,7 +6,7 @@ import iso.services.heightResolution
 import iso.services.weightResolution
 
 fun parseWeightMeasurement(reading : BLEReading) =
-    parse(reading.data) {
+    parse(reading) {
         flags(0..1)
 
         WeightRecord.fromISOValues(
@@ -19,10 +19,10 @@ fun parseWeightMeasurement(reading : BLEReading) =
             heightUnit = if(flag(0)) LengthUnit.Inch else LengthUnit.M,
             device = reading.device
         ) ?: EmptyRecord(reading.device)
-    }
+    }   
 
 fun parseWeightScaleFeature(reading : BLEReading) =
-    parse(reading.data) {
+    parse(reading) {
         flags(0..4)
 
         WeightFeatures(

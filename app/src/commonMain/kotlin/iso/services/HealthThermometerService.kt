@@ -6,7 +6,7 @@ import data.PeripheralDescription
 import iso.parse
 
 fun parseTemperatureMeasurement(reading : BLEReading) =
-    parse(reading.data) {
+    parse(reading) {
         flags(0..1)
 
         EmptyRecord(PeripheralDescription("unknown"))

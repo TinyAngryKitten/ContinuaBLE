@@ -9,7 +9,7 @@ import util.rightMostNibble
 
 
 fun parseGlucoseReading(reading : BLEReading) : DataRecord =
-    parse(reading.data) {
+    parse(reading) {
         flags(0..1)
 
         GlucoseRecord.fromISOValues(
@@ -23,7 +23,7 @@ fun parseGlucoseReading(reading : BLEReading) : DataRecord =
     }
 
 fun parseGlucoseContextReading(reading: BLEReading) : DataRecord =
-    parse(reading.data) {
+    parse(reading) {
         flags(0..1)
 
         var tester : ISOValue.UInt8? = null
@@ -56,7 +56,7 @@ fun parseGlucoseContextReading(reading: BLEReading) : DataRecord =
     }
 
 fun parseGlucoseFeatures(reading : BLEReading) =
-    parse(reading.data) {
+    parse(reading) {
         flags(0..2)
 
         GlucoseFeatures(

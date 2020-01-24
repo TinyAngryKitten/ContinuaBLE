@@ -2,6 +2,20 @@ package data
 
 sealed class UnitOfMeasurement
 
+sealed class TemperatureUnit: UnitOfMeasurement() {
+    object Celsius : TemperatureUnit() {
+        override fun toString(): String {
+            return "TemperatureUnit: Celsius"
+        }
+    }
+
+    object Fahrenheit: TemperatureUnit() {
+        override fun toString(): String {
+            return "TemperatureUnit: Fahrenheit"
+        }
+    }
+}
+
 sealed class BloodGlucoseUnit : UnitOfMeasurement(){
     object MMOL : BloodGlucoseUnit() {
         override fun toString(): String {

@@ -15,7 +15,7 @@ fun parseBLEReading(reading : BLEReading): DataRecord =
     acc,characteristic ->
 
     if(characteristic == reading.characteristic) {
-        logger.debug("parse")
+//        logger.debug("parse")
         return characteristic.parse(reading)
     }
     else acc

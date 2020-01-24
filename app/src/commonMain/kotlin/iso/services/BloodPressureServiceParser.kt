@@ -9,7 +9,7 @@ import iso.parse
 
 
 fun parseBloodPressureFeature(reading : BLEReading) =
-    parse(reading.data) {
+    parse(reading) {
         flags(0..2)
 
         BloodPressureFeatures(
@@ -24,7 +24,7 @@ fun parseBloodPressureFeature(reading : BLEReading) =
     }
 
 fun parseBloodPressureMeasurement(reading : BLEReading) =
-    parse(reading.data) {
+    parse(reading) {
         flags(0..1)
 
         BloodPressureRecord.fromISOValues(

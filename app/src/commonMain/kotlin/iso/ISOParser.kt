@@ -1,5 +1,6 @@
 package iso
 
+import bledata.BLEReading
 import data.DataRecord
 import data.EmptyRecord
 import data.PeripheralDescription
@@ -10,11 +11,13 @@ import kotlin.math.floor
 import kotlin.math.pow
 
 //
-fun parse(bytes: ByteArray, fn : ISOParser.()->DataRecord) : DataRecord = try {
-    ISOParser(bytes).run(fn)
+fun parse(reading: BLEReading, fn : ISOParser.()->DataRecord) : DataRecord = try {
+    ISOParser(reading.data).run(fn)
 } catch (e : Exception) {
-    logger.error("an error occured while parsing a BLEReading: " + (e.message ?: e.toString()) )
-    EmptyRecord(PeripheralDescription("unknown"))
+    //logger.error("an error occured while parsing a BLEReading (device: ${reading.device}, characteristic: ${reading.characteristic}: " + (e.message ?: e.toString()) )
+    println(e)
+    println("PARSE FAILED")
+    EmptyRecord(reading.device)
 }
 
 /**
@@ -121,6 +124,8 @@ class ISOParser(var bytes : ByteArray) {
 
     fun flags(range : IntRange) {
         flagBytes = bytes.slice(range).toByteArray()
-        bytes = bytes.sliceArray(0 until range.first) + bytes.sliceArray(range.last until bytes.size)
+        if(range.last >= bytes.size) bytes = byteArrayOf()
+        bytes = if(range.first >0) bytes.sliceArray(0 until range.first) + bytes.sliceArray(range.last until bytes.size)
+        else bytes.sliceArray(range.last until bytes.size)
     }
 }

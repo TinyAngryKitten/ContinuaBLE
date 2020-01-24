@@ -7,6 +7,43 @@ sealed class DataRecord(val device: PeripheralDescription)
 
 class EmptyRecord(device : PeripheralDescription) : DataRecord(device)
 
+class ThermometerMeasurement(
+    val measurementValue: Float,
+    val measurementUnit: TemperatureUnit,
+    val timeStamp: ISOValue.DateTime?,
+    val temperatureType: TemperatureType?,
+    device: PeripheralDescription
+): DataRecord(device)
+
+
+sealed class TemperatureType {
+    object Armpit: TemperatureType()
+    object Body : TemperatureType()
+    object Ear: TemperatureType()
+    object Finger: TemperatureType()
+    object GastroIntestinalTract: TemperatureType()
+    object Mouth: TemperatureType()
+    object Rectum: TemperatureType()
+    object Toe: TemperatureType()
+    object Tympanum : TemperatureType()
+    object ReservedForFutureUse : TemperatureType()
+
+    companion object {
+        fun fromInt(value: Int) = when(value) {
+            1 -> Armpit
+            2 -> Body
+            3 -> Ear
+            4 -> Finger
+            5 -> GastroIntestinalTract
+            6 -> Mouth
+            7 -> Rectum
+            8 -> Toe
+            9 -> Tympanum
+            else -> ReservedForFutureUse
+        }
+    }
+}
+
 //These are all UTF8 strings
 sealed class DeviceInfoComponent(device: PeripheralDescription) : DataRecord(device) {
     class ModelNumber(
@@ -43,7 +80,17 @@ class DeviceInfoRecord (
     val softwareRevision : String = "",
     val manufacturerName: String = "",
     device: PeripheralDescription
-) :  DataRecord(device)
+) :  DataRecord(device) {
+    override fun toString(): String {
+        return """
+            DeviceInfoRecord(
+            modelNr: $modelNumber,
+            serialNr: $serialNumber,
+            manufacturer: $manufacturerName,
+            )
+        """.trimIndent()
+    }
+}
 
 class BatteryLevelRecord(
     level : Int,
@@ -322,6 +369,16 @@ class GlucoseRecord(
         ctx,
         device!!
     )
+
+    override fun toString(): String = """
+    Glucose Record ( 
+    unit: $unit,
+    amount: $amount,
+    sequenceNr: $sequenceNumber,
+    context: $context
+    )
+    """.trimIndent()
+
     companion object {
         fun fromISOValues(
             unit : ISOValue.Flag,
@@ -361,7 +418,23 @@ class GlucoseFeatures (
     val timeFault : Boolean = false,
     val multipleBonds : Boolean = false,
     device: PeripheralDescription
-) : DataRecord(device)
+) : DataRecord(device) {
+    override fun toString(): String = """ 
+        GlucoseFeatures(
+        lowBattery: $lowBattery,
+        sensorMalfunction: $sensorMalfunction,
+        sensorSampleSize. $sensorSampleSize,
+        ensorStripInsertionMalfunction: $sensorStripInsertionMalfunction,
+        sensorStripTypeError: $sensorStripTypeError,
+        sensorHighLowDetection: $sensorHighLowDetection,
+        sensorTempHighLow: $sensorTemperatureHighLowDetection,
+        ssensorReadInterrupt: $sensorReadInterruptedDetection,
+        generalDevicefault: $generalDeviceFaultDetection,
+        timeFault: $timeFault,
+        multipleBonds: $multipleBonds,
+        )
+        """
+}
 
 class GlucoseRecordContext(
     val sequenceNumber : UInt,
@@ -378,6 +451,23 @@ class GlucoseRecordContext(
     val HbA1cPercent : Float?,
     device: PeripheralDescription
 ) : DataRecord(device) {
+
+    override fun toString(): String = """
+        GlucoseRecordContext(
+        sequenceNumber: $sequenceNumber,
+        carbohydrateType: $carbohydrateType,
+        mealWeightKg: $mealWeightKg,
+        mealContext: $mealContext,
+        tester: $tester,
+        health: $health,
+        exerciseDuration: $exerciseDuration,
+        exerciseIntensityPercent: $exerciseIntensityPercent,
+        medicationID: $medicationID,
+        medicationInKg: $medicationInKg,
+        medicationInLiter: $medicationInLiter,
+        HbA1cPercent: $HbA1cPercent,
+        )
+    """.trimIndent()
     companion object {
         fun fromISOValues(
             sequenceNumber: ISOValue.UInt16,

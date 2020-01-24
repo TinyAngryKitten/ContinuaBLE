@@ -7,7 +7,7 @@ import data.BodySensorLocationRecord
 import iso.parse
 
 fun parseBodySensorLocation(reading : BLEReading) =
-    parse(reading.data){
+    parse(reading){
         BodySensorLocationRecord(
 
             when(uint8().value.toInt()) {

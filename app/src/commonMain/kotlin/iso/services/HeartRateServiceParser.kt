@@ -7,7 +7,7 @@ import iso.ISOValue
 import iso.parse
 
 fun parseHeartRateMeasurement(reading: BLEReading) =
-    parse(reading.data) {
+    parse(reading) {
         flags(0..1)
 
         HeartRateRecord(

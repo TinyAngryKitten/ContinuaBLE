@@ -99,12 +99,13 @@ sealed class CharacteristicUUIDs(val id : String,val parse : (BLEReading) -> Dat
         fun fromId(id : String) = getAll().find { it.id.equals(id,ignoreCase = true) } ?: UnsupportedCharacteristic(
             unsupportedCharacteristicName(id),PeripheralDescription("unknown"))
 
-        fun unsupportedCharacteristicName(id : String) = when(id){
-            "0x2A2B" -> "$id (Current time)"
-            "0x2A23" -> "$id (System ID)"
-            "0x2A50" -> "$id (PnP ID)"
-            "0x2A08" -> "$id (Date Time)"
+        fun unsupportedCharacteristicName(id : String) = when(id.toUpperCase()){
+            "0X2A2B" -> "$id (Current time)"
+            "0X2A23" -> "$id (System ID)"
+            "0X2A50" -> "$id (PnP ID)"
+            "0X2A08" -> "$id (Date Time)"
             "0x2A52" -> "$id (Record Access control point)"
+            "0X2A2A" -> "$id (Regulatory Certificate Lists)"
             else -> id
         }
     }
