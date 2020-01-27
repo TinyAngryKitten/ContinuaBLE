@@ -10,7 +10,7 @@ import iso.parse
 
 fun parseBloodPressureFeature(reading : BLEReading) =
     parse(reading) {
-        flags(0..2)
+        flags(0..1)
 
         BloodPressureFeatures(
             flag(0),
@@ -25,7 +25,7 @@ fun parseBloodPressureFeature(reading : BLEReading) =
 
 fun parseBloodPressureMeasurement(reading : BLEReading) =
     parse(reading) {
-        flags(0..1)
+        flags(0..0)
 
         BloodPressureRecord.fromISOValues(
             systolic = sfloat(),

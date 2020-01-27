@@ -1,6 +1,7 @@
 package ble
 
 import bledata.BLEReading
+import bledata.BLEState
 import co.touchlab.stately.concurrency.AtomicReference
 import co.touchlab.stately.freeze
 import data.DataRecord
@@ -14,7 +15,7 @@ class DeviceCentral(private val bleCentral : BLECentral){
     val onRecordReceived = AtomicReference({it : DataRecord-> logger.debug(it.toString())}.freeze())
     val onDeviceDiscovered = AtomicReference({_ : PeripheralDescription -> }.freeze())
     val onDeviceConnected = AtomicReference({_ : PeripheralDescription -> }.freeze())
-    val onStateChanged = AtomicReference({_:BLEState -> }.freeze())
+    val onStateChanged = AtomicReference({_: BLEState -> }.freeze())
 
     private val recordCentral = RecordCentral({
             record: DataRecord ->

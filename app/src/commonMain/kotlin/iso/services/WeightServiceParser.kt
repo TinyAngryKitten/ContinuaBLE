@@ -7,7 +7,7 @@ import iso.services.weightResolution
 
 fun parseWeightMeasurement(reading : BLEReading) =
     parse(reading) {
-        flags(0..1)
+        flags(0..0)
 
         WeightRecord.fromISOValues(
             weight = uint16(),
@@ -23,7 +23,7 @@ fun parseWeightMeasurement(reading : BLEReading) =
 
 fun parseWeightScaleFeature(reading : BLEReading) =
     parse(reading) {
-        flags(0..4)
+        flags(0..3)
 
         WeightFeatures(
             flag(0),

@@ -9,11 +9,10 @@ import android.content.Context
 import android.os.Handler
 import android.support.v4.content.ContextCompat.getSystemService
 import bledata.BLEReading
+import bledata.BLEState
 import data.PeripheralDescription
-import iso.CharacteristicUUIDs
 import iso.ServiceUUID
 import iso.identifier
-import iso.parseBLEReading
 import sample.logger
 import util.strRepresentation
 import java.util.*

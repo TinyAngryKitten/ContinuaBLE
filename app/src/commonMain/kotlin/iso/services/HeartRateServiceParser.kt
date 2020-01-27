@@ -8,7 +8,7 @@ import iso.parse
 
 fun parseHeartRateMeasurement(reading: BLEReading) =
     parse(reading) {
-        flags(0..1)
+        flags(0..0)
 
         HeartRateRecord(
             //type of measurement can vary, if uint8 just turn it into a uint16

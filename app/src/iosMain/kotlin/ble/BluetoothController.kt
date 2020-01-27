@@ -1,4 +1,5 @@
 package ble
+import bledata.BLEState
 import co.touchlab.stately.collections.frozenCopyOnWriteList
 import co.touchlab.stately.freeze
 import data.PeripheralDescription
@@ -30,7 +31,7 @@ class BluetoothController :
 
     val discoverCallback = AtomicReference({_:PeripheralDescription -> }.freeze())
     val connectCallback = AtomicReference ({_:PeripheralDescription -> }.freeze())
-    val stateChangedCallback = AtomicReference({_:BLEState -> }.freeze())
+    val stateChangedCallback = AtomicReference({_: BLEState -> }.freeze())
 
     val centralManager = CBCentralManager(this,null)
 

@@ -1,4 +1,4 @@
-package ble
+package bledata
 
 sealed class BLEState {
     object Off : BLEState()

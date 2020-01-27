@@ -28,7 +28,7 @@ class RecordCentral(val onCompleteRecord : (DataRecord) -> Unit) {
                 if(glucoseRecords.containsKey(record.device.UUID)) {
 
                     completeRecordCallback(
-                        glucoseRecords[record.device.UUID]?.copyWithContect(
+                        glucoseRecords[record.device.UUID]?.copyWithContext(
                             HasGlucoseContext.Context(
                                 record
                             )

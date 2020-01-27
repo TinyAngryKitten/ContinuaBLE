@@ -1,6 +1,7 @@
 package iso
 
 import bledata.BLEReading
+import data.EmptyRecord
 import data.GlucoseFeatures
 import data.GlucoseRecord
 import data.PeripheralDescription
@@ -16,15 +17,17 @@ class TestParseGlucoseReading {
 
     //                 type  loc  exp  mantissa              time n shit                                                  sequence nr
     //0000000000000000 1111 1000 1011 000001011001
-    val glucoseAmountWithDecimalPoint = listOf("F0","31","80","00","00","00","00","00","00","00","00","03","86").map {it.toInt(16)}
+    val glucoseAmountWithDecimalPoint = listOf("F0","31","80","00","00","00","00","00","00","00","00","00","03","87").map {it.toInt(16)}
 
     /*
     exponent  mantissa                                                                          time  sequence   flags
     0000 0000 00010101 10000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000111 0000110
      */
-    val validStrRepresentation = "00000000000101011000000000000000000000000000000000000000000000000000000000000000000000000000001110000110"
-    val zeroExponentHex = listOf("00","15","80","00","00","00","00","00","00","00","00","03","86").map {it.toInt(16)}
-    val noneZeroExponentHex = listOf("30","15","80","00","00","00","00","00","00","00","00","03","86").map {it.toInt(16)}
+
+    val validStrRepresentation = "0000000000010101100000000000000000000000000000000000000000000000000000000000000000000000000000000000001110000111"
+
+    val zeroExponentHex = listOf("00","15","80","00","00","00","00","00","00","00","00","00","03","87").map {it.toInt(16)}
+    val noneZeroExponentHex = listOf("30","15","80","00","00","00","00","00","00","00","00","00","03","87").map {it.toInt(16)}
 
     val exponent = 3
 
@@ -73,7 +76,7 @@ class TestParseGlucoseReading {
     @Test
     fun testValidReadingWithNegativeMantissa() {
         val result = parseGlucoseReading(negativeMantissaReading)
-        assertTrue(result is GlucoseRecord)
+        assertTrue(result is GlucoseRecord,"result lass : ${result::class}")
         assertEquals(sequenceNr.toUInt(),result.sequenceNumber)
         assertEquals(4.9f,result.amount)
     }
@@ -94,6 +97,7 @@ class TestParseGlucoseReading {
         assertEquals(10f.pow(exponent) * mantissa,result.amount)
     }
 
+    /*
     @Test
     fun attemptToParseValidGlucoseFeatures() {
         val result = parseBLEReading(
@@ -109,7 +113,7 @@ class TestParseGlucoseReading {
         )
         assertTrue(result is GlucoseFeatures)
         assertTrue(result.timeFault)
-    }
+    }*/
 
     /*@Test
     fun parseDeviceInfo() {

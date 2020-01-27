@@ -10,13 +10,15 @@ import util.rightMostNibble
 
 fun parseGlucoseReading(reading : BLEReading) : DataRecord =
     parse(reading) {
-        flags(0..1)
+        flags(0..0)
 
         GlucoseRecord.fromISOValues(
             unit = flag(flag(2)),
             sequenceNumber = uint16(),
             //ignore date and time of measurement
-            amount = dropThen(8) { onCondition(flag(1), sfloat) },
+            baseTime = dateTime(),
+            timeOffset = onCondition(flag(0),sint16),
+            amount = sfloat(),
             contextFollows = flag(4),
             device = reading.device
         ) ?: EmptyRecord(reading.device)
@@ -24,7 +26,7 @@ fun parseGlucoseReading(reading : BLEReading) : DataRecord =
 
 fun parseGlucoseContextReading(reading: BLEReading) : DataRecord =
     parse(reading) {
-        flags(0..1)
+        flags(0..0)
 
         var tester : ISOValue.UInt8? = null
         var health : ISOValue.UInt8? = null
@@ -57,7 +59,7 @@ fun parseGlucoseContextReading(reading: BLEReading) : DataRecord =
 
 fun parseGlucoseFeatures(reading : BLEReading) =
     parse(reading) {
-        flags(0..2)
+        flags(0..1)
 
         GlucoseFeatures(
             flag(0),

@@ -12,6 +12,9 @@ sealed class ISOValue {
     data class UInt8 @ExperimentalUnsignedTypes constructor(val value : UInt) : ISOValue()
     data class UInt16 @ExperimentalUnsignedTypes constructor(val value : UInt) : ISOValue()
 
+    //represents a 4 bit value
+    data class Nibble(val value: Byte) : ISOValue()
+
     data class DateTime(
         val year : UInt,
         val month : UInt,
@@ -37,6 +40,17 @@ sealed class ISOValue {
             seconds.value
         )
 
+        override fun toString(): String {
+            return """
+                year: $year,
+                month: $month,
+                day: $day,
+                hour: $hours,
+                minute: $minutes,
+                second: $seconds,
+            """.trimIndent()
+        }
+
         fun toByteArray() = ByteArray(7) {
             when(it) {
                 6 -> seconds
@@ -51,6 +65,19 @@ sealed class ISOValue {
         }
     }
 
+    class Float(val value : kotlin.Float) : ISOValue() {
+        companion object {
+            //unable to find information about the FLOAT datatype, but there are likely NaN/Nres etc. values
+            fun from(rightMostManitssa : SInt16, leftMostMantissa: SInt8, exponent: SInt8) : Float {
+                var mantissa = leftMostMantissa.value.shl(16)
+                for (i in 0..15) {
+                    mantissa = mantissa or (rightMostManitssa.value and (1 shl i))
+                }
+                return Float(mantissa * 10f.pow(exponent.value))
+            }
+        }
+    }
+
     sealed class SFloat : ISOValue() {
         object NaN : SFloat()
         object NRes : SFloat()
@@ -58,19 +85,21 @@ sealed class ISOValue {
         object PlussInfinity : SFloat()
         object MinusInfinity : SFloat()
 
-        data class Value(val value: Float) : SFloat() {
-            override fun toString() ="value(val: $value"
+        data class Value(val value: kotlin.Float) : SFloat() {
+            override fun toString() ="value(val: $value)"
         }
 
         companion object {
-            fun fromBytes(byteArray : ByteArray) = fromBytes(byteArray[0],byteArray[1])
+            //fun fromBytes(byteArray : ByteArray) = fromBytes(byteArray[0],byteArray[1])
 
-            fun fromBytes(byte1 : Byte, byte2 : Byte) : SFloat {
-                val exponent = nibleToSignedInt(byte2.leftMostNibble())
+            fun fromBytes(mantissaByte: UInt8, mantissaNibble: Nibble, exponent: Nibble) : SFloat {
 
-                val mantissa = byte1.or(byte2.rightMostNibble().shl(8).toByte())
+                var mantissa = mantissaNibble.value.toInt().shl(8)
+                for(i in 0..7) {
+                    mantissa = mantissa or (mantissaByte.value.toInt() and 1.shl(i))
+                }
 
-                return when(val value = (10f.pow(exponent) * mantissa.toInt()) ) {
+                return when(val value = (10f.pow(exponent.value.toInt()) * mantissa) ) {
                     0x07FF.toFloat() -> NaN
                     0x0800.toFloat() -> NRes
                     0x07FE.toFloat() -> PlussInfinity

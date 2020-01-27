@@ -4,6 +4,8 @@ import kotlin.experimental.and
 import kotlin.math.ceil
 import kotlin.math.pow
 
+fun toByteArray(list: List<String>) = list.map { it.toInt(16).toByte() }.toByteArray().reversedArray()
+
 fun ByteArray.strRepresentation() : String = foldRight("") {
         it:Byte, acc:String ->
     acc + it.strRepresentation()

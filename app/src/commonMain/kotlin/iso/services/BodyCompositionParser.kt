@@ -8,7 +8,7 @@ import iso.parse
 
 fun parseBodyCompositionFeature(reading : BLEReading) =
     parse(reading) {
-        flags(0..4)
+        flags(0..3)
         BodyCompositionFeature(
             flag(0),
             flag(1),
@@ -29,7 +29,7 @@ fun parseBodyCompositionFeature(reading : BLEReading) =
 
 fun parseBodyCompositionMeasurement(reading: BLEReading) =
     parse(reading) {
-        flags(0..2)
+        flags(0..1)
 
         //compiler error for some reason when using named arguments
         BodyCompositionRecord(

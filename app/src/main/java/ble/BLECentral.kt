@@ -2,6 +2,7 @@ package ble
 
 import android.bluetooth.BluetoothAdapter
 import bledata.BLEReading
+import bledata.BLEState
 import data.PeripheralDescription
 
 actual class BLECentral(val controller : BluetoothController ) {
@@ -28,7 +29,7 @@ actual class BLECentral(val controller : BluetoothController ) {
         if((controller.adapter).isEnabled != true) BLEState.NotAuthorized
         return when(controller.adapter.state) {
             BluetoothAdapter.STATE_ON -> BLEState.On
-            BluetoothAdapter.STATE_OFF, BluetoothAdapter.STATE_TURNING_OFF,BluetoothAdapter.STATE_TURNING_ON->BLEState.Off
+            BluetoothAdapter.STATE_OFF, BluetoothAdapter.STATE_TURNING_OFF,BluetoothAdapter.STATE_TURNING_ON-> BLEState.Off
             else -> BLEState.UnknownErrorState
         }
     }
