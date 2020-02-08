@@ -3,6 +3,7 @@ package sample
 import android.util.Log
 
 actual object logger {
+    var additionalAction : (String) -> Unit = {_->}
     actual fun printLine(str: String) {
         Log.println(0,"",str)
     }
@@ -11,7 +12,8 @@ actual object logger {
         get() = TODO()
 
     actual fun info(str: String) {
-        Log.i("",str)
+        Log.i("INFO",str)
+        additionalAction(str+"\n")
     }
 
     actual fun debug(str: String) {

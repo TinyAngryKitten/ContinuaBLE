@@ -12,7 +12,7 @@ fun parseHeartRateMeasurement(reading: BLEReading) =
 
         HeartRateRecord(
             //type of measurement can vary, if uint8 just turn it into a uint16
-            if(flag(0)) uint16() else ISOValue.UInt16(uint8().value),
+            if(flag(0)) uint16() else ISOValue.UInt16(uint8().byte,0.toByte()),
             onCondition(flag(3),uint16),
             parseSensorContact(flag(1),flag(2)),
             null,

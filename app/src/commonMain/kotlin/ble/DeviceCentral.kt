@@ -2,6 +2,7 @@ package ble
 
 import bledata.BLEReading
 import bledata.BLEState
+import co.touchlab.stately.collections.frozenHashMap
 import co.touchlab.stately.concurrency.AtomicReference
 import co.touchlab.stately.freeze
 import data.DataRecord
@@ -16,12 +17,16 @@ class DeviceCentral(private val bleCentral : BLECentral){
     val onDeviceDiscovered = AtomicReference({_ : PeripheralDescription -> }.freeze())
     val onDeviceConnected = AtomicReference({_ : PeripheralDescription -> }.freeze())
     val onStateChanged = AtomicReference({_: BLEState -> }.freeze())
+    //val onDeviceCapabilitiesDiscovered = AtomicReference({record: DataRecord->recordCentral.addDeviceCapabilities }.freeze())
 
-    private val recordCentral = RecordCentral({
+
+    //val deviceCapabilities : Map<String, DeviceCapabilities.DeviceServices> = frozenHashMap()
+
+    private val recordCentral = IntermediateRecordStorage {
             record: DataRecord ->
-        logger.debug("Record received: $record")
+        logger.info("Record received: $record")
         onRecordReceived.get()(record).freeze()
-    })
+    }
 
     //subscribe to changes in bluetooth connection
     init {
@@ -36,15 +41,15 @@ class DeviceCentral(private val bleCentral : BLECentral){
         }.freeze())
 
         bleCentral.changeOnConnectCallback({device : PeripheralDescription ->
-            logger.debug("onConnectCallback: ${device.name}")
+            logger.info("connected to: ${device.name}")
             onDeviceConnected.get()(device)
         }.freeze())
         bleCentral.changeOnDiscoverCallback({device : PeripheralDescription ->
-            logger.debug("onDiscoverCallback: ${device.name}")
+            logger.info("discovered: ${device.name}")
             onDeviceDiscovered.get()(device)
         }.freeze())
         bleCentral.changeStateChangeCallback({state : BLEState ->
-            logger.debug("state changed: $state")
+            logger.info("state changed: $state")
             onStateChanged.get()(state)
         }.freeze())
     }

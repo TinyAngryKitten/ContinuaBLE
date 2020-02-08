@@ -42,6 +42,7 @@ class BluetoothController(
             val manager = getSystemService(context, BluetoothManager::class.java)
             val adapter = manager?.adapter//BluetoothAdapter.getDefaultAdapter()
             return if (manager == null || adapter == null) {
+                error("manager = $manager and adapter = $adapter")
                 null
             }
             else BluetoothController(manager, adapter, context)
@@ -58,55 +59,71 @@ class BluetoothController(
 
     fun scan() {
         logger.debug("Scan starting")
-        adapter.bluetoothLeScanner.startScan(object : ScanCallback() {
-            override fun onBatchScanResults(results: MutableList<ScanResult>?) {
-                logger.debug("scan finished")
-                if (results != null) {
-                    discoveredDevices = results.map {
-                        connectToDevice(it.device.address)
-                        logger.debug("discovered: ${it.device}")
-                        it.device
-                    }.toMutableList()
 
-                    discoveredDevices.forEach {
-                        discoverCallback.get()(
-                            PeripheralDescription.fromNullable(
-                                it.address,
-                                it.name
-                            )
-                        )
-                    }
+        bleHandler.postDelayed({
+            adapter.bluetoothLeScanner.stopScan(scanCallback)
+        }, 60000)//stop scan after 1 minute
 
-                }
-            }
+        adapter.bluetoothLeScanner.startScan(scanCallback)
+        /*
+        logger.debug("IS DISCOVERING: "+adapter.isDiscovering)
+        val device = adapter.bondedDevices.find { it.address == "34:03:DE:0D:51:16" }
+        logger.debug("DEVICE: $device")
+        //val device = adapter.getRemoteDevice(address)
+        val bleGatt = device?.connectGatt(context, false, gattCallback)
+        //bleGatt.discoverServices()
+        logger.debug("connecting: ${device?.name}")*/
+    }
 
-            override fun onScanResult(callbackType: Int, result: ScanResult?) {
-                if (result != null && result.device != null && !discoveredDevices.contains(result.device)) {
-                    logger.debug("discovered. ${result.device.address}")
-                    logger.debug("discovered. ${result.device.name}")
+    val scanCallback = object : ScanCallback() {
+        override fun onBatchScanResults(results: MutableList<ScanResult>?) {
+            logger.debug("scan finished")
+            if (results != null) {
+                discoveredDevices = results.map {
+                    connectToDevice(it.device.address)
+                    logger.debug("discovered: ${it.device}")
+                    it.device
+                }.toMutableList()
 
-                    discoveredDevices.add(result.device)
+                discoveredDevices.forEach {
                     discoverCallback.get()(
                         PeripheralDescription.fromNullable(
-                            result.device.address,
-                            result.device.name
+                            it.address,
+                            it.name
                         )
                     )
                 }
-            }
 
-            override fun onScanFailed(errorCode: Int) {
-                logger.debug("scan error")
             }
-        })
+        }
+
+        override fun onScanResult(callbackType: Int, result: ScanResult?) {
+            if (result != null && result.device != null && !discoveredDevices.contains(result.device)) {
+                logger.debug("discovered. ${result.device.address}")
+                logger.debug("discovered. ${result.device.name}")
+
+                discoveredDevices.add(result.device)
+                discoverCallback.get()(
+                    PeripheralDescription.fromNullable(
+                        result.device.address,
+                        result.device.name
+                    )
+                )
+            }
+        }
+        override fun onScanFailed(errorCode: Int) {
+            logger.debug("scan error")
+        }
     }
 
     fun connectToDevice(address: String) {
         logger.debug("connecting..")
-        val device = adapter.getRemoteDevice(address)
-        val bleGatt = device.connectGatt(context, false, gattCallback)
+        val device = adapter.bondedDevices.find { it.address == address } ?: adapter.getRemoteDevice(address)
+
+        //val device = adapter.getRemoteDevice(address)
+        val bleGatt = device?.connectGatt(context, true, gattCallback)
         //bleGatt.discoverServices()
-        logger.debug("connecting: ${device.name}")
+        logger.debug("connecting: ${device?.name}")
     }
 
     fun disconnectFromDevice(address: String) {
@@ -137,8 +154,6 @@ class BluetoothController(
         }
 
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-            adapter.bluetoothLeScanner.flushPendingScanResults(object : ScanCallback() {})
-            adapter.bluetoothLeScanner.stopScan(object : ScanCallback() {})
 
             bleHandler.post {
                 logger.debug("services discovered on: ${gatt?.device?.name}")
@@ -150,6 +165,7 @@ class BluetoothController(
                 ServiceUUID.getAll().find { it.equalsAndroidUUID(service.uuid) } == null
             //}?.forEach {
              */
+
                 gatt?.services?.filter { ServiceUUID.fromNr(it.uuid.identifier) != null }
                     ?.forEach { service ->
 
@@ -183,25 +199,26 @@ class BluetoothController(
             }
         }
 
-        private val CCC_DESCRIPTOR_UUID = "00002902-0000-1000-8000-00805f9b34fb"
+        private val descriptorUUID = "00002902-0000-1000-8000-00805f9b34fb"
         fun setNotify(
             gatt: BluetoothGatt,
             characteristic: BluetoothGattCharacteristic,
             enable: Boolean
         ): Boolean {
+            logger.debug("setting notify")
 
             // Get the CCC Descriptor for the characteristic
-            val descriptor = characteristic.getDescriptor(UUID.fromString(CCC_DESCRIPTOR_UUID));
+            val descriptor = characteristic.getDescriptor(UUID.fromString(descriptorUUID));
             if (descriptor == null) {
-                logger.error("Could not get CCC descriptor for characteristic ${characteristic.uuid}")
+                logger.error("Could not get CCC for: ${characteristic.uuid}")
                 return false
             }
 
             // Check if characteristic has NOTIFY or INDICATE properties and set the correct byte value to be written
-            val properties = characteristic.properties
-            val desciptorValue = if ((properties and PROPERTY_NOTIFY) > 0) {
+            val props = characteristic.properties
+            val desciptorValue = if ((props and PROPERTY_NOTIFY) > 0) {
                 BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-            } else if ((properties and PROPERTY_INDICATE) > 0) {
+            } else if ((props and PROPERTY_INDICATE) > 0) {
                 BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
             } else if (!enable) {
                 BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE
@@ -223,6 +240,7 @@ class BluetoothController(
                     logger.error("unable to write to descriptor of characteristic: ${characteristic.uuid}")
                     completedCommand()
                 }//if it didnt fail complete command will be called in onWriteDescriptor
+                else gatt.readCharacteristic(characteristic)
             }})
 
             if (result) {
@@ -239,6 +257,7 @@ class BluetoothController(
             descriptor: BluetoothGattDescriptor,
             status: Int
         ) {
+            logger.debug("descriptor written: ${descriptor.uuid.identifier}")
             // Do some checks first
             val parentCharacteristic = descriptor.characteristic
             if (status != GATT_SUCCESS) {
@@ -251,6 +270,7 @@ class BluetoothController(
             characteristic: BluetoothGattCharacteristic,
             gatt: BluetoothGatt
         ): Boolean {
+            logger.debug("reading characteristic: ${characteristic.uuid.identifier}")
             val result = commandQueue.add(Runnable {
                 if (gatt.readCharacteristic(characteristic)) {
                     logger.debug("characteristic read: ${characteristic.uuid}")
@@ -288,6 +308,7 @@ class BluetoothController(
             characteristic: BluetoothGattCharacteristic?,
             status: Int
         ) {
+            logger.debug("characteristic read: ${characteristic?.uuid?.identifier}")
             if (BluetoothGatt.GATT_SUCCESS == status) {
                 if (gatt == null || characteristic == null) return logger.error("unable to read characteristic, gatt or characteristic is null")
                 logger.debug("read received: from ${gatt.device.name}, characteristic: ${characteristic.uuid}, values: ${characteristic.value.strRepresentation()}")
@@ -301,7 +322,7 @@ class BluetoothController(
                         )
                     resultCallback.get()(result)
                 }
-            } else logger.error("GATT ERROR STATUS")
+            } else logger.error("GATT ERROR STATUS: $status (${characteristic?.uuid?.identifier})")
             completedCommand()
         }
 
@@ -315,7 +336,7 @@ class BluetoothController(
             gatt: BluetoothGatt?,
             characteristic: BluetoothGattCharacteristic?
         ) {
-
+            logger.debug("characteristic changed: ${characteristic?.uuid?.identifier}")
             if(gatt == null || characteristic == null) return logger.error("gatt(${gatt?.device}) or characteristic(${characteristic?.uuid}) is null on changed events")
             logger.debug("characteristic change received ${characteristic.value.strRepresentation()}")
             bleHandler.post {

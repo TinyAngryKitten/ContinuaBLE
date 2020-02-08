@@ -8,10 +8,10 @@ import data.PeripheralDescription
 actual class BLECentral(val controller : BluetoothController ) {
 
     val discoveredDevices : List<PeripheralDescription>
-        get() = controller.discoveredDevices.map { PeripheralDescription(it.address,it.name) } ?: listOf()
+        get() = controller.discoveredDevices.map { PeripheralDescription(it.address,it.name) }
 
     val connectedDevices : List<PeripheralDescription>
-        get() = controller.connectedDevices.map { PeripheralDescription(it.address,it.name) } ?: listOf()
+        get() = controller.connectedDevices.map { PeripheralDescription(it.address,it.name) }
 
      actual fun scanForDevices(){
         controller.scan()
@@ -26,7 +26,7 @@ actual class BLECentral(val controller : BluetoothController ) {
 
 
     actual fun bleState(): BLEState {
-        if((controller.adapter).isEnabled != true) BLEState.NotAuthorized
+        if(!(controller.adapter).isEnabled) BLEState.NotAuthorized
         return when(controller.adapter.state) {
             BluetoothAdapter.STATE_ON -> BLEState.On
             BluetoothAdapter.STATE_OFF, BluetoothAdapter.STATE_TURNING_OFF,BluetoothAdapter.STATE_TURNING_ON-> BLEState.Off

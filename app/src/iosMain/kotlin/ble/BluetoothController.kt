@@ -51,7 +51,6 @@ class BluetoothController :
     val discoveredDevices : MutableList<CBPeripheral> = frozenCopyOnWriteList(listOf())
     val connectedDevices : MutableList<CBPeripheral> = frozenCopyOnWriteList(listOf())
 
-
     override fun centralManagerDidUpdateState(central: CBCentralManager) {
         when(central.state) {
             CBManagerStatePoweredOff -> {
@@ -131,14 +130,6 @@ class BluetoothController :
         peripheral: CBPeripheral,
         didDiscoverServices: NSError?
     ) {
-        peripheral.services?.map {
-            logger.printLine(
-                """
-                    Service:
-                ${it.toString()}
-            """
-            )
-        }
         peripheralController.peripheral(peripheral, didDiscoverServices = didDiscoverServices)
     }
         //characteristics discovered

@@ -18,7 +18,10 @@ fun parseGlucoseReading(reading : BLEReading) : DataRecord =
             //ignore date and time of measurement
             baseTime = dateTime(),
             timeOffset = onCondition(flag(0),sint16),
-            amount = sfloat(),
+            amount = onCondition(flag(1),sfloat),
+            sampleType = onCondition(flag(1),rightNibble),
+            sampleLocation = onCondition(flag(1),leftNibble),
+            sensorStatusAnunciation = onCondition(flag(3),uint16),
             contextFollows = flag(4),
             device = reading.device
         ) ?: EmptyRecord(reading.device)
@@ -40,8 +43,8 @@ fun parseGlucoseContextReading(reading: BLEReading) : DataRecord =
             //a wonky way to deal with nibbles, should be implemented in ISOParser, but not worth the work for a single use case
             tester = onCondition(flag(2)) {
                 val byte = uint8()
-                tester = ISOValue.UInt8(byte.value.toByte().rightMostNibble().toUInt())
-                health = ISOValue.UInt8(byte.value.toByte().leftMostNibble().toUInt())
+                tester = ISOValue.UInt8(byte.value.toByte().rightMostNibble().toByte())
+                health = ISOValue.UInt8(byte.value.toByte().leftMostNibble().toByte())
                 tester
             },
             health = onCondition(flag(2)) {health},

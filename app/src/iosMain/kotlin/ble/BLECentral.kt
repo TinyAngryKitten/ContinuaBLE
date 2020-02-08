@@ -2,9 +2,21 @@ package ble
 
 import bledata.BLEReading
 import bledata.BLEState
+import co.touchlab.stately.freeze
 import data.PeripheralDescription
+import iso.CharacteristicUUIDs
 import iso.ServiceUUID
+import kotlinx.cinterop.*
+import kotlinx.cinterop.nativeHeap.alloc
+import platform.CoreBluetooth.CBCharacteristic
+import platform.CoreBluetooth.CBCharacteristicWriteWithResponse
+import platform.CoreBluetooth.CBService
 import platform.CoreBluetooth.CBUUID
+import platform.Foundation.NSData
+import platform.Foundation.create
+import platform.darwin.UInt8
+import platform.posix.int32_t
+import platform.posix.int32_tVar
 import sample.logger
 
 actual class BLECentral {
@@ -29,6 +41,27 @@ actual class BLECentral {
         logger.debug("scan started")
     }
 
+    fun writeCharacteristic(deviceDescription: PeripheralDescription) {
+        controller.connectedDevices.find { it.identifier.UUIDString == deviceDescription.UUID }?.let {
+            peripheral->
+            if(controller.centralManager.isScanning) controller.centralManager.stopScan()
+            val service = peripheral.services?.find { (it as CBService).UUID.UUIDString == ServiceUUID.glucose.id } as CBService?
+            val characteristic = service?.characteristics?.find { (it as CBCharacteristic).UUID.UUIDString == CharacteristicUUIDs.glucoseControlPoint.id } as CBCharacteristic?
+                ?: return
+
+            val bytedata = 1
+            val data = logger.nsdata.value ?: return
+            logger.info("write attempted...")
+
+            peripheral.writeValue(
+                data as NSData,
+                characteristic,
+                CBCharacteristicWriteWithResponse
+                )
+            //controller.centralManager
+        } ?: logger.error("Attempted to connect to a peripheral that does not exist or are not in range: $deviceDescription")
+    }
+
     actual fun connectToDevice(deviceDescription: PeripheralDescription) {
         controller.discoveredDevices.find { it.identifier.UUIDString == deviceDescription.UUID }?.let {
             if(controller.centralManager.isScanning) controller.centralManager.stopScan()
@@ -42,7 +75,11 @@ actual class BLECentral {
     }
 
     actual fun changeOnConnectCallback(callback : (PeripheralDescription)-> Unit) {
-        controller.connectCallback.compareAndSet(controller.connectCallback.value,callback)
+        controller.connectCallback.compareAndSet(controller.connectCallback.value,{
+            it:PeripheralDescription->
+            writeCharacteristic(it)
+            callback(it)
+        }.freeze())
     }
 
     actual fun changeResultCallback(callback: (BLEReading) -> Unit) {

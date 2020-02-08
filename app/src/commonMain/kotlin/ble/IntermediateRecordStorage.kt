@@ -8,13 +8,25 @@ import data.*
 import sample.logger
 import kotlin.native.concurrent.ThreadLocal
 
-class RecordCentral(val onCompleteRecord : (DataRecord) -> Unit) {
+class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
+    //val deviceCapabilities: MutableMap<String, DeviceCapabilities.DeviceServices> = frozenHashMap()
 
     val glucoseRecords = frozenHashMap<String,GlucoseRecord>()
     val deviceInfoRecords = frozenHashMap<String,DeviceInfoBuilder>()
 
     val bodyCompositionFeatureMap = frozenHashMap<String,BodyCompositionFeature>()
     val weightFeateatureMap = frozenHashMap<String,WeightFeatures>()
+
+    /*
+    fun addDeviceCapabilities(capability : DeviceCapabilities) = when(capability) {
+        is DeviceCapabilities.DeviceServices -> deviceCapabilities[capability.device.UUID] = capability
+        is DeviceCapabilities.ServiceCharacteristics -> {
+            deviceCapabilities[capability.device.UUID]?.services?.add(capability)
+            Unit
+        }
+        if
+    }*/
+
 
     fun addRecord(record : DataRecord) =
         when(record) {
@@ -123,13 +135,13 @@ class RecordCentral(val onCompleteRecord : (DataRecord) -> Unit) {
 //TODO: Deal with the fact that some fields might not be sendt?
 @ThreadLocal
 class DeviceInfoBuilder(val device : PeripheralDescription) {
-    var modelNumber = AtomicReference(null as String?)
-    var serialNumber = AtomicReference(null as String?)
-    var firmwareRevision = AtomicReference(null as String?)
-    //var hardwareRevision = AtomicReference(null as String?)
-    //var softwareRevision = AtomicReference(null as String?)
-    var manufacturerName = AtomicReference(null as String?)
-    var changedFields = frozenCopyOnWriteList(listOf(false,false,false,false))
+    val modelNumber = AtomicReference(null as String?)
+    val serialNumber = AtomicReference(null as String?)
+    val firmwareRevision = AtomicReference(null as String?)
+    val hardwareRevision = AtomicReference(null as String?)
+    val softwareRevision = AtomicReference(null as String?)
+    val manufacturerName = AtomicReference(null as String?)
+    val changedFields = frozenCopyOnWriteList(listOf(false,false,false))
 
     fun addComponent(record : DeviceInfoComponent) = when(record) {
         is DeviceInfoComponent.ModelNumber -> {
@@ -142,30 +154,32 @@ class DeviceInfoBuilder(val device : PeripheralDescription) {
         }
         is DeviceInfoComponent.FirmwareRevision -> {
             firmwareRevision.set(record.value)
-            changedFields[2] = true
+            //changedFields[2] = true
         }
         is DeviceInfoComponent.HardwareRevision -> {
-            //hardwareRevision.set(record.value)
-            //changedFields[3] = true
+            hardwareRevision.set(record.value)
+            //changedFields[4] = true
         }
         is DeviceInfoComponent.SoftwareRevision -> {
-            //softwareRevision.set(record.value)
-            //changedFields[4] = true
+            softwareRevision.set(record.value)
+            //changedFields[5] = true
         }
         is DeviceInfoComponent.ManufacturerName -> {
             manufacturerName.set(record.value)
-            changedFields[3] = true
+            changedFields[2] = true
         }
     }
 
-    //build deviceInfoRecord if all fields are set
+    //TODO: is it acceptible to possibly not register revision numbers even when they are available?
+    //build deviceInfoRecord if all fields are set, there is a chance that only one or no fields are present
+    // this ignores hardware firmware and software revision  because it might never be sendt, but device info should still be of some value
     fun build() = if(changedFields.all { it }) {
         DeviceInfoRecord(
             modelNumber.get()?:"",//
             serialNumber.get()?:"",//
             firmwareRevision.get()?:"",//
-            "",//hardwareRevision.get()?:"",
-            "",//softwareRevision.get()?:"",
+            hardwareRevision.get()?:"",
+            softwareRevision.get()?:"",
             manufacturerName.get()?:"",//
             device
         )

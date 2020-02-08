@@ -9,7 +9,7 @@ fun parseTemperatureMeasurement(reading : BLEReading) =
         flags(0..0)
 
         ThermometerMeasurement(
-            measurementValue = float().value,
+            measurementValue = float(),
             timeStamp = onCondition(flag(1), dateTime),
             measurementUnit = if(flag(0)) TemperatureUnit.Fahrenheit else TemperatureUnit.Celsius,
             temperatureType = onCondition(flag(2),sint8)?.let {

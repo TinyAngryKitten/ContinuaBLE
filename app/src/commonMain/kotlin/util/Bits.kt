@@ -19,6 +19,13 @@ fun Byte.strRepresentation() : String = (7 downTo 0).fold("") {
 fun Byte.bitAt(index : Int) = and(1.shl(index).toByte())
 fun Byte.positiveBitAt(index : Int) = bitAt(index).toInt() != 0
 
+fun Byte.toUnsignedInt() : Int {
+    var result = 0
+    for(i in 0..7) {
+        result = result or (1.shl(i) and toInt())
+    }
+    return result
+}
 
 /**
  * @return Returns a hex representation of a collection of bytes,

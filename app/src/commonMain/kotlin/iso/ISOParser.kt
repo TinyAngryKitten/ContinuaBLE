@@ -28,7 +28,6 @@ fun parse(reading: BLEReading, fn : ISOParser.()->DataRecord) : DataRecord = try
 class ISOParser(var bytes : ByteArray) {
     private var flagBytes : ByteArray = byteArrayOf()
 
-
     //when left or right nibble is called, take 1 byte and store it in nibble byte,
     //register which side has been viewed, if both sides has been viewed or one side is viewed twice, drop nibble byte
     private var nibbleByte : Byte? = null
@@ -87,7 +86,7 @@ class ISOParser(var bytes : ByteArray) {
         leftNibbleViewed = true
 
         var nibbleValue = 240.toByte().and(nibbleByte!!)
-            .toInt().shr(4).toByte()
+            .toUnsignedInt().shr(4).toByte()
 
         //fill with 1s if the number is in 2s compliments
         if(nibbleValue.positiveBitAt(3)) nibbleValue = nibbleValue.or(240.toByte())
@@ -126,14 +125,17 @@ class ISOParser(var bytes : ByteArray) {
      * turn 2 bytes into a unsigned integer
      */
     val uint16 = {
+        val intbytes = take(2)
         ISOValue.UInt16(
-            parseUInt16(take(2))
+            intbytes[0],
+            intbytes[1]
         )
     }
     val sint16 = {
         val intbytes = take(2)
         ISOValue.SInt16(
-            intbytes[0].toInt().or(intbytes[1].toInt().shl(8))
+            intbytes[0],
+            intbytes[1]
         )
     }
 
@@ -142,10 +144,10 @@ class ISOParser(var bytes : ByteArray) {
      * turn a byte into an unsigned integer
      */
     val uint8 = {
-            ISOValue.UInt8(take(1).first().toUInt())
+            ISOValue.UInt8(take(1).first())
     }
     val sint8 = {
-        ISOValue.SInt8(take(1).first().toInt())
+        ISOValue.SInt8(take(1).first())
     }
 
     val utf8 = {

@@ -21,6 +21,8 @@ sealed class CharacteristicUUIDs(val id : String,val parse : (BLEReading) -> Dat
     object glucoseMeasurement : CharacteristicUUIDs("0x2A18", ::parseGlucoseReading)
     object glucoseMeasurementContext : CharacteristicUUIDs("0x2A34",::parseGlucoseContextReading)
 
+    object glucoseControlPoint : CharacteristicUUIDs("0x2A52",{EmptyRecord(PeripheralDescription(""))})
+
     //HEART RATE
     object heartRateMeasurement : CharacteristicUUIDs("0x2A37",::parseHeartRateMeasurement)
     object bodySensorLocation : CharacteristicUUIDs("0x2A38",::parseBodySensorLocation)
@@ -44,6 +46,10 @@ sealed class CharacteristicUUIDs(val id : String,val parse : (BLEReading) -> Dat
     object manufacturerName :CharacteristicUUIDs("0x2A29",::parseManufacturerName)
 
     object temperatureMeasurement : CharacteristicUUIDs("0x2A1C", ::parseTemperatureMeasurement)
+
+    object plxSpotCheck : CharacteristicUUIDs("0x2A5E", ::parsePlxSpotCheck)
+    object plxContinousMeasurement: CharacteristicUUIDs("0x2A5F", ::parseContinousPlxMeasurement)
+    //object plxFeatures : CharacteristicUUIDs("0x2A60",)
 
     //CURRENT TIME
     //object currentTime : CharacteristicUUIDs("0x2A2B",::parseCurrentTime)
@@ -90,6 +96,8 @@ sealed class CharacteristicUUIDs(val id : String,val parse : (BLEReading) -> Dat
                 manufacturerName,
 
                 temperatureMeasurement,
+                plxContinousMeasurement,
+                plxSpotCheck,
 
                 //currentTime,
                 batteryLevel

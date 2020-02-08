@@ -1,13 +1,16 @@
 package data
 
 import iso.ISOValue
+import sample.logger
+import util.strRepresentation
+import util.toUnsignedInt
 
 
 sealed class DataRecord(val device: PeripheralDescription)
 
 class EmptyRecord(device : PeripheralDescription) : DataRecord(device)
 
-/*class PulseOximeterFeatures(
+class PulseOximeterFeatures(
     measurementStatus: Boolean,
     deviceAndSensorStatus: Boolean,
     measurementStoreForSpotCheck : Boolean,
@@ -18,16 +21,174 @@ class EmptyRecord(device : PeripheralDescription) : DataRecord(device)
     multipleBonds: Boolean,
     device: PeripheralDescription
 ): DataRecord(device)
-  */
 
+
+class PLXSpotCheck(
+    spo2: ISOValue.SFloat,
+    PR: ISOValue.SFloat,
+    timeStamp: ISOValue.DateTime?,
+    measurementStatus: PLXSpotCheckMeasurementStatus?,
+    sensorStatus: PLXSpotCheckSensorStatus?,
+    pulseAmplitudeIndex : ISOValue.SFloat?,
+    device: PeripheralDescription
+): DataRecord(device) {
+    companion object{
+        fun fromISO(
+            spo2: ISOValue.SFloat,
+            PR: ISOValue.SFloat,
+            timeStamp: ISOValue.DateTime?,
+            measurementStatus: ISOValue.SInt16?,
+            sensorstatus1: ISOValue.SInt16?,
+            sensorstatus2: ISOValue.SInt8?,
+            pulseAmplitudeIndex : ISOValue.SFloat?,
+            device : PeripheralDescription
+        ) : PLXSpotCheck? {
+            val measureStatusEnum = if(measurementStatus != null) PLXSpotCheckMeasurementStatus.fromInt(measurementStatus.value) else null
+            val sensorStatus = if(sensorstatus1 != null && sensorstatus2 != null)
+                PLXSpotCheckSensorStatus.fromInt(sensorstatus1.value or sensorstatus2.value.shl(16))
+                else null
+
+            return PLXSpotCheck(
+                spo2,
+                PR,
+                timeStamp,
+                measureStatusEnum,
+                sensorStatus,
+                pulseAmplitudeIndex,
+                device
+            )
+        }
+    }
+}
+
+
+class PLXContinousMeasurement(
+    spo2Normal: ISOValue.SFloat,
+    PRNormal: ISOValue.SFloat,
+    spo2Fast: ISOValue.SFloat?,
+    PRFast: ISOValue.SFloat?,
+    spo2Slow: ISOValue.SFloat?,
+    PRSlow: ISOValue.SFloat?,
+    measurementStatus: PLXSpotCheckMeasurementStatus?,
+    sensorStatus: PLXSpotCheckSensorStatus?,
+    pulseAmplitudeIndex : ISOValue.SFloat?,
+    device: PeripheralDescription
+): DataRecord(device) {
+    companion object{
+        fun fromISO(
+            spo2Normal: ISOValue.SFloat,
+            PRNormal: ISOValue.SFloat,
+            spo2Fast: ISOValue.SFloat?,
+            PRFast: ISOValue.SFloat?,
+            spo2Slow: ISOValue.SFloat?,
+            PRSlow: ISOValue.SFloat?,
+            measurementStatus: ISOValue.SInt16?,
+            sensorstatus1: ISOValue.SInt16?,
+            sensorstatus2: ISOValue.SInt8?,
+            pulseAmplitudeIndex : ISOValue.SFloat?,
+            device: PeripheralDescription
+        ) : PLXContinousMeasurement? {
+            val measureStatusEnum = if(measurementStatus != null) PLXSpotCheckMeasurementStatus.fromInt(measurementStatus.value) else null
+            val sensorStatus = if(sensorstatus1 != null && sensorstatus2 != null)
+                PLXSpotCheckSensorStatus.fromInt(sensorstatus1.value or sensorstatus2.value.shl(16))
+            else null
+
+            return PLXContinousMeasurement(
+                spo2Normal,
+                PRNormal,
+                spo2Fast,
+                PRFast,
+                spo2Slow,
+                PRSlow,
+                measureStatusEnum,
+                sensorStatus,
+                pulseAmplitudeIndex,
+                device
+            )
+        }
+    }
+}
+
+enum class PLXSpotCheckSensorStatus {
+    ExtendedDisplayUpdateOngoing,
+    EquipmentMalfunctionDetected,
+    SignalProcessingIrregularityDetected,
+    InadequateSignalDetected,
+    PoorSignalDetected,
+    LowPerfusionDetected,
+    ErraticSignalDetected,
+    NonPulsatileSignalDetected,
+    QuestionablePulseDetected,
+    SignalAnalysisOngoing,
+    SensorInterfaceDetected,
+    SensorUnconnectedToUser,
+    UnknownSensorConnected,
+    SensorDisplaced,
+    SensorMalfunction,
+    SensorDisconnected,
+    ReservedForFutureUse;
+
+    companion object {
+        fun fromInt(i: Int) = when (i) {
+            0 -> ExtendedDisplayUpdateOngoing
+            1 -> EquipmentMalfunctionDetected
+            2 -> SignalProcessingIrregularityDetected
+            3 -> InadequateSignalDetected
+            4 -> PoorSignalDetected
+            5 -> LowPerfusionDetected
+            6 -> ErraticSignalDetected
+            7 -> NonPulsatileSignalDetected
+            8 -> QuestionablePulseDetected
+            9 -> SignalAnalysisOngoing
+            10 -> SensorInterfaceDetected
+            11 -> SensorUnconnectedToUser
+            12 -> UnknownSensorConnected
+            13 -> SensorDisplaced
+            14 -> SensorMalfunction
+            15 -> SensorDisconnected
+            else -> ReservedForFutureUse
+        }
+    }
+}
+
+enum class PLXSpotCheckMeasurementStatus {
+    MeasurementOngoing,
+    EarlyEstimateData,
+    ValidatedData,
+    FullyQualifiedData,
+    DataFromMeasurementStorage,
+    DataForDemonstration,
+    DataForTesting,
+    CalibrationOngoing,
+    MeasurementUnavailable,
+    QuestionableMeasurementDetected,
+    InvalidMeasurementDetecteds,
+    ReservedForFutureUse;
+
+    companion object {
+            fun fromInt(i : Int) : PLXSpotCheckMeasurementStatus = when(i) {
+            5 -> MeasurementOngoing
+            6 -> EarlyEstimateData
+            7-> ValidatedData
+            8 -> FullyQualifiedData
+            9 -> DataFromMeasurementStorage
+            10 -> DataForDemonstration
+            11 -> DataForTesting
+            12 -> CalibrationOngoing
+            13 -> MeasurementUnavailable
+            14 -> QuestionableMeasurementDetected
+            15 -> InvalidMeasurementDetecteds
+            else -> ReservedForFutureUse
+        }
+    }
+}
 class ThermometerMeasurement(
-    val measurementValue: Float,
+    val measurementValue: ISOValue.Float,
     val measurementUnit: TemperatureUnit,
     val timeStamp: ISOValue.DateTime?,
     val temperatureType: TemperatureType?,
     device: PeripheralDescription
 ): DataRecord(device)
-
 
 sealed class TemperatureType {
     object Armpit: TemperatureType()
@@ -123,12 +284,12 @@ class BloodPressureFeatures(
 ) : DataRecord(device)
 
 class BloodPressureRecord(
-    val systolic : Float,
-    val diastolic : Float,
-    val meanArtieralPressure : Float,
+    val systolic : ISOValue.SFloat,
+    val diastolic : ISOValue.SFloat,
+    val meanArtieralPressure : ISOValue.SFloat,
     val unit : BloodPressureUnit,
     val timeStamp : ISOValue.DateTime?,
-    val bpm : Float?,
+    val bpm : ISOValue.SFloat?,
     val userId : Int?,
     val status : MeasurementStatus?,
     device: PeripheralDescription
@@ -152,13 +313,13 @@ class BloodPressureRecord(
             if (bpm != null && bpm !is ISOValue.SFloat.Value) return null
 
             return BloodPressureRecord(
-                systolic.value,
-                diastolic.value,
-                meanArtieralPressure.value,
+                systolic,
+                diastolic,
+                meanArtieralPressure,
                 unit,
                 timeStamp,
-                (bpm as ISOValue.SFloat.Value).value,
-                userId?.value?.toInt(),
+                bpm,
+                userId?.value,
                 status,
                 device
             )
@@ -186,16 +347,16 @@ class BodyCompositionFeature(
 ) : DataRecord(device)
 
 class BodyCompositionRecord(
-   val bodyFatPercent : UInt,
+   val bodyFatPercent : Int,
    val dateTime: ISOValue.DateTime?,
-   val userId: UInt?,
-   val basalMetabolism : UInt?,
-   val musclePercent : UInt?,
-   val muscleMass : UInt?,
-   val fatFreeMass : UInt?,
-   val softLeanMass : UInt?,
-   val bodyWaterMass : UInt?,
-   val impedance: UInt?,
+   val userId: Int?,
+   val basalMetabolism : Int?,
+   val musclePercent : Int?,
+   val muscleMass : Int?,
+   val fatFreeMass : Int?,
+   val softLeanMass : Int?,
+   val bodyWaterMass : Int?,
+   val impedance: Int?,
    device: PeripheralDescription,
    val heightMeasurementResolution: HeightMeasurementResolution = HeightMeasurementResolution.HighRes,
    val weightMeasurementResolution: WeightMeasurementResolution = WeightMeasurementResolution.Res7
@@ -229,12 +390,12 @@ class BodyCompositionRecord(
 
 
 class WeightRecord(
-    val weight: UInt,
+    val weight: Int,
     val weightUnit: WeightUnit,
     val timestamp : ISOValue.DateTime?,
-    val userId: UInt?,
-    val BMI : UInt?,
-    val height: UInt?,
+    val userId: Int?,
+    val BMI : Int?,
+    val height: Int?,
     val heightUnit: LengthUnit?,
     device: PeripheralDescription,
     val heightMeasurementResolution: HeightMeasurementResolution = HeightMeasurementResolution.HighRes,
@@ -323,10 +484,10 @@ sealed class HeightMeasurementResolution(val increments : Float) {
 }
 
 class HeartRateRecord(
-    val measurementValue : UInt,
-    val energyExpended : UInt?,
+    val measurementValue : Int,
+    val energyExpended : Int?,
     val sensorContact : SensorContact,
-    val rrInterval : UInt?,
+    val rrInterval : Int?,
     device: PeripheralDescription
 ) : DataRecord(device) {
     constructor(
@@ -367,13 +528,100 @@ sealed class BodySensorLocation {
     object Foot : BodySensorLocation()
 }
 
+sealed class BloodSampleType {
+    object ReservedForFutureUse : BloodSampleType()
+    object CapillaryWholeBlood : BloodSampleType()
+    object CapillaryPlasma : BloodSampleType()
+    object VenousWholeBlood : BloodSampleType()
+    object VenousPlasma : BloodSampleType()
+    object ArterialWholeBlood : BloodSampleType()
+    object ArterialPlasma : BloodSampleType()
+    object UndeterminedWholeBlood : BloodSampleType()
+    object UndeterminedPlasma: BloodSampleType()
+    object InterstitialFluid : BloodSampleType()
+    object ControlSolution : BloodSampleType()
+
+    companion object {
+        fun fromInt(i : Int) = when(i) {
+            1 -> CapillaryWholeBlood
+            2 -> CapillaryPlasma
+            3-> VenousWholeBlood
+            4 -> VenousPlasma
+            5 -> ArterialWholeBlood
+            6 -> ArterialPlasma
+            7 -> UndeterminedWholeBlood
+            8 -> UndeterminedPlasma
+            9 -> InterstitialFluid
+            10 -> ControlSolution
+            else -> ReservedForFutureUse
+        }
+    }
+}
+
+enum class GlucoseSensorStatusAnunciation {
+    BatteryLowAtMeasurement,
+    SensorMalfunctionAtMeasurement,
+    SampleSizeOfBloodInsufficient,
+    StripInsertionError,
+    StripTypeIncorrect,
+    SensorResultTooHigh,
+    SensorResultTooLow,
+    SensorTemperatureTooHigh,
+    SensorTemperatureTooLow,
+    SensorReadInterrupted,
+    GeneralDeviceFault,
+    TimeFault_TimeMightBeInaccurate,
+    ReservedForFutureUse;
+
+    companion object {
+        fun fromInt(i : Int) = when(i) {
+            0 -> BatteryLowAtMeasurement
+            1 -> SensorMalfunctionAtMeasurement
+            2 -> SampleSizeOfBloodInsufficient
+            3 -> StripInsertionError
+            4 -> StripTypeIncorrect
+            5 -> SensorResultTooHigh
+            6 -> SensorResultTooLow
+            7 -> SensorTemperatureTooHigh
+            8 -> SensorTemperatureTooLow
+            9 -> SensorReadInterrupted
+            10 -> GeneralDeviceFault
+            11 -> TimeFault_TimeMightBeInaccurate
+            else -> ReservedForFutureUse
+
+        }
+    }
+}
+
+sealed class GlucoseSampleLocation {
+    object ReservedForFutureUse : GlucoseSampleLocation()
+    object Finger : GlucoseSampleLocation()
+    object AlternateTestSite: GlucoseSampleLocation()
+    object Earlobe : GlucoseSampleLocation()
+    object ControlSolution: GlucoseSampleLocation()
+    object SampleLocationNotAvailable : GlucoseSampleLocation()
+
+    companion object {
+        fun fromInt(i : Int) = when(i) {
+            1 -> Finger
+            2 -> AlternateTestSite
+            3 -> Earlobe
+            4 -> ControlSolution
+            15 -> SampleLocationNotAvailable
+            else -> ReservedForFutureUse
+        }
+    }
+}
 
 class GlucoseRecord(
     val unit : BloodGlucoseUnit,
-    val amount : Float,
-    val sequenceNumber : UInt,
+    val amount : ISOValue.SFloat,
+    val sequenceNumber : Int,
     val baseTime : ISOValue.DateTime,
     val timeOffset: Int?,
+    val sampleType: BloodSampleType?,
+    val sampleLocation: GlucoseSampleLocation?,
+    val sensorStatusAnunciation: GlucoseSensorStatusAnunciation?,
     val context : HasGlucoseContext,
     device: PeripheralDescription
 ) : DataRecord(device) {
@@ -383,6 +631,9 @@ class GlucoseRecord(
         sequenceNumber,
         baseTime,
         timeOffset,
+        sampleType,
+        sampleLocation,
+        sensorStatusAnunciation,
         ctx,
         device
     )
@@ -395,6 +646,9 @@ class GlucoseRecord(
     baseTime: $baseTime,
     timeOffset: $timeOffset
     context: $context
+    sampleType: $sampleType
+    sampleLocation $sampleLocation
+    sensorStatusAnunciation: $sensorStatusAnunciation
     )
     """.trimIndent()
 
@@ -406,14 +660,23 @@ class GlucoseRecord(
             baseTime: ISOValue.DateTime,
             timeOffset: ISOValue.SInt16?,
             contextFollows : Boolean,
+            sampleType: ISOValue.Nibble?,
+            sampleLocation: ISOValue.Nibble?,
+            sensorStatusAnunciation: ISOValue.UInt16?,
             device: PeripheralDescription
         ) : GlucoseRecord? {
+            logger.debug("Sampletype Nibble: ${sampleType?.value?.strRepresentation()}")
+            logger.debug("samplelocation Nibble: ${sampleLocation?.value?.strRepresentation()}")
+            logger.debug(("sensorAnunciation : ${sensorStatusAnunciation?.value}"))
             return GlucoseRecord(
                 if(unit.value) BloodGlucoseUnit.MMOL else BloodGlucoseUnit.DL,
-                if(amount is ISOValue.SFloat.Value) amount.value else return null,
+                amount ?: return null,
                 sequenceNumber.value,
                 baseTime,
                 timeOffset?.value,
+                if(sampleType!=null) BloodSampleType.fromInt(sampleType.unsigned) else null,
+                if(sampleLocation!=null) GlucoseSampleLocation.fromInt(sampleLocation.unsigned) else null,
+                if(sensorStatusAnunciation!=null) GlucoseSensorStatusAnunciation.fromInt(sensorStatusAnunciation.value) else null,
                 if (contextFollows) HasGlucoseContext.NotReceivedYet else HasGlucoseContext.NotSupported,
                 device
             )
@@ -460,18 +723,18 @@ class GlucoseFeatures (
 }
 
 class GlucoseRecordContext(
-    val sequenceNumber : UInt,
+    val sequenceNumber : Int,
     val carbohydrateType: CarbohydrateType?,
-    val mealWeightKg : Float?,//int KG
+    val mealWeightKg : ISOValue.SFloat?,//int KG
     val mealContext: MealContext?,
     val tester : Tester?,
     val health : Health?,
-    val exerciseDuration : UInt?,
-    val exerciseIntensityPercent : UInt?,
+    val exerciseDuration : Int?,
+    val exerciseIntensityPercent : Int?,
     val medicationID: MedicationID?,
-    val medicationInKg : Float?,
-    val medicationInLiter : Float?,
-    val HbA1cPercent : Float?,
+    val medicationInKg : ISOValue.SFloat?,
+    val medicationInLiter : ISOValue.SFloat?,
+    val HbA1cPercent : ISOValue.SFloat?,
     device: PeripheralDescription
 ) : DataRecord(device) {
 
@@ -507,135 +770,130 @@ class GlucoseRecordContext(
             HbA1cPercent: ISOValue.SFloat?,
             device: PeripheralDescription
         ) : GlucoseRecordContext? {
-            if (mealWeight !is ISOValue.SFloat.Value) return null
-            if (medicationInKg !is ISOValue.SFloat.Value) return null
-            if (medicationInLiter !is ISOValue.SFloat.Value) return null
-            if (HbA1cPercent !is ISOValue.SFloat.Value) return null
-
             return GlucoseRecordContext(
                 sequenceNumber.value,
                 CarbohydrateType.fromUInt(carbohydrateType?.value),
-                mealWeight.value,
+                mealWeight,
                 MealContext.fromUint(mealContext?.value),
                 Tester.fromUint(tester?.value),
                 Health.fromUInt(health?.value),
                 exerciseDuration?.value,
                 exerciseIntensityPercent?.value,
                 MedicationID.fromUInt(medicationID?.value),
-                medicationInKg.value,
-                medicationInLiter.value,
-                HbA1cPercent.value,
+                medicationInKg,
+                medicationInLiter,
+                HbA1cPercent,
                 device
             )
         }
     }
 }
 
-sealed class CarbohydrateType(val value : UInt) {
-    object ReservedForFutureUse : CarbohydrateType(0u)
-    object Breakfast : CarbohydrateType(1u)
-    object Lunch : CarbohydrateType(2u)
-    object Dinner : CarbohydrateType(3u)
-    object Snack : CarbohydrateType(4u)
-    object Drink : CarbohydrateType(5u)
-    object Supper : CarbohydrateType(6u)
-    object Brunch : CarbohydrateType(7u)
+sealed class CarbohydrateType(val value : Int) {
+    object ReservedForFutureUse : CarbohydrateType(0)
+    object Breakfast : CarbohydrateType(1)
+    object Lunch : CarbohydrateType(2)
+    object Dinner : CarbohydrateType(3)
+    object Snack : CarbohydrateType(4)
+    object Drink : CarbohydrateType(5)
+    object Supper : CarbohydrateType(6)
+    object Brunch : CarbohydrateType(7)
 
     companion object {
-        fun fromUInt(i : UInt?) = when(i) {
+        fun fromUInt(i : Int?) = when(i) {
             null -> null
-            1u -> Breakfast
-            2u -> Lunch
-            3u -> Dinner
-            4u -> Snack
-            5u -> Drink
-            6u -> Supper
-            7u -> Brunch
+            1 -> Breakfast
+            2 -> Lunch
+            3 -> Dinner
+            4 -> Snack
+            5 -> Drink
+            6 -> Supper
+            7 -> Brunch
             else -> ReservedForFutureUse
         }
     }
 }
 
-sealed class MealContext(val value : UInt) {
-    object ReservedForFutureUse : MealContext(0u)
-    object Preprandial : MealContext(1u)
-    object Postprandial : MealContext(2u)
-    object Fasting : MealContext(3u)
-    object Casual : MealContext(4u) // casual drink / snack etc.
-    object Bedtime : MealContext(5u)
+sealed class MealContext(val value : Int) {
+    object ReservedForFutureUse : MealContext(0)
+    object Preprandial : MealContext(1)
+    object Postprandial : MealContext(2)
+    object Fasting : MealContext(3)
+    object Casual : MealContext(4) // casual drink / snack etc.
+    object Bedtime : MealContext(5)
 
     companion object{
-        fun fromUint(i : UInt?) = when(i) {
+        fun fromUint(i : Int?) = when(i) {
             null -> null
-            1u -> Preprandial
-            2u -> Postprandial
-            3u -> Fasting
-            4u -> Casual
-            5u -> Bedtime
+            1 -> Preprandial
+            2 -> Postprandial
+            3 -> Fasting
+            4 -> Casual
+            5 -> Bedtime
             else -> ReservedForFutureUse
         }
     }
 }
 
-sealed class Tester(val value : UInt) {
-    object ReservedForFutureUse : Tester(0u)
-    object Self : Tester(1u)
-    object HealthCareProfessional : Tester(2u)
-    object LabTest : Tester(3u)
-    object NotAvailable : Tester(15u)
+sealed class Tester(val value : Int) {
+    object ReservedForFutureUse : Tester(0)
+    object Self : Tester(1)
+    object HealthCareProfessional : Tester(2)
+    object LabTest : Tester(3)
+    object NotAvailable : Tester(15)
 
     companion object {
-        fun fromUint(i : UInt?) = when(i) {
+        fun fromUint(i : Int?) = when(i) {
             null -> null
-            1u -> Self
-            2u -> HealthCareProfessional
-            3u -> LabTest
-            15u -> NotAvailable
+            1 -> Self
+            2 -> HealthCareProfessional
+            3 -> LabTest
+            15 -> NotAvailable
             else -> ReservedForFutureUse
         }
     }
 }
 
-sealed class Health(val value : UInt) {
-    object ReservedForFutureUse : Health(0u)
-    object MinorHealthIssues : Health(1u)
-    object MajorHealthIssues : Health(2u)
-    object DuringMenses : Health(3u)
-    object UnderStress : Health(4u)
-    object NoHealthIssues : Health(5u)
-    object NotAvailable : Health(15u)
+sealed class Health(val value : Int) {
+    object ReservedForFutureUse : Health(0)
+    object MinorHealthIssues : Health(1)
+    object MajorHealthIssues : Health(2)
+    object DuringMenses : Health(3)
+    object UnderStress : Health(4)
+    object NoHealthIssues : Health(5)
+    object NotAvailable : Health(15)
 
     companion object {
-        fun fromUInt(i : UInt?) = when(i) {
+        fun fromUInt(i : Int?) = when(i) {
             null -> null
-            1u -> MinorHealthIssues
-            2u -> MajorHealthIssues
-            3u -> DuringMenses
-            4u -> UnderStress
-            5u -> NoHealthIssues
-            15u -> NotAvailable
+            1 -> MinorHealthIssues
+            2 -> MajorHealthIssues
+            3 -> DuringMenses
+            4 -> UnderStress
+            5 -> NoHealthIssues
+            15 -> NotAvailable
             else -> ReservedForFutureUse
         }
     }
 }
 
-sealed class MedicationID(val value : UInt) {
-    object ReservedForFutureUse : MedicationID(0u)
-    object RapidActingInsulin : MedicationID(1u)
-    object ShortActingInsuling : MedicationID(2u)
-    object IntermediateActingInsulin : MedicationID(3u)
-    object LongActingInsulin : MedicationID(4u)
-    object PremixedInsulin : MedicationID(5u)
+sealed class MedicationID(val value : Int) {
+    object ReservedForFutureUse : MedicationID(0)
+    object RapidActingInsulin : MedicationID(1)
+    object ShortActingInsuling : MedicationID(2)
+    object IntermediateActingInsulin : MedicationID(3)
+    object LongActingInsulin : MedicationID(4)
+    object PremixedInsulin : MedicationID(5)
 
     companion object{
-        fun fromUInt(i : UInt?) = when(i) {
+        fun fromUInt(i : Int?) = when(i) {
             null -> null
-            1u -> RapidActingInsulin
-            2u -> ShortActingInsuling
-            3u -> IntermediateActingInsulin
-            4u -> LongActingInsulin
-            5u -> PremixedInsulin
+            1 -> RapidActingInsulin
+            2 -> ShortActingInsuling
+            3 -> IntermediateActingInsulin
+            4 -> LongActingInsulin
+            5 -> PremixedInsulin
             else -> ReservedForFutureUse
         }
     }
-    }
+}

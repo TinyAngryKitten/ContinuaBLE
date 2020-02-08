@@ -6,22 +6,33 @@ import kotlin.math.pow
 
 
 sealed class ISOValue {
-    data class SInt8(val value : Int) : ISOValue()
-    data class SInt16(val value : Int) : ISOValue()
+    data class SInt8(val byte : Byte) : ISOValue() {
+        val value = byte.toInt()
+    }
+    data class SInt16(val byte1: Byte, val byte2: Byte) : ISOValue() {
+        val value = byte1.toUnsignedInt() or byte2.toInt().shl(8)
+    }
 
-    data class UInt8 @ExperimentalUnsignedTypes constructor(val value : UInt) : ISOValue()
-    data class UInt16 @ExperimentalUnsignedTypes constructor(val value : UInt) : ISOValue()
+    data class UInt8 constructor(val byte: Byte) : ISOValue() {
+        val value = byte.toUnsignedInt()
+    }
+    data class UInt16 constructor(val byte1 : Byte, val byte2: Byte) : ISOValue() {
+        val value = byte1.toUnsignedInt() or byte2.toUnsignedInt().shl(8)
+    }
 
     //represents a 4 bit value
-    data class Nibble(val value: Byte) : ISOValue()
+    data class Nibble(val value: Byte) : ISOValue() {
+        val unsigned = value.toInt().and(15)
+    }
 
+    //date and time representationf
     data class DateTime(
-        val year : UInt,
-        val month : UInt,
-        val day : UInt,
-        val hours : UInt,
-        val minutes : UInt,
-        val seconds : UInt
+        val year : Int,
+        val month : Int,
+        val day : Int,
+        val hours : Int,
+        val minutes : Int,
+        val seconds : Int
     ) : ISOValue() {
 
         constructor(
@@ -58,13 +69,14 @@ sealed class ISOValue {
                 4 -> hours
                 3 -> day
                 2 -> month
-                1 -> (year xor Byte.MAX_VALUE.toUInt())//second part of the year value
-                0 -> (year and Byte.MAX_VALUE.toUInt())//first part of the year value
+                1 -> (year xor Byte.MAX_VALUE.toInt())//second part of the year value
+                0 -> (year and Byte.MAX_VALUE.toInt())//first part of the year value
                 else -> seconds//TODO: does it start at 0 or 1?
             }.toByte()
         }
     }
 
+    //32 bit floating point number
     class Float(val value : kotlin.Float) : ISOValue() {
         companion object {
             //unable to find information about the FLOAT datatype, but there are likely NaN/Nres etc. values
@@ -78,6 +90,7 @@ sealed class ISOValue {
         }
     }
 
+    //short float 16 bit
     sealed class SFloat : ISOValue() {
         object NaN : SFloat()
         object NRes : SFloat()
@@ -111,10 +124,13 @@ sealed class ISOValue {
         }
     }
 
+    //list of booleans
     class Flags(val value : List<Boolean>) : ISOValue()
 
+    //single boolean
     class Flag(val value : Boolean) : ISOValue()
 
+    //UTF8 encoded string
     class UTF8(val rawBytes : ByteArray) {
         //default characterset is allways UTF-8 for String <-> Byte
         val encodedString = rawBytes.fold("") {acc, byte -> acc+byte.toChar()}

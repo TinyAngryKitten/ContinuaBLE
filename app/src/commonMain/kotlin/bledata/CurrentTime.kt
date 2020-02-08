@@ -12,7 +12,7 @@ data class CurrentTime(
 
 data class ExactTime(
     val dayDateTime : DayDateTime,
-    val fractions : UInt
+    val fractions : Int
 ) {
     constructor(
         dayDateTime: DayDateTime,

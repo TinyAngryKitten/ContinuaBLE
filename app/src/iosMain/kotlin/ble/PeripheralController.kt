@@ -34,7 +34,10 @@ class PeripheralController(
             characteristics.map {
                 if(it != null) {
                     val char = it as CBCharacteristic
-                    if(char.isNotifying) peripheral.setNotifyValue(true,char)
+                    if(char.isNotifying) {
+                        peripheral.setNotifyValue(true,char)
+                        peripheral.readValueForCharacteristic(char)
+                    }
                     else peripheral.readValueForCharacteristic(it)
                 }
             }
