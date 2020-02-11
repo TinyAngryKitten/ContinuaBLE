@@ -5,7 +5,12 @@ import co.touchlab.stately.freeze
 import data.PeripheralDescription
 import platform.CoreBluetooth.*
 import platform.Foundation.*
+import platform.darwin.DISPATCH_QUEUE_CONCURRENT
 import platform.darwin.NSObject
+import platform.darwin.OS_dispatch_queue_mainProtocol
+import platform.darwin.dispatch_queue_main_t
+import sample.GlobalSingleton.dispatchQueue
+import sample.GlobalSingleton.nsdata
 import sample.logger
 import kotlin.native.concurrent.AtomicReference
 
@@ -33,7 +38,7 @@ class BluetoothController :
     val connectCallback = AtomicReference ({_:PeripheralDescription -> }.freeze())
     val stateChangedCallback = AtomicReference({_: BLEState -> }.freeze())
 
-    val centralManager = CBCentralManager(this,null)
+    val centralManager = CBCentralManager(this, dispatchQueue.value)
 
     //funky solution for sharing a
     var state : BLEState
@@ -43,6 +48,10 @@ class BluetoothController :
             bleState.compareAndSet(bleState.value,s)
             stateChangedCallback.value(s)
         }
+
+    init {
+
+    }
 
     private val bleState = AtomicReference(BLEState.UnknownErrorState as BLEState)
 

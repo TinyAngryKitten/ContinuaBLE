@@ -558,6 +558,40 @@ sealed class BloodSampleType {
     }
 }
 
+class ControlPointRecord(val response : RecordControlPointResponse, device: PeripheralDescription) : DataRecord(device) {
+    override fun toString(): String {
+        return response.toString()
+    }
+}
+
+enum class RecordControlPointResponse {
+    ReservedforFutureUse,
+    Success,
+    OPCodenotSupported,
+    InvalidOperator,
+    OperatorNotSupported,
+    InvalidOperand,
+    NoRecordsFound,
+    AbortUnsucessful,
+    ProcedureNotCompleted,
+    OperandNotSupported;
+
+    companion object{
+        fun fromInt(i : Int) = when(i) {
+            1 -> Success
+            2 -> OPCodenotSupported
+            3 -> InvalidOperator
+            4 -> OperatorNotSupported
+            5 -> InvalidOperand
+            6 -> NoRecordsFound
+            7 -> AbortUnsucessful
+            8 -> ProcedureNotCompleted
+            9 -> OperandNotSupported
+            else -> ReservedforFutureUse
+        }
+    }
+}
+
 enum class GlucoseSensorStatusAnunciation {
     BatteryLowAtMeasurement,
     SensorMalfunctionAtMeasurement,
@@ -665,9 +699,6 @@ class GlucoseRecord(
             sensorStatusAnunciation: ISOValue.UInt16?,
             device: PeripheralDescription
         ) : GlucoseRecord? {
-            logger.debug("Sampletype Nibble: ${sampleType?.value?.strRepresentation()}")
-            logger.debug("samplelocation Nibble: ${sampleLocation?.value?.strRepresentation()}")
-            logger.debug(("sensorAnunciation : ${sensorStatusAnunciation?.value}"))
             return GlucoseRecord(
                 if(unit.value) BloodGlucoseUnit.MMOL else BloodGlucoseUnit.DL,
                 amount ?: return null,
@@ -687,7 +718,11 @@ class GlucoseRecord(
 sealed class HasGlucoseContext {
     object NotReceivedYet : HasGlucoseContext()
     object NotSupported : HasGlucoseContext()
-    class Context(val value : GlucoseRecordContext) : HasGlucoseContext()
+    class Context(val value : GlucoseRecordContext) : HasGlucoseContext() {
+        override fun toString(): String {
+            return value.toString()
+        }
+    }
 }
 
 //describes a glucse peripherals supported flags

@@ -79,3 +79,13 @@ fun parseGlucoseFeatures(reading : BLEReading) =
             reading.device
         )
     }
+
+fun parseRecordControlPoint(reading : BLEReading) =
+    parse(reading) {
+        ControlPointRecord(
+            RecordControlPointResponse.fromInt(
+                uint8().value
+            ),
+            reading.device
+        )
+    }

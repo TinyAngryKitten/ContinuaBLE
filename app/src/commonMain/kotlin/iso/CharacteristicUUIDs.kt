@@ -20,6 +20,7 @@ sealed class CharacteristicUUIDs(val id : String,val parse : (BLEReading) -> Dat
     object glucoseFeature : CharacteristicUUIDs("0x2A51", ::parseGlucoseFeatures)
     object glucoseMeasurement : CharacteristicUUIDs("0x2A18", ::parseGlucoseReading)
     object glucoseMeasurementContext : CharacteristicUUIDs("0x2A34",::parseGlucoseContextReading)
+    object recordControlPoint : CharacteristicUUIDs("0x2A52", ::parseRecordControlPoint)
 
     object glucoseControlPoint : CharacteristicUUIDs("0x2A52",{EmptyRecord(PeripheralDescription(""))})
 
@@ -77,6 +78,7 @@ sealed class CharacteristicUUIDs(val id : String,val parse : (BLEReading) -> Dat
                 glucoseFeature,
                 glucoseMeasurement,
                 glucoseMeasurementContext,
+                recordControlPoint,
 
                 heartRateMeasurement,
                 bodySensorLocation,
@@ -112,7 +114,6 @@ sealed class CharacteristicUUIDs(val id : String,val parse : (BLEReading) -> Dat
             "0X2A23" -> "$id (System ID)"
             "0X2A50" -> "$id (PnP ID)"
             "0X2A08" -> "$id (Date Time)"
-            "0x2A52" -> "$id (Record Access control point)"
             "0X2A2A" -> "$id (Regulatory Certificate Lists)"
             else -> id
         }

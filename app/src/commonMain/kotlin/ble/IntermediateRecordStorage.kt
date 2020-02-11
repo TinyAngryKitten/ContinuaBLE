@@ -12,6 +12,8 @@ class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
     //val deviceCapabilities: MutableMap<String, DeviceCapabilities.DeviceServices> = frozenHashMap()
 
     val glucoseRecords = frozenHashMap<String,GlucoseRecord>()
+    val glucoseContextRecords = frozenHashMap<String,GlucoseRecordContext>()
+
     val deviceInfoRecords = frozenHashMap<String,DeviceInfoBuilder>()
 
     val bodyCompositionFeatureMap = frozenHashMap<String,BodyCompositionFeature>()
@@ -28,13 +30,21 @@ class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
     }*/
 
 
-    fun addRecord(record : DataRecord) =
+    fun addRecord(record : DataRecord): Unit =
         when(record) {
             is EmptyRecord -> logger.debug("empty record added to record central")
 
             is GlucoseRecord -> when(record.context) {
-                is HasGlucoseContext.Context -> glucoseRecords[record.device.UUID] = record
-                else -> completeRecordCallback(record)
+                is HasGlucoseContext.NotReceivedYet-> {
+
+                    glucoseContextRecords[record.device.UUID]?.let {
+                        completeRecordCallback(record.copyWithContext(HasGlucoseContext.Context(it)))
+                    }
+                    glucoseRecords[record.device.UUID] = record
+                }
+                else -> {//contex does not follow, send record as is
+                    completeRecordCallback(record)
+                }
             }
             is GlucoseRecordContext -> {
                 if(glucoseRecords.containsKey(record.device.UUID)) {
@@ -46,8 +56,7 @@ class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
                             )
                         )
                     )
-
-                } else Unit
+                } else glucoseContextRecords[record.device.UUID]= record
             }
 
             is DeviceInfoComponent -> addDeviceInfoComponent(record)
@@ -113,7 +122,7 @@ class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
         val deviceInfo = deviceInfoRecords[record.device.UUID]?.build()
 
         if(deviceInfo != null) {
-            deviceInfoRecords.remove(record.device.UUID)
+            //deviceInfo shouldnt be changing, so just keep it in memory
             completeRecordCallback(deviceInfo)
         }
     }
@@ -125,11 +134,14 @@ class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
      */
     fun completeRecordCallback(record : DataRecord?) {
         if(record != null ) {
+            //do some cleanup to ensure that there are no old records
+            if(record is GlucoseRecord) {
+                glucoseContextRecords.remove(record.device.UUID)
+                glucoseRecords.remove(record.device.UUID)
+            }
             onCompleteRecord(record.freeze())
         }
     }
-
-
 }
 
 //TODO: Deal with the fact that some fields might not be sendt?

@@ -10,6 +10,7 @@ import ble.BLECentral
 import ble.BluetoothController
 import ble.DeviceCentral
 import data.PeripheralDescription
+import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -38,8 +39,9 @@ class MainActivity : AppCompatActivity() {
             //weight: B4:99:4C:5B:FA:0F
             //weight main: 10:CE:A9:C9:78:64
             //glucosemeter: "34:03:DE:0D:51:16"
+            //gluco2: "F0:B5:D1:58:7D:56"
 
-            deviceCentral.connectToDevice(PeripheralDescription("B4:99:4C:5B:FA:0F"))
+            deviceCentral.connectToDevice(PeripheralDescription("F0:B5:D1:58:7D:56"))
         }//("9A427AF2-7BC3-785F-471E-CF3AA62E0A5A") }
         scanBtn.setOnClickListener {
             controller.scan()

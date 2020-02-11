@@ -11,7 +11,7 @@ import iso.parseBLEReading
 import sample.logger
 import kotlin.native.concurrent.SharedImmutable
 
-class DeviceCentral(private val bleCentral : BLECentral){
+class DeviceCentral(val bleCentral : BLECentral){
     @SharedImmutable
     val onRecordReceived = AtomicReference({it : DataRecord-> logger.debug(it.toString())}.freeze())
     val onDeviceDiscovered = AtomicReference({_ : PeripheralDescription -> }.freeze())

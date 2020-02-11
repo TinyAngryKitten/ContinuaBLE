@@ -11,6 +11,7 @@ import android.support.v4.content.ContextCompat.getSystemService
 import bledata.BLEReading
 import bledata.BLEState
 import data.PeripheralDescription
+import iso.CharacteristicUUIDs
 import iso.ServiceUUID
 import iso.identifier
 import sample.logger
@@ -33,7 +34,6 @@ class BluetoothController(
     private var commandQueueBusy = false
     private val bleHandler = Handler()
 
-    val REQUEST_ENABLE_BT = 666
     private val CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR_UUID: UUID =
         UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 
@@ -136,7 +136,7 @@ class BluetoothController(
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
             if (gatt != null && status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_CONNECTED) {
-                logger.debug("device connected successfully: ${gatt?.device?.name} ")
+                logger.debug("device connected successfully: ${gatt.device?.name} ")
 
                 bleHandler.post {
 
@@ -153,6 +153,7 @@ class BluetoothController(
             }
         }
 
+
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
 
             bleHandler.post {
@@ -166,7 +167,7 @@ class BluetoothController(
             //}?.forEach {
              */
 
-                gatt?.services?.filter { ServiceUUID.fromNr(it.uuid.identifier) != null }
+                gatt?.services//?.filter { ServiceUUID.fromNr(it.uuid.identifier) != null }
                     ?.forEach { service ->
 
                         logger.debug(

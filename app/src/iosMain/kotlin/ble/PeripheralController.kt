@@ -16,6 +16,7 @@ class PeripheralController(
     val readingReceivedCallback = AtomicReference(readingReceived.freeze())
 
     override fun peripheral(peripheral: CBPeripheral, didDiscoverServices: NSError?) {
+        logger.info("error occured on discover characteristics: ${didDiscoverServices?.localizedDescription}")
         peripheral.services?.let { services ->//type information are erased from servies due to the kotlin-swift-obj bridge
             logger.printLine(services.joinToString(", ") )
             services.map { logger.printLine("UUID: " + (it as CBService).UUID) }
@@ -30,18 +31,29 @@ class PeripheralController(
         didDiscoverCharacteristicsForService: CBService,
         error: NSError?
     ) {
+        logger.debug("error occured on discover characteristics: ${error?.localizedDescription}")
         didDiscoverCharacteristicsForService.characteristics?.let {characteristics->
+
             characteristics.map {
                 if(it != null) {
                     val char = it as CBCharacteristic
                     if(char.isNotifying) {
                         peripheral.setNotifyValue(true,char)
+                        logger.info("set notify for char with prop: ${char.properties} (${char.UUID})")
+                        logger.info("current charval: ${char.value}")
                         peripheral.readValueForCharacteristic(char)
                     }
                     else peripheral.readValueForCharacteristic(it)
                 }
             }
         }
+    }
+
+    override fun peripheral(
+        peripheral: CBPeripheral,
+        didWriteValueForDescriptor: CBDescriptor,
+        error: NSError?
+    ) {
     }
 
     //Characteristic updateds

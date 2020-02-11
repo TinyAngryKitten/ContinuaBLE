@@ -12,7 +12,7 @@ expect object logger {
 
 
 sealed class LogLevel(val level : Int) {
-    object DEBUG : LogLevel(0)
-    object INFO : LogLevel(1)
+    object INFO : LogLevel(0)
+    object DEBUG : LogLevel(1)
     object ERROR : LogLevel(2)
 }
