@@ -15,7 +15,7 @@ fun parseHeartRateMeasurement(reading: BLEReading) =
             if(flag(0)) uint16() else ISOValue.UInt16(uint8().byte,0.toByte()),
             onCondition(flag(3),uint16),
             parseSensorContact(flag(1),flag(2)),
-            null,
+            if(flag(4)) (0 until bytes.size/2).map {uint16()} else null,
             reading.device
         )
     }

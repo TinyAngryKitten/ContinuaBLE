@@ -126,9 +126,7 @@ class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
             completeRecordCallback(deviceInfo)
         }
     }
-
-
-
+    
     /**
      *A record has been completed, freeze it and send it with the callback if it is valid
      */
@@ -182,9 +180,8 @@ class DeviceInfoBuilder(val device : PeripheralDescription) {
         }
     }
 
-    //TODO: is it acceptible to possibly not register revision numbers even when they are available?
     //build deviceInfoRecord if all fields are set, there is a chance that only one or no fields are present
-    // this ignores hardware firmware and software revision  because it might never be sendt, but device info should still be of some value
+    // this ignores hardware firmware and software revision  because it might never be sent
     fun build() = if(changedFields.all { it }) {
         DeviceInfoRecord(
             modelNumber.get()?:"",//

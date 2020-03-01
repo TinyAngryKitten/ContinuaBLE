@@ -549,24 +549,24 @@ class HeartRateRecord(
     val measurementValue : Int,
     val energyExpended : Int?,
     val sensorContact : SensorContact,
-    val rrInterval : Int?,
+    val rrInterval : List<Int>?,
     device: PeripheralDescription
 ) : DataRecord(device) {
     constructor(
         measurementValue: ISOValue.UInt8,
         energyExpended: ISOValue.UInt16?,
         sensorContact: SensorContact,
-        rrInterval: ISOValue.UInt16?,
+        rrInterval: List<ISOValue.UInt16>?,
         device: PeripheralDescription
-    ) : this(measurementValue.value,energyExpended?.value,sensorContact,rrInterval?.value,device)
+    ) : this(measurementValue.value,energyExpended?.value,sensorContact,rrInterval?.map{it.value},device)
 
     constructor(
         measurementValue: ISOValue.UInt16,
         energyExpended: ISOValue.UInt16?,
         sensorContact: SensorContact,
-        rrInterval: ISOValue.UInt16?,
+        rrInterval: List<ISOValue.UInt16>?,
         device: PeripheralDescription
-    ) : this(measurementValue.value,energyExpended?.value,sensorContact,rrInterval?.value,device)
+    ) : this(measurementValue.value,energyExpended?.value,sensorContact,rrInterval?.map{it.value},device)
 }
 
 sealed class SensorContact {
