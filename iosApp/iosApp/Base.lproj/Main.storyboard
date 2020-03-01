@@ -32,10 +32,18 @@
                                     <action selector="scan:" destination="BYZ-38-t0r" eventType="touchDown" id="sK7-3j-yKc"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="05O-ks-Mxh">
-                                <rect key="frame" x="67" y="632" width="99" height="30"/>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="G5Q-yX-eNR">
+                                <rect key="frame" x="178" y="632" width="30" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="ConnectMeter"/>
+                                <state key="normal" title="BP"/>
+                                <connections>
+                                    <action selector="connectToBp:" destination="BYZ-38-t0r" eventType="touchDown" id="Fud-uj-O4d"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="05O-ks-Mxh">
+                                <rect key="frame" x="80" y="632" width="56" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Glucose"/>
                                 <connections>
                                     <action selector="connectToMeter:" destination="BYZ-38-t0r" eventType="touchDown" id="SzU-l5-Dbf"/>
                                 </connections>

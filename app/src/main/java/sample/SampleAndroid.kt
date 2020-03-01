@@ -40,8 +40,8 @@ class MainActivity : AppCompatActivity() {
             //weight main: 10:CE:A9:C9:78:64
             //glucosemeter: "34:03:DE:0D:51:16"
             //gluco2: "F0:B5:D1:58:7D:56"
-
-            deviceCentral.connectToDevice(PeripheralDescription("F0:B5:D1:58:7D:56"))
+            //bp: 18:93:D7:7A:40:DC
+            deviceCentral.connectToDevice(PeripheralDescription("18:93:D7:7A:40:DC"))
         }//("9A427AF2-7BC3-785F-471E-CF3AA62E0A5A") }
         scanBtn.setOnClickListener {
             controller.scan()

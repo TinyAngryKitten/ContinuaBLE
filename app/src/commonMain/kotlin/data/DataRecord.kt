@@ -1,37 +1,59 @@
 package data
 
 import iso.ISOValue
-import sample.logger
-import util.strRepresentation
-import util.toUnsignedInt
-
 
 sealed class DataRecord(val device: PeripheralDescription)
 
 class EmptyRecord(device : PeripheralDescription) : DataRecord(device)
 
 class PulseOximeterFeatures(
-    measurementStatus: Boolean,
-    deviceAndSensorStatus: Boolean,
-    measurementStoreForSpotCheck : Boolean,
-    timestampForSpotCheck: Boolean,
-    spo2PRFast : Boolean,
-    spo2PRSlow : Boolean,
-    pulseAmplitudeIndexField: Boolean,
-    multipleBonds: Boolean,
+    val measurementStatus: Boolean,
+    val deviceAndSensorStatus: Boolean,
+    val measurementStoreForSpotCheck : Boolean,
+    val timestampForSpotCheck: Boolean,
+    val spo2PRFast : Boolean,
+    val spo2PRSlow : Boolean,
+    val pulseAmplitudeIndexField: Boolean,
+    val multipleBonds: Boolean,
     device: PeripheralDescription
-): DataRecord(device)
+): DataRecord(device) {
+    override fun toString(): String {
+        return """PulseOximeterFeatures(
+            measurementStatus: $measurementStatus,
+            deviceAndSensorStatus: $deviceAndSensorStatus,
+            measurementStoreForSpotCheck: $measurementStoreForSpotCheck,
+            timestampForSpotCheck: $timestampForSpotCheck,
+            spo2PRFast: $spo2PRFast,
+            spo2PRSlow: $spo2PRSlow,
+            pulseAmplitudeIndexField: $pulseAmplitudeIndexField,
+            multipleBonds: $multipleBonds
+            )
+        """.trimIndent()
+    }
+}
 
 
 class PLXSpotCheck(
-    spo2: ISOValue.SFloat,
-    PR: ISOValue.SFloat,
-    timeStamp: ISOValue.DateTime?,
-    measurementStatus: PLXSpotCheckMeasurementStatus?,
-    sensorStatus: PLXSpotCheckSensorStatus?,
-    pulseAmplitudeIndex : ISOValue.SFloat?,
+    val spo2: ISOValue.SFloat,
+    val PR: ISOValue.SFloat,
+    val timeStamp: ISOValue.DateTime?,
+    val measurementStatus: PLXSpotCheckMeasurementStatus?,
+    val sensorStatus: PLXSpotCheckSensorStatus?,
+    val pulseAmplitudeIndex : ISOValue.SFloat?,
     device: PeripheralDescription
 ): DataRecord(device) {
+    override fun toString(): String {
+        return """
+            PLXSpotCheck(
+                spo2: $spo2,
+                PR: $PR,
+                timeStamp: $timeStamp,
+                measurementStatus: $measurementStatus,
+                sensorStatus: $sensorStatus,
+                pulseAmplitudeIndex: $pulseAmplitudeIndex
+            )
+        """.trimIndent()
+    }
     companion object{
         fun fromISO(
             spo2: ISOValue.SFloat,
@@ -63,15 +85,15 @@ class PLXSpotCheck(
 
 
 class PLXContinousMeasurement(
-    spo2Normal: ISOValue.SFloat,
-    PRNormal: ISOValue.SFloat,
-    spo2Fast: ISOValue.SFloat?,
-    PRFast: ISOValue.SFloat?,
-    spo2Slow: ISOValue.SFloat?,
-    PRSlow: ISOValue.SFloat?,
-    measurementStatus: PLXSpotCheckMeasurementStatus?,
-    sensorStatus: PLXSpotCheckSensorStatus?,
-    pulseAmplitudeIndex : ISOValue.SFloat?,
+    val spo2Normal: ISOValue.SFloat,
+    val PRNormal: ISOValue.SFloat,
+    val spo2Fast: ISOValue.SFloat?,
+    val PRFast: ISOValue.SFloat?,
+    val spo2Slow: ISOValue.SFloat?,
+    val PRSlow: ISOValue.SFloat?,
+    val measurementStatus: PLXSpotCheckMeasurementStatus?,
+    val sensorStatus: PLXSpotCheckSensorStatus?,
+    val pulseAmplitudeIndex : ISOValue.SFloat?,
     device: PeripheralDescription
 ): DataRecord(device) {
     companion object{
@@ -128,6 +150,8 @@ enum class PLXSpotCheckSensorStatus {
     SensorDisconnected,
     ReservedForFutureUse;
 
+    override fun toString(): String = this::class.simpleName ?: ""
+
     companion object {
         fun fromInt(i: Int) = when (i) {
             0 -> ExtendedDisplayUpdateOngoing
@@ -165,6 +189,8 @@ enum class PLXSpotCheckMeasurementStatus {
     InvalidMeasurementDetecteds,
     ReservedForFutureUse;
 
+    override fun toString(): String = this::class.simpleName ?: ""
+
     companion object {
             fun fromInt(i : Int) : PLXSpotCheckMeasurementStatus = when(i) {
             5 -> MeasurementOngoing
@@ -201,6 +227,8 @@ sealed class TemperatureType {
     object Toe: TemperatureType()
     object Tympanum : TemperatureType()
     object ReservedForFutureUse : TemperatureType()
+
+    override fun toString(): String = this::class.simpleName ?: ""
 
     companion object {
         fun fromInt(value: Int) = when(value) {
@@ -267,10 +295,13 @@ class DeviceInfoRecord (
 }
 
 class BatteryLevelRecord(
-    level : Int,
+    val level : Int,
     device : PeripheralDescription
 ) : DataRecord(device) {
-    constructor(level: ISOValue.UInt8, device: PeripheralDescription) : this(level.value.toInt(), device)
+    override fun toString(): String {
+        return "BatteryLevel: $level"
+    }
+    constructor(level: ISOValue.UInt8, device: PeripheralDescription) : this(level.value, device)
 }
 
 class BloodPressureFeatures(
@@ -281,12 +312,24 @@ class BloodPressureFeatures(
     val measurementPositionDetection : Boolean,
     val multipleBondSupport : Boolean,
     device: PeripheralDescription
-) : DataRecord(device)
+) : DataRecord(device) {
+    override fun toString(): String {
+        return """BloodPressureFeatures: (
+            bodyMovementDetection: $bodyMovementDetection,
+            cuffFitDetection: $cuffFitDetection,
+            irregularPulseDetection: $irregularPulseDetection,
+            pulseRateRangeDetection: $pulseRateRangeDetection,
+            measurementPositionDetection: $measurementPositionDetection,
+            multipleBondSupport: $multipleBondSupport
+            )
+        """.trimIndent()
+    }
+}
 
 class BloodPressureRecord(
     val systolic : ISOValue.SFloat,
     val diastolic : ISOValue.SFloat,
-    val meanArtieralPressure : ISOValue.SFloat,
+    val meanArterialPressure : ISOValue.SFloat,
     val unit : BloodPressureUnit,
     val timeStamp : ISOValue.DateTime?,
     val bpm : ISOValue.SFloat?,
@@ -294,6 +337,21 @@ class BloodPressureRecord(
     val status : MeasurementStatus?,
     device: PeripheralDescription
 ) : DataRecord(device){
+
+    override fun toString(): String {
+        return """
+            BloodPressureRecord: (
+            systolic: $systolic,
+            diastolic: $diastolic,
+            meanArterialPressure: $meanArterialPressure,
+            unit: $unit,
+            timeStamp: $timeStamp,
+            bpm: $bpm,
+            userId: $userId,
+            status: ${if(status != null)status::class.simpleName else ""}
+            )
+        """.trimIndent()
+    }
 
     companion object {
         fun fromISOValues(
@@ -449,6 +507,8 @@ sealed class WeightMeasurementResolution(val kg: Float, val lb : Float) {
     object Res6 : WeightMeasurementResolution(0.01f,0.02f)
     object Res7 : WeightMeasurementResolution(0.005f,0.01f)//default
 
+    override fun toString(): String = "WeightResolution: " + "kg: $kg, lb: $lb"
+
     companion object{
         fun fromInt(i : Int) = when(i) {
             1 -> Res1
@@ -472,6 +532,8 @@ sealed class HeightMeasurementResolution(val increments : Float) {
     object LowRes : HeightMeasurementResolution(0.01f)
     object MediumRes : HeightMeasurementResolution(0.005f)
     object HighRes : HeightMeasurementResolution(0.001f)
+
+    override fun toString(): String = "Height Resolution: increments: $increments"
 
     companion object{
         fun fromInt(i : Int) = when(i) {
@@ -511,12 +573,16 @@ sealed class SensorContact {
     object NotSupported : SensorContact()
     object ContactNotDetected : SensorContact()
     object ContactDetected : SensorContact()
+
+    override fun toString(): String = this::class.simpleName ?: ""
 }
 
 class BodySensorLocationRecord(
     val location : BodySensorLocation,
     device: PeripheralDescription
-) : DataRecord(device)
+) : DataRecord(device) {
+    override fun toString(): String = "Body sensor location: $location"
+}
 
 sealed class BodySensorLocation {
     object Other : BodySensorLocation()
@@ -526,6 +592,8 @@ sealed class BodySensorLocation {
     object Hand : BodySensorLocation()
     object EarLobe : BodySensorLocation()
     object Foot : BodySensorLocation()
+
+    override fun toString(): String = this::class.simpleName ?: ""
 }
 
 sealed class BloodSampleType {
@@ -540,6 +608,8 @@ sealed class BloodSampleType {
     object UndeterminedPlasma: BloodSampleType()
     object InterstitialFluid : BloodSampleType()
     object ControlSolution : BloodSampleType()
+
+    override fun toString(): String = this::class.simpleName ?: ""
 
     companion object {
         fun fromInt(i : Int) = when(i) {
@@ -576,6 +646,8 @@ enum class RecordControlPointResponse {
     ProcedureNotCompleted,
     OperandNotSupported;
 
+    override fun toString(): String = this::class.simpleName ?: ""
+
     companion object{
         fun fromInt(i : Int) = when(i) {
             1 -> Success
@@ -607,6 +679,8 @@ enum class GlucoseSensorStatusAnunciation {
     TimeFault_TimeMightBeInaccurate,
     ReservedForFutureUse;
 
+    override fun toString(): String = this::class.simpleName ?: ""
+
     companion object {
         fun fromInt(i : Int) = when(i) {
             0 -> BatteryLowAtMeasurement
@@ -634,6 +708,8 @@ sealed class GlucoseSampleLocation {
     object Earlobe : GlucoseSampleLocation()
     object ControlSolution: GlucoseSampleLocation()
     object SampleLocationNotAvailable : GlucoseSampleLocation()
+
+    override fun toString(): String = this::class.simpleName ?: ""
 
     companion object {
         fun fromInt(i : Int) = when(i) {
@@ -834,6 +910,8 @@ sealed class CarbohydrateType(val value : Int) {
     object Supper : CarbohydrateType(6)
     object Brunch : CarbohydrateType(7)
 
+    override fun toString(): String = this::class.simpleName ?: ""
+
     companion object {
         fun fromUInt(i : Int?) = when(i) {
             null -> null
@@ -857,6 +935,8 @@ sealed class MealContext(val value : Int) {
     object Casual : MealContext(4) // casual drink / snack etc.
     object Bedtime : MealContext(5)
 
+    override fun toString(): String = this::class.simpleName ?: ""
+
     companion object{
         fun fromUint(i : Int?) = when(i) {
             null -> null
@@ -876,6 +956,8 @@ sealed class Tester(val value : Int) {
     object HealthCareProfessional : Tester(2)
     object LabTest : Tester(3)
     object NotAvailable : Tester(15)
+
+    override fun toString(): String = this::class.simpleName ?: ""
 
     companion object {
         fun fromUint(i : Int?) = when(i) {
@@ -898,6 +980,8 @@ sealed class Health(val value : Int) {
     object NoHealthIssues : Health(5)
     object NotAvailable : Health(15)
 
+    override fun toString(): String = this::class.simpleName ?: ""
+
     companion object {
         fun fromUInt(i : Int?) = when(i) {
             null -> null
@@ -919,6 +1003,8 @@ sealed class MedicationID(val value : Int) {
     object IntermediateActingInsulin : MedicationID(3)
     object LongActingInsulin : MedicationID(4)
     object PremixedInsulin : MedicationID(5)
+
+    override fun toString(): String = this::class.simpleName ?: ""
 
     companion object{
         fun fromUInt(i : Int?) = when(i) {

@@ -8,21 +8,26 @@ import kotlin.math.pow
 sealed class ISOValue {
     data class SInt8(val byte : Byte) : ISOValue() {
         val value = byte.toInt()
+        override fun toString(): String = value.toString()
     }
     data class SInt16(val byte1: Byte, val byte2: Byte) : ISOValue() {
         val value = byte1.toUnsignedInt() or byte2.toInt().shl(8)
+        override fun toString(): String = value.toString()
     }
 
     data class UInt8 constructor(val byte: Byte) : ISOValue() {
         val value = byte.toUnsignedInt()
+        override fun toString(): String = value.toString()
     }
     data class UInt16 constructor(val byte1 : Byte, val byte2: Byte) : ISOValue() {
         val value = byte1.toUnsignedInt() or byte2.toUnsignedInt().shl(8)
+        override fun toString(): String = value.toString()
     }
 
     //represents a 4 bit value
     data class Nibble(val value: Byte) : ISOValue() {
         val unsigned = value.toInt().and(15)
+        override fun toString(): String = "Nibble(signed: ${value.toInt()}, unsigned: $unsigned)"
     }
 
     //date and time representationf
@@ -78,6 +83,7 @@ sealed class ISOValue {
 
     //32 bit floating point number
     class Float(val value : kotlin.Float) : ISOValue() {
+        override fun toString(): String = value.toString()
         companion object {
             //unable to find information about the FLOAT datatype, but there are likely NaN/Nres etc. values
             fun from(rightMostManitssa : SInt16, leftMostMantissa: SInt8, exponent: SInt8) : Float {
@@ -92,6 +98,7 @@ sealed class ISOValue {
 
     //short float 16 bit
     sealed class SFloat : ISOValue() {
+        override fun toString(): String = this::class.simpleName ?: ""
         object NaN : SFloat()
         object NRes : SFloat()
         object ReservedForFutureUse : SFloat()
@@ -99,7 +106,7 @@ sealed class ISOValue {
         object MinusInfinity : SFloat()
 
         data class Value(val value: kotlin.Float) : SFloat() {
-            override fun toString() ="value(val: $value)"
+            override fun toString() =value.toString()
         }
 
         companion object {
@@ -125,16 +132,23 @@ sealed class ISOValue {
     }
 
     //list of booleans
-    class Flags(val value : List<Boolean>) : ISOValue()
+    class Flags(val value : List<Boolean>) : ISOValue() {
+        override fun toString(): String = value.toString()
+    }
 
     //single boolean
-    class Flag(val value : Boolean) : ISOValue()
+    class Flag(val value : Boolean) : ISOValue() {
+        override fun toString(): String = value.toString()
+    }
 
     //UTF8 encoded string
     class UTF8(val rawBytes : ByteArray) {
         //default characterset is allways UTF-8 for String <-> Byte
         val encodedString = rawBytes.fold("") {acc, byte -> acc+byte.toChar()}
+        override fun toString(): String = encodedString
     }
 
-    object Empty : ISOValue()
+    object Empty : ISOValue() {
+        override fun toString(): String = "Empty value"
+    }
 }

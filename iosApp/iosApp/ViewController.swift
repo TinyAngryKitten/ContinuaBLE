@@ -1,5 +1,7 @@
 import UIKit
 import app
+//glucose: FC637664-D732-5B33-193A-8DF96288E3A6
+//bp: 552D7A89-7BB7-C25D-6936-5AF9C752CC03
 
 class ViewController: UIViewController {
     let deviceCentral = DeviceCentral(bleCentral: BLECentral())
@@ -20,15 +22,18 @@ class ViewController: UIViewController {
         super.didReceiveMemoryWarning()
     }
     @IBAction func connectToMeter(_ sender: Any) {
-        deviceCentral.connectToDevice(device: PeripheralDescription(
-            UUID: "FC637664-D732-5B33-193A-8DF96288E3A6", name: "Glucometerthingy"
-        ))
-        /*DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            // Put your code which should be executed with a delay here
-            print("DONE SLEEPING\n")
-            self.deviceCentral.bleCentral.writeCharacteristic(deviceDescription: PeripheralDescription(UUID: "FC637664-D732-5B33-193A-8DF96288E3A6", name: ""))
-        }*/
-        
+        deviceCentral.connectToDevice(
+            device: PeripheralDescription(
+                UUID: "FC637664-D732-5B33-193A-8DF96288E3A6", name: "Glucometerthingy"
+            )
+        )
+    }
+    @IBAction func connectToBp(_ sender: Any) {
+        deviceCentral.connectToDevice(
+            device: PeripheralDescription(
+                UUID: "552D7A89-7BB7-C25D-6936-5AF9C752CC03", name: "Bp A and D"
+            )
+        )
     }
     @IBOutlet weak var text: UITextView!
     @IBAction func scan(_ sender: Any) {
