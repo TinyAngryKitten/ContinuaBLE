@@ -202,34 +202,6 @@ class RxTest : BleCentralInterface{
     func peripheralToDescription(peripheral : Peripheral) -> PeripheralDescription{
         return PeripheralDescription(UUID: peripheral.peripheral.identifier.uuidString, name: peripheral.peripheral.name ?? "unknown")
     }
-    
-    func scan() {
-        print("Scan started")
-        if(manager.state != .poweredOn) {
-            print("not powered on")
-        } else {manager.scanForPeripherals(withServices: [bps])
-        .subscribe(onNext: { scannedPeripheral in
-            print("peripheral discovered: \(scannedPeripheral.peripheral.name)")
-            let disposable = scannedPeripheral.peripheral.establishConnection().flatMap { $0.discoverServices([self.bps]) }.asObservable()
-                .flatMap { Observable.from($0) }
-                .flatMap { $0.discoverCharacteristics([self.bp])}.asObservable()
-                .flatMap { Observable.from($0) }
-                .subscribe(onNext: { characteristic in
-                    print("Discovered characteristic: \(characteristic.characteristic.uuid.uuidString)")
-                characteristic.observeValueUpdateAndSetNotification()
-                .subscribe(onNext: {
-                    let newValue = $0.value
-                    print("characteristic\(characteristic.characteristic.uuid.uuidString) update: \(newValue)")
-                    self.onResult(
-                            self.messageParser.packageBleReading(
-                                data: newValue,
-                                device: nil,
-                                characteristic:characteristic.characteristic)
-                        )
-                    })
-                })
-            })
-        }}
 }
 
 class ViewController: UIViewController {
