@@ -18,10 +18,10 @@ import sample.GlobalSingleton
 import sample.GlobalSingleton.nsdata
 import sample.logger
 
-actual class BLECentral {
-    val controller = BluetoothController()
+actual class BLECentral : BleCentralInterface {
+    /*val controller = BluetoothController()
 
-    actual fun bleState() = controller.state;
+    actual fun bleState() = BLEState.NotAuthorized//controller.state;
 
     actual fun scanForDevices() {
         if(bleState() != BLEState.On) {
@@ -85,6 +85,27 @@ actual class BLECentral {
 
     actual fun changeStateChangeCallback(callback: (BLEState) -> Unit) {
         controller.stateChangedCallback.compareAndSet(controller.stateChangedCallback.value,callback)
+    }*/
+    override fun scanForDevices() {
+    }
+
+    override fun connectToDevice(deviceDescription: PeripheralDescription) {
+    }
+
+    override fun bleState(): BLEState {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun changeStateChangeCallback(callback: (BLEState) -> Unit) {
+    }
+
+    override fun changeResultCallback(callback: (BLEReading) -> Unit) {
+    }
+
+    override fun changeOnDiscoverCallback(callback: (PeripheralDescription) -> Unit) {
+    }
+
+    override fun changeOnConnectCallback(callback: (PeripheralDescription) -> Unit) {
     }
 
 }

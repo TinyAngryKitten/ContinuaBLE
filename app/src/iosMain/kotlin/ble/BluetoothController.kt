@@ -3,6 +3,7 @@ import bledata.BLEState
 import co.touchlab.stately.collections.frozenCopyOnWriteList
 import co.touchlab.stately.freeze
 import data.PeripheralDescription
+import iso.CharacteristicUUIDs
 import platform.CoreBluetooth.*
 import platform.Foundation.*
 import platform.darwin.DISPATCH_QUEUE_CONCURRENT
@@ -49,13 +50,9 @@ class BluetoothController :
             stateChangedCallback.value(s)
         }
 
-    init {
-
-    }
-
     private val bleState = AtomicReference(BLEState.UnknownErrorState as BLEState)
 
-    val peripheralController = PeripheralController(null)
+    val peripheralController = PeripheralController(CharacteristicUUIDs.getAll().map { CBUUID.UUIDWithString(it.id) })
 
     val discoveredDevices : MutableList<CBPeripheral> = frozenCopyOnWriteList(listOf())
     val connectedDevices : MutableList<CBPeripheral> = frozenCopyOnWriteList(listOf())
@@ -106,6 +103,7 @@ class BluetoothController :
             didDiscoverPeripheral.name ?: "unknown"
         )
         )
+        didDiscoverPeripheral.state
     }
 
     //on connected to peripheral

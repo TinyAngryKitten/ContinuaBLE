@@ -12,6 +12,23 @@ import platform.CoreBluetooth.CBPeripheral
 import platform.Foundation.NSData
 import platform.Foundation.base64Encoding
 import util.toHexString
+class BleMessageParser {
+    fun packageBleReading(data : NSData?, device: CBPeripheral?,characteristic: CBCharacteristic?) : BLEReading =
+        BLEReading(
+            PeripheralDescription.fromNullable(
+                device?.identifier?.UUIDString ?: "",
+                device?.name
+            ),
+            CharacteristicUUIDs.fromNr(characteristic?.UUID?.UUIDString ?: "0000"),
+            nsDataToByteArray(data)
+        )
+
+    private fun nsDataToByteArray(data : NSData?) : ByteArray =
+        data
+            ?.bytes
+            ?.reinterpret<ByteVar>()
+            ?.readBytes(data.length.toInt()) ?: ByteArray(0)
+}
 
 fun packageBleReading(data : NSData?, device: CBPeripheral,characteristic: CBCharacteristic) : BLEReading =
     BLEReading(

@@ -16,10 +16,10 @@ class PeripheralController(
     val readingReceivedCallback = AtomicReference(readingReceived.freeze())
 
     override fun peripheral(peripheral: CBPeripheral, didDiscoverServices: NSError?) {
-        logger.info("error occured on discover characteristics: ${didDiscoverServices?.localizedDescription}")
+        if(didDiscoverServices != null) return logger.info("error occured on discover services): ${didDiscoverServices.description}")
         peripheral.services?.let { services ->//type information are erased from servies due to the kotlin-swift-obj bridge
             logger.printLine(services.joinToString(", ") )
-            services.map { logger.printLine("UUID: " + (it as CBService).UUID) }
+            services.map { logger.debug("UUID: " + (it as CBService).UUID) }
             services.map { (it as CBService).includedServices?.map { logger.printLine("Nested service:"+ (it as CBService).UUID) } }
             services.map{peripheral.discoverCharacteristics(characteristicUUIDs,it as CBService)}
         }
@@ -31,14 +31,15 @@ class PeripheralController(
         didDiscoverCharacteristicsForService: CBService,
         error: NSError?
     ) {
-        logger.debug("error occured on discover characteristics: ${error?.localizedDescription}")
-        didDiscoverCharacteristicsForService.characteristics?.let {characteristics->
+        if(error != null) return logger.debug("error occured on discover characteristics(${didDiscoverCharacteristicsForService.description}) Description: ${error?.description}, code: ${error?.code}")
+        else didDiscoverCharacteristicsForService.characteristics?.let {characteristics->
 
             characteristics.map {
                 if(it != null) {
                     val char = it as CBCharacteristic
                     if(char.isNotifying) {
                         peripheral.setNotifyValue(true,char)
+                        peripheral.discoverDescriptorsForCharacteristic(char)
                         logger.info("set notify for char with prop: ${char.properties} (${char.UUID})")
                         logger.info("current charval: ${char.value}")
                         peripheral.readValueForCharacteristic(char)
@@ -48,6 +49,8 @@ class PeripheralController(
             }
         }
     }
+
+
 
     override fun peripheral(
         peripheral: CBPeripheral,
@@ -61,11 +64,15 @@ class PeripheralController(
         peripheral: CBPeripheral,
         didUpdateValueForCharacteristic: CBCharacteristic,
         error: NSError?
-    ) = readingReceivedCallback.value(
+    ) {
+        if(error != null) {
+            logger.debug("error occured when reading characteristic(${didUpdateValueForCharacteristic.UUID.UUIDString}) update: ${error.description} from device: ${peripheral.description}")
+        } else readingReceivedCallback.value(
             packageBleReading(
                 didUpdateValueForCharacteristic.value,
                 peripheral,
                 didUpdateValueForCharacteristic
             ).freeze()
         )
+    }
 }

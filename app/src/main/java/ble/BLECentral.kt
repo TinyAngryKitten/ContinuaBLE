@@ -5,7 +5,7 @@ import bledata.BLEReading
 import bledata.BLEState
 import data.PeripheralDescription
 
-actual class BLECentral(val controller : BluetoothController ) {
+actual class BLECentral(val controller : BluetoothController ) : BleCentralInterface{
 
     val discoveredDevices : List<PeripheralDescription>
         get() = controller.discoveredDevices.map { PeripheralDescription(it.address,it.name) }
@@ -13,11 +13,11 @@ actual class BLECentral(val controller : BluetoothController ) {
     val connectedDevices : List<PeripheralDescription>
         get() = controller.connectedDevices.map { PeripheralDescription(it.address,it.name) }
 
-     actual fun scanForDevices(){
+     override fun scanForDevices(){
         controller.scan()
     }
 
-    actual fun connectToDevice(deviceDescription: PeripheralDescription) {
+    override fun connectToDevice(deviceDescription: PeripheralDescription) {
         val device = controller.discoveredDevices
             .find { it.address.equals(deviceDescription.UUID,ignoreCase = true) }
 
@@ -25,7 +25,7 @@ actual class BLECentral(val controller : BluetoothController ) {
     }
 
 
-    actual fun bleState(): BLEState {
+    override fun bleState(): BLEState {
         if(!(controller.adapter).isEnabled) BLEState.NotAuthorized
         return when(controller.adapter.state) {
             BluetoothAdapter.STATE_ON -> BLEState.On
@@ -34,19 +34,19 @@ actual class BLECentral(val controller : BluetoothController ) {
         }
     }
 
-    actual fun changeResultCallback(callback: (BLEReading) -> Unit) {
+    override fun changeResultCallback(callback: (BLEReading) -> Unit) {
         controller.resultCallback.set(callback)
     }
 
-    actual fun changeOnDiscoverCallback(callback: (PeripheralDescription) -> Unit) {
+    override fun changeOnDiscoverCallback(callback: (PeripheralDescription) -> Unit) {
         controller.discoverCallback.set(callback)
     }
 
-    actual fun changeOnConnectCallback(callback: (PeripheralDescription) -> Unit) {
+    override fun changeOnConnectCallback(callback: (PeripheralDescription) -> Unit) {
         controller.connectCallback.set(callback)
     }
 
-    actual fun changeStateChangeCallback(callback: (BLEState) -> Unit) {
+    override fun changeStateChangeCallback(callback: (BLEState) -> Unit) {
         //TODO: NOT IMPLEMENTED
     }
 

@@ -14,7 +14,11 @@ target 'iosApp' do
   use_frameworks!
 
   # Pods for iosApp
-
+  pod 'Bluejay', '~> 0.8'
+  pod 'RxBluetoothKit'
+  pod 'RxSwift', '~> 5'
+  pod 'RxCocoa', '~> 5'
+  
   target 'iosAppTests' do
     inherit! :search_paths
     # Pods for testing

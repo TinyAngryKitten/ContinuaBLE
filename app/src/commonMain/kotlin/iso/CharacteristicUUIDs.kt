@@ -13,52 +13,52 @@ import parseWeightScaleFeature
 
 //glucose characteristics
 
-sealed class CharacteristicUUIDs(val id : String,val parse : (BLEReading) -> DataRecord) {
+sealed class CharacteristicUUIDs(val id : String,val service: ServiceUUID, val parse : (BLEReading) -> DataRecord) {
     val nr = id.substring(2)
 
     //GLUCOSE
-    object glucoseFeature : CharacteristicUUIDs("0x2A51", ::parseGlucoseFeatures)
-    object glucoseMeasurement : CharacteristicUUIDs("0x2A18", ::parseGlucoseReading)
-    object glucoseMeasurementContext : CharacteristicUUIDs("0x2A34",::parseGlucoseContextReading)
-    object recordControlPoint : CharacteristicUUIDs("0x2A52", ::parseRecordControlPoint)
+    object glucoseFeature : CharacteristicUUIDs("0x2A51", ServiceUUID.glucose, ::parseGlucoseFeatures)
+    object glucoseMeasurement : CharacteristicUUIDs("0x2A18", ServiceUUID.glucose,::parseGlucoseReading)
+    object glucoseMeasurementContext : CharacteristicUUIDs("0x2A34",ServiceUUID.glucose,::parseGlucoseContextReading)
+    object recordControlPoint : CharacteristicUUIDs("0x2A52", ServiceUUID.glucose, ::parseRecordControlPoint)
 
-    object glucoseControlPoint : CharacteristicUUIDs("0x2A52",{EmptyRecord(PeripheralDescription(""))})
+    object glucoseControlPoint : CharacteristicUUIDs("0x2A52",ServiceUUID.glucose,{EmptyRecord(PeripheralDescription(""))})
 
     //HEART RATE
-    object heartRateMeasurement : CharacteristicUUIDs("0x2A37",::parseHeartRateMeasurement)
-    object bodySensorLocation : CharacteristicUUIDs("0x2A38",::parseBodySensorLocation)
+    object heartRateMeasurement : CharacteristicUUIDs("0x2A37",ServiceUUID.heartRate,::parseHeartRateMeasurement)
+    object bodySensorLocation : CharacteristicUUIDs("0x2A38",ServiceUUID.heartRate,::parseBodySensorLocation)
     //object heartRateControlPoint : CharacteristicUUIDs("2A39",)
 
     //BLOOD PRESSURE
-    object bloodPressureFeature : CharacteristicUUIDs("0x2A49",::parseBloodPressureFeature)
-    object bloodPressureMeasurement : CharacteristicUUIDs("0x2A35",::parseBloodPressureMeasurement)
+    object bloodPressureFeature : CharacteristicUUIDs("0x2A49",ServiceUUID.bloodPressure,::parseBloodPressureFeature)
+    object bloodPressureMeasurement : CharacteristicUUIDs("0x2A35",ServiceUUID.bloodPressure,::parseBloodPressureMeasurement)
     //object IntermediateCuffPressure : CharacteristicUUIDs("0x2A36")
 
     //BODY WEIGHT
-    object weightFeature : CharacteristicUUIDs("0x2A9E", ::parseWeightScaleFeature)
-    object weightMeasurement : CharacteristicUUIDs("0x2A9D",::parseWeightMeasurement)
+    object weightFeature : CharacteristicUUIDs("0x2A9E", ServiceUUID.weight,::parseWeightScaleFeature)
+    object weightMeasurement : CharacteristicUUIDs("0x2A9D",ServiceUUID.weight,::parseWeightMeasurement)
 
     //DEVICE INFO
-    object modelNumber : CharacteristicUUIDs("0x2A24",::parseModelNumber)
-    object serialNumber : CharacteristicUUIDs("0x2A25",::parseSerialNumber)
-    object firmwareRevision : CharacteristicUUIDs("0x2A26",::parseFirmwareRevision)
-    object hardwareRevision : CharacteristicUUIDs("0x2A27",::parseHardwareRevision)
-    object softwareRevision : CharacteristicUUIDs("0x2A28",::parseSoftwareRevision)
-    object manufacturerName :CharacteristicUUIDs("0x2A29",::parseManufacturerName)
+    object modelNumber : CharacteristicUUIDs("0x2A24",ServiceUUID.deviceInformation,::parseModelNumber)
+    object serialNumber : CharacteristicUUIDs("0x2A25",ServiceUUID.deviceInformation,::parseSerialNumber)
+    object firmwareRevision : CharacteristicUUIDs("0x2A26",ServiceUUID.deviceInformation,::parseFirmwareRevision)
+    object hardwareRevision : CharacteristicUUIDs("0x2A27",ServiceUUID.deviceInformation,::parseHardwareRevision)
+    object softwareRevision : CharacteristicUUIDs("0x2A28",ServiceUUID.deviceInformation,::parseSoftwareRevision)
+    object manufacturerName :CharacteristicUUIDs("0x2A29",ServiceUUID.deviceInformation,::parseManufacturerName)
 
-    object temperatureMeasurement : CharacteristicUUIDs("0x2A1C", ::parseTemperatureMeasurement)
+    object temperatureMeasurement : CharacteristicUUIDs("0x2A1C", ServiceUUID.thermometer, ::parseTemperatureMeasurement)
 
-    object plxSpotCheck : CharacteristicUUIDs("0x2A5E", ::parsePlxSpotCheck)
-    object plxContinousMeasurement: CharacteristicUUIDs("0x2A5F", ::parseContinousPlxMeasurement)
+    object plxSpotCheck : CharacteristicUUIDs("0x2A5E", ServiceUUID.pulseOximeter,::parsePlxSpotCheck)
+    object plxContinousMeasurement: CharacteristicUUIDs("0x2A5F", ServiceUUID.pulseOximeter,::parseContinousPlxMeasurement)
     //object plxFeatures : CharacteristicUUIDs("0x2A60",)
 
     //CURRENT TIME
     //object currentTime : CharacteristicUUIDs("0x2A2B",::parseCurrentTime)
 
     //BATTERY LEVEL
-    object batteryLevel : CharacteristicUUIDs("0x2A19",::parseBatteryLevel)
+    object batteryLevel : CharacteristicUUIDs("0x2A19",ServiceUUID.battery,::parseBatteryLevel)
 
-    class UnsupportedCharacteristic(id: String,device : PeripheralDescription) : CharacteristicUUIDs(id,{EmptyRecord(device)}) {
+    class UnsupportedCharacteristic(id: String,device : PeripheralDescription) : CharacteristicUUIDs(id,ServiceUUID.unknown,{EmptyRecord(device)}) {
         override fun equals(other: Any?): Boolean {
             return if(other is UnsupportedCharacteristic) id.equals(other.id,ignoreCase = true)
             else false
