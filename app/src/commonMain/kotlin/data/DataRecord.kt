@@ -326,10 +326,8 @@ class BloodPressureFeatures(
     }
 }
 
-class BloodPressureRecord(
+sealed class BloodPressureRecord(
     val systolic : ISOValue.SFloat,
-    val diastolic : ISOValue.SFloat,
-    val meanArterialPressure : ISOValue.SFloat,
     val unit : BloodPressureUnit,
     val timeStamp : ISOValue.DateTime?,
     val bpm : ISOValue.SFloat?,
@@ -342,8 +340,6 @@ class BloodPressureRecord(
         return """
             BloodPressureRecord: (
             systolic: $systolic,
-            diastolic: $diastolic,
-            meanArterialPressure: $meanArterialPressure,
             unit: $unit,
             timeStamp: $timeStamp,
             bpm: $bpm,
@@ -353,8 +349,56 @@ class BloodPressureRecord(
         """.trimIndent()
     }
 
+    class IntermediateMeasurement(
+        systolic : ISOValue.SFloat,
+        unit : BloodPressureUnit,
+        timeStamp : ISOValue.DateTime?,
+        bpm : ISOValue.SFloat?,
+        userId : Int?,
+        status : MeasurementStatus?,
+        device: PeripheralDescription
+    ) : BloodPressureRecord(systolic,unit,timeStamp,bpm,userId,status,device) {
+        override fun toString() = """
+            IntermediateBloodPressureMeasurement: (
+            systolic: $systolic,
+            unit: $unit,
+            timeStamp: $timeStamp,
+            bpm: $bpm,
+            userId: $userId,
+            status: ${if(status != null)status::class.simpleName else ""}
+            )
+        """.trimIndent()
+    }
+
+    class FinalMeasurement(
+        systolic : ISOValue.SFloat,
+        val diastolic : ISOValue.SFloat,
+        val meanArterialPressure : ISOValue.SFloat,
+        unit : BloodPressureUnit,
+        timeStamp : ISOValue.DateTime?,
+        bpm : ISOValue.SFloat?,
+        userId : Int?,
+        status : MeasurementStatus?,
+        device: PeripheralDescription
+    ) : BloodPressureRecord(systolic,unit,timeStamp,bpm,userId,status,device) {
+        override fun toString(): String {
+            return return """
+            FinalBloodPressureMeasurement: (
+            systolic: $systolic,
+            diastolic: $diastolic,
+            meanArterialPressure: $meanArterialPressure,
+            unit: $unit,
+            timeStamp: $timeStamp,
+            bpm: $bpm,
+            userId: $userId,
+            status: ${if(status != null)status::class.simpleName else ""}
+            )
+        """.trimIndent()
+        }
+    }
+
     companion object {
-        fun fromISOValues(
+        fun finalFromISO(
             systolic: ISOValue.SFloat,
             diastolic: ISOValue.SFloat,
             meanArtieralPressure: ISOValue.SFloat,
@@ -370,10 +414,32 @@ class BloodPressureRecord(
             if (meanArtieralPressure !is ISOValue.SFloat.Value) return null
             if (bpm != null && bpm !is ISOValue.SFloat.Value) return null
 
-            return BloodPressureRecord(
+            return FinalMeasurement(
                 systolic,
                 diastolic,
                 meanArtieralPressure,
+                unit,
+                timeStamp,
+                bpm,
+                userId?.value,
+                status,
+                device
+            )
+        }
+        fun intermediateFromISO(
+            systolic: ISOValue.SFloat,
+            unit: BloodPressureUnit,
+            timeStamp: ISOValue.DateTime?,
+            bpm: ISOValue.SFloat?,
+            userId: ISOValue.UInt8?,
+            status: MeasurementStatus?,
+            device: PeripheralDescription
+        ): IntermediateMeasurement? {
+            if (systolic !is ISOValue.SFloat.Value) return null
+            if (bpm != null && bpm !is ISOValue.SFloat.Value) return null
+
+            return IntermediateMeasurement(
+                systolic,
                 unit,
                 timeStamp,
                 bpm,

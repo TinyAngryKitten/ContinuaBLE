@@ -41,6 +41,12 @@ sealed class ServiceUUID(val id : String) {
     object pulseOximeter : ServiceUUID("0x1822") {
         override val name = "Pulse Oximeter Service"
     }
+
+    object currentTime : ServiceUUID("0x1805") {
+        override val name: String
+            get() = "Current Time Service"
+    }
+
     object unknown : ServiceUUID("") {
         override val name: String
             get() = "unknown"
@@ -59,7 +65,8 @@ sealed class ServiceUUID(val id : String) {
             deviceInformation,
             battery,
             bloodPressure,
-            heartRate
+            heartRate,
+            currentTime
         )
 
         fun fromNr(nr : String) = getAll().find { it.nr.equals(nr,ignoreCase = true) }

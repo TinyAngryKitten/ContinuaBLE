@@ -22,8 +22,6 @@ sealed class CharacteristicUUIDs(val id : String,val service: ServiceUUID, val p
     object glucoseMeasurementContext : CharacteristicUUIDs("0x2A34",ServiceUUID.glucose,::parseGlucoseContextReading)
     object recordControlPoint : CharacteristicUUIDs("0x2A52", ServiceUUID.glucose, ::parseRecordControlPoint)
 
-    object glucoseControlPoint : CharacteristicUUIDs("0x2A52",ServiceUUID.glucose,{EmptyRecord(PeripheralDescription(""))})
-
     //HEART RATE
     object heartRateMeasurement : CharacteristicUUIDs("0x2A37",ServiceUUID.heartRate,::parseHeartRateMeasurement)
     object bodySensorLocation : CharacteristicUUIDs("0x2A38",ServiceUUID.heartRate,::parseBodySensorLocation)
@@ -32,7 +30,7 @@ sealed class CharacteristicUUIDs(val id : String,val service: ServiceUUID, val p
     //BLOOD PRESSURE
     object bloodPressureFeature : CharacteristicUUIDs("0x2A49",ServiceUUID.bloodPressure,::parseBloodPressureFeature)
     object bloodPressureMeasurement : CharacteristicUUIDs("0x2A35",ServiceUUID.bloodPressure,::parseBloodPressureMeasurement)
-    //object IntermediateCuffPressure : CharacteristicUUIDs("0x2A36")
+    object IntermediateCuffPressure : CharacteristicUUIDs("0x2A36", ServiceUUID.bloodPressure, ::intermediateCuffPressureParser)
 
     //BODY WEIGHT
     object weightFeature : CharacteristicUUIDs("0x2A9E", ServiceUUID.weight,::parseWeightScaleFeature)
@@ -53,7 +51,7 @@ sealed class CharacteristicUUIDs(val id : String,val service: ServiceUUID, val p
     //object plxFeatures : CharacteristicUUIDs("0x2A60",)
 
     //CURRENT TIME
-    //object currentTime : CharacteristicUUIDs("0x2A2B",::parseCurrentTime)
+    object currentTime : CharacteristicUUIDs("0x2A2B",ServiceUUID.currentTime,{reading :BLEReading -> EmptyRecord(reading.device)})//::parseCurrentTime)
 
     //BATTERY LEVEL
     object batteryLevel : CharacteristicUUIDs("0x2A19",ServiceUUID.battery,::parseBatteryLevel)
@@ -102,7 +100,8 @@ sealed class CharacteristicUUIDs(val id : String,val service: ServiceUUID, val p
                 plxSpotCheck,
 
                 //currentTime,
-                batteryLevel
+                batteryLevel,
+                currentTime
             )
 
         fun fromNr(nr : String) = getAll().find { it.nr.equals(nr,ignoreCase = true) } ?: UnsupportedCharacteristic("${unsupportedCharacteristicName("0x$nr")}",PeripheralDescription("unknown"))

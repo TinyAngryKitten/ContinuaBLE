@@ -27,7 +27,7 @@ fun parseBloodPressureMeasurement(reading : BLEReading) =
     parse(reading) {
         flags(0..0)
 
-        BloodPressureRecord.fromISOValues(
+        BloodPressureRecord.finalFromISO(
             systolic = sfloat(),
             diastolic = sfloat(),
             meanArtieralPressure = sfloat(),
@@ -40,9 +40,15 @@ fun parseBloodPressureMeasurement(reading : BLEReading) =
         ) ?: EmptyRecord(reading.device)
     }
 
-//TODO: find out if this is something i should support
-/*
 fun intermediateCuffPressureParser(reading : BLEReading) =
-    parse(reading.data) {
-
-    }*/
+    parse(reading) {
+        BloodPressureRecord.intermediateFromISO(
+            systolic = sfloat(),
+            timeStamp = onCondition( flag(1), dateTime),
+            unit = if(flag(0)) BloodPressureUnit.kPa else BloodPressureUnit.mmHg,
+            bpm = onCondition(flag(2), sfloat),
+            userId = onCondition(flag(3),uint8),
+            status = null,//onCondition(flag(4), ISOValue.Flags())
+            device = reading.device
+        ) ?: EmptyRecord(reading.device)
+    }
