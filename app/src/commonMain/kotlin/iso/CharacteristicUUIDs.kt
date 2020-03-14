@@ -52,6 +52,7 @@ sealed class CharacteristicUUIDs(val id : String,val service: ServiceUUID, val p
 
     //CURRENT TIME
     object currentTime : CharacteristicUUIDs("0x2A2B",ServiceUUID.currentTime,{reading :BLEReading -> EmptyRecord(reading.device)})//::parseCurrentTime)
+    object dateTime : CharacteristicUUIDs("0x2A08",ServiceUUID.currentTime,{reading :BLEReading -> EmptyRecord(reading.device)})//::parseCurrentTime)
 
     //BATTERY LEVEL
     object batteryLevel : CharacteristicUUIDs("0x2A19",ServiceUUID.battery,::parseBatteryLevel)
@@ -76,11 +77,10 @@ sealed class CharacteristicUUIDs(val id : String,val service: ServiceUUID, val p
                 glucoseFeature,
                 glucoseMeasurement,
                 glucoseMeasurementContext,
-                recordControlPoint,
+                //recordControlPoint,
 
                 heartRateMeasurement,
                 bodySensorLocation,
-                //heartRateControlPoint,
 
                 bloodPressureFeature,
                 bloodPressureMeasurement,
@@ -99,14 +99,14 @@ sealed class CharacteristicUUIDs(val id : String,val service: ServiceUUID, val p
                 plxContinousMeasurement,
                 plxSpotCheck,
 
-                //currentTime,
                 batteryLevel,
-                currentTime
+                currentTime,
+                dateTime
             )
 
-        fun fromNr(nr : String) = getAll().find { it.nr.equals(nr,ignoreCase = true) } ?: UnsupportedCharacteristic("${unsupportedCharacteristicName("0x$nr")}",PeripheralDescription("unknown"))
+        fun fromNr(nr : String) = getAll().find { it.nr.equals(nr,ignoreCase = true) } ?: UnsupportedCharacteristic("${unsupportedCharacteristicName("0x$nr")}",PeripheralDescription(""))
         fun fromId(id : String) = getAll().find { it.id.equals(id,ignoreCase = true) } ?: UnsupportedCharacteristic(
-            unsupportedCharacteristicName(id),PeripheralDescription("unknown"))
+            unsupportedCharacteristicName(id),PeripheralDescription(""))
 
         fun unsupportedCharacteristicName(id : String) = when(id.toUpperCase()){
             "0X2A2B" -> "$id (Current time)"

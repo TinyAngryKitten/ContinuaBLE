@@ -2,7 +2,9 @@ package data
 
 import iso.ISOValue
 
-sealed class DataRecord(val device: PeripheralDescription)
+sealed class DataRecord(val device: PeripheralDescription) {
+    override fun toString(): String = this::class.simpleName ?: "DataRecord"
+}
 
 class EmptyRecord(device : PeripheralDescription) : DataRecord(device)
 
@@ -214,7 +216,16 @@ class ThermometerMeasurement(
     val timeStamp: ISOValue.DateTime?,
     val temperatureType: TemperatureType?,
     device: PeripheralDescription
-): DataRecord(device)
+): DataRecord(device) {
+    override fun toString(): String = """
+        ThermometerMeasurement(
+            measurementValue: $measurementValue,
+            measurementUnit: $measurementUnit,
+            timestamp: $timeStamp,
+            type: $temperatureType
+        )
+    """.trimIndent()
+}
 
 sealed class TemperatureType {
     object Armpit: TemperatureType()
@@ -286,9 +297,12 @@ class DeviceInfoRecord (
     override fun toString(): String {
         return """
             DeviceInfoRecord(
-            modelNr: $modelNumber,
-            serialNr: $serialNumber,
-            manufacturer: $manufacturerName,
+                modelNr: $modelNumber,
+                serialNr: $serialNumber,
+                firmwareRevision: $firmwareRevision,
+                hardwareRevision: $hardwareRevision,
+                softwareRevision: $softwareRevision,
+                manufacturer: $manufacturerName,
             )
         """.trimIndent()
     }
@@ -315,12 +329,12 @@ class BloodPressureFeatures(
 ) : DataRecord(device) {
     override fun toString(): String {
         return """BloodPressureFeatures: (
-            bodyMovementDetection: $bodyMovementDetection,
-            cuffFitDetection: $cuffFitDetection,
-            irregularPulseDetection: $irregularPulseDetection,
-            pulseRateRangeDetection: $pulseRateRangeDetection,
-            measurementPositionDetection: $measurementPositionDetection,
-            multipleBondSupport: $multipleBondSupport
+                bodyMovementDetection: $bodyMovementDetection,
+                cuffFitDetection: $cuffFitDetection,
+                irregularPulseDetection: $irregularPulseDetection,
+                pulseRateRangeDetection: $pulseRateRangeDetection,
+                measurementPositionDetection: $measurementPositionDetection,
+                multipleBondSupport: $multipleBondSupport
             )
         """.trimIndent()
     }
@@ -339,12 +353,12 @@ sealed class BloodPressureRecord(
     override fun toString(): String {
         return """
             BloodPressureRecord: (
-            systolic: $systolic,
-            unit: $unit,
-            timeStamp: $timeStamp,
-            bpm: $bpm,
-            userId: $userId,
-            status: ${if(status != null)status::class.simpleName else ""}
+                systolic: $systolic,
+                unit: $unit,
+                timeStamp: $timeStamp,
+                bpm: $bpm,
+                userId: $userId,
+                status: ${if(status != null)status::class.simpleName else ""}
             )
         """.trimIndent()
     }
@@ -360,12 +374,12 @@ sealed class BloodPressureRecord(
     ) : BloodPressureRecord(systolic,unit,timeStamp,bpm,userId,status,device) {
         override fun toString() = """
             IntermediateBloodPressureMeasurement: (
-            systolic: $systolic,
-            unit: $unit,
-            timeStamp: $timeStamp,
-            bpm: $bpm,
-            userId: $userId,
-            status: ${if(status != null)status::class.simpleName else ""}
+                systolic: $systolic,
+                unit: $unit,
+                timeStamp: $timeStamp,
+                bpm: $bpm,
+                userId: $userId,
+                status: ${if(status != null)status::class.simpleName else ""}
             )
         """.trimIndent()
     }
@@ -384,14 +398,14 @@ sealed class BloodPressureRecord(
         override fun toString(): String {
             return return """
             FinalBloodPressureMeasurement: (
-            systolic: $systolic,
-            diastolic: $diastolic,
-            meanArterialPressure: $meanArterialPressure,
-            unit: $unit,
-            timeStamp: $timeStamp,
-            bpm: $bpm,
-            userId: $userId,
-            status: ${if(status != null)status::class.simpleName else ""}
+                systolic: $systolic,
+                diastolic: $diastolic,
+                meanArterialPressure: $meanArterialPressure,
+                unit: $unit,
+                timeStamp: $timeStamp,
+                bpm: $bpm,
+                userId: $userId,
+                status: ${if(status != null)status::class.simpleName else ""}
             )
         """.trimIndent()
         }
@@ -633,6 +647,15 @@ class HeartRateRecord(
         rrInterval: List<ISOValue.UInt16>?,
         device: PeripheralDescription
     ) : this(measurementValue.value,energyExpended?.value,sensorContact,rrInterval?.map{it.value},device)
+
+    override fun toString(): String = """
+        HeartRateMeasurement(
+            measurementValue: $measurementValue,
+            energyExpended: $energyExpended,
+            sensorContact: $sensorContact,
+            rrInterval: $rrInterval,
+        )
+    """.trimIndent()
 }
 
 sealed class SensorContact {
@@ -647,7 +670,7 @@ class BodySensorLocationRecord(
     val location : BodySensorLocation,
     device: PeripheralDescription
 ) : DataRecord(device) {
-    override fun toString(): String = "Body sensor location: $location"
+    override fun toString(): String = "BodySensorLocation: $location"
 }
 
 sealed class BodySensorLocation {

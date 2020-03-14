@@ -47,7 +47,7 @@ sealed class ServiceUUID(val id : String) {
             get() = "Current Time Service"
     }
 
-    object unknown : ServiceUUID("") {
+    object unknown : ServiceUUID("0x0000") {
         override val name: String
             get() = "unknown"
 

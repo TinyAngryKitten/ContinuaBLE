@@ -151,7 +151,7 @@ class DeviceInfoBuilder(val device : PeripheralDescription) {
     val hardwareRevision = AtomicReference(null as String?)
     val softwareRevision = AtomicReference(null as String?)
     val manufacturerName = AtomicReference(null as String?)
-    val changedFields = frozenCopyOnWriteList(listOf(false,false,false))
+    val changedFields = frozenCopyOnWriteList(listOf(false,false,false,false))
 
     fun addComponent(record : DeviceInfoComponent) = when(record) {
         is DeviceInfoComponent.ModelNumber -> {
@@ -164,7 +164,7 @@ class DeviceInfoBuilder(val device : PeripheralDescription) {
         }
         is DeviceInfoComponent.FirmwareRevision -> {
             firmwareRevision.set(record.value)
-            //changedFields[2] = true
+            changedFields[3] = true
         }
         is DeviceInfoComponent.HardwareRevision -> {
             hardwareRevision.set(record.value)

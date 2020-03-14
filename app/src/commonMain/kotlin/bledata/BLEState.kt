@@ -7,4 +7,6 @@ sealed class BLEState {
     object NotAuthorized : BLEState()
     object Resetting : BLEState()
     object UnknownErrorState : BLEState()
+
+    override fun toString(): String = this::class.simpleName ?: "UnknownBLEState"
 }

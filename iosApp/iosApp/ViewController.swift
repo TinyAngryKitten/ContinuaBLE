@@ -1,89 +1,26 @@
 import UIKit
 import app
-//import Bluejay
 import CoreBluetooth
 import RxBluetoothKit
 import RxSwift
 //glucose: FC637664-D732-5B33-193A-8DF96288E3A6
 //bp: 552D7A89-7BB7-C25D-6936-5AF9C752CC03
+class TimeService: ServiceIdentifier {
+    var uuid = CBUUID(string: ServiceUUID.currentTime().nr)
+}
+class TimeCharacteristic: CharacteristicIdentifier {
+    var uuid: CBUUID = CBUUID(string: CharacteristicUUIDs.currentTime().nr)
+    //Service to which characteristic belongs
+    var service: ServiceIdentifier = TimeService()
+}
 
-/*struct HeartRateMeasurement: Receivable {
-    init(bluetoothData: Data) throws {
-        print("bluetooth data size: \(bluetoothData.count)")
-    }
+enum DeviceService: String, ServiceIdentifier {
+    case monitoring = "1b0d1200-a720-f7e9-46b6-31b601c4fca1"
 
-}*/
-/*
-class BlueSwiftTest {
-    let services = ServiceUUID.Companion().getAll().map({c in ServiceIdentifier(uuid: c.nr)})
-    let characteristics = CharacteristicUUIDs.Companion().getAll().map{c in CharacteristicIdentifier(uuid: c.nr, service:ServiceIdentifier(uuid: c.service.nr))}
-    
-    var bps : ServiceIdentifier
-    var bp : CharacteristicIdentifier
-    
-    
-    init() {
-        bps = ServiceIdentifier(uuid: "1810")
-        bp = CharacteristicIdentifier(uuid: "2A35", service: bps)
-    }
-    var discoveredDevices = [ScanDiscovery]()
-    
-    func scan() {
-        print("scan starting")
-    bluejay.scan(
-        duration: 15,
-        allowDuplicates: false,
-        serviceIdentifiers: [bps],//services,
-        discovery: { [weak self] (discovery, discoveries) -> ScanAction in
-            guard let weakSelf = self else {
-                return .stop
-            }
-            print("device discovered: \(discovery.peripheralIdentifier.description)")
-
-            weakSelf.discoveredDevices.append(discovery)
-            weakSelf.bluejay.connect(discovery.peripheralIdentifier, timeout: .seconds(15)) { result in
-                switch result {
-                case .success:
-                    debugPrint("Connection attempt to: \(discovery.peripheralIdentifier.description) is successful")
-                    weakSelf.bluejay.listen(to: weakSelf.bp, multipleListenOption: .replaceable)
-                    { [weak self] (result: ReadResult<HeartRateMeasurement>) in
-                            guard let weakSelf = self else {
-                                return
-                            }
-
-                            switch result {
-                            case .success(let heartRate):
-                                print("success!!!")
-                            case .failure(let error):
-                                debugPrint("Failed to listen with error: \(error.localizedDescription)")
-                            }
-                    }
-                    
-                case .failure(let error):
-                    debugPrint("Failed to connect with error: \(error.localizedDescription)")
-                }
-            }
-
-            return .continue
-        },
-        stopped: { (discoveries, error) in
-            if let error = error {
-                debugPrint("Scan stopped with error: \(error.localizedDescription)")
-            }
-            else {
-                debugPrint("Scan stopped without error.")
-            }
-    })
-    }
-    
-    let bluejay = Bluejay()
-    func start() {
-        bluejay.start()
-    }
-    func v() {
+    var uuid: CBUUID {
+        return CBUUID(string: self.rawValue)
     }
 }
-*/
 
 class RxTest : BleCentralInterface{
     
@@ -95,6 +32,7 @@ class RxTest : BleCentralInterface{
     var manager : CentralManager!
     let services = ServiceUUID.Companion().getAll().map({c in CBUUID(string: c.nr)})
     let characteristics = CharacteristicUUIDs.Companion().getAll().map({c in CBUUID(string: c.nr)})
+    
     var discoveredDevices : [Peripheral] = []
     let messageParser = BleMessageParser()
     
@@ -142,15 +80,55 @@ class RxTest : BleCentralInterface{
         stateChanged = callback
     }
     
+    func updateCurrentTimeOfDevice(characteristic: Characteristic){
+        let date = Date()
+        let calendar = Calendar.current
+        var comp = calendar.dateComponents([.day, .month, .year, .hour, .minute, .second, .weekday, .nanosecond], from: date)
+        let milisecond = comp.nanosecond!/1000000
+        let quiterValue = milisecond/256
+        let year_mso = (comp.year!) & 0xFF
+        let year_lso = ((comp.year!) >> 8) & 0xFF
+        let ajjust_reason = 1
+        
+        let Year_MSO = Int8(bitPattern: UInt8(year_mso))
+        let Year_LSO = Int8(bitPattern: UInt8(year_lso))
+        let MONTH = Int8(bitPattern: UInt8(comp.month!+1))
+        let DAY = Int8(bitPattern: UInt8(comp.day!))
+        let HOUR = Int8(bitPattern: UInt8(comp.hour!))
+        let MINUTE = Int8(bitPattern: UInt8(comp.minute!))
+        let SECOND = Int8(bitPattern: UInt8(comp.second!))
+        let WEEKDAY = Int8(bitPattern: UInt8(comp.weekday!))
+        let QUITERVALUE = Int8(bitPattern: UInt8(0))
+        let AJRSON = Int8(bitPattern: UInt8(ajjust_reason))
+
+        let isCurrentTime = characteristic.uuid.uuidString == CharacteristicUUIDs.currentTime().nr
+        
+        var data = [Year_MSO, Year_LSO, MONTH, DAY ,HOUR ,MINUTE ,SECOND]
+        let currentTimeArray = [WEEKDAY , QUITERVALUE , AJRSON];
+        if(isCurrentTime) {data.append(contentsOf:currentTimeArray)}
+        //return currentTimeArray//Data(bytes: currentTimeArray, count: currentTimeArray.count)
+        //let charIdentifier = CharacteristicIdentifier(characteristic: CBUUID(string: characteristic.nr), service: CBUUID(string: service.nr))
+        characteristic.writeValue(Data(bytes: data, count:data.count), type: .withResponse).asObservable().subscribe(onNext:{c in print("Write success! \(c)")}, onError: {e in print("write failed!\(e)")}, onCompleted: {print("write completed")}, onDisposed: {print("write disposed")})
+        //peripheral.writeValue(data:data, for: peripheral.characteristic(with: TimeCharacteristic()), type: .withResponse)
+    }
+    
     func connectToDevice(deviceDescription: PeripheralDescription) {
         print("connecting to \(deviceDescription.description())")
         let device = discoveredDevices.first(where: {p in p.identifier.uuidString == deviceDescription.UUID})
         if(device != nil) {
-            device?.establishConnection().flatMap { $0.discoverServices(self.services) }.asObservable()
+            device?.establishConnection().flatMap { peripheral -> Single<[Service]> in
+                return peripheral.discoverServices(self.services)
+            }.asObservable()
             .flatMap { Observable.from($0) }
             .flatMap { $0.discoverCharacteristics(self.characteristics)}.asObservable()
             .flatMap { Observable.from($0) }
             .subscribe(onNext: { characteristic in
+                print("CHARACTERISTIC DISCOVERED: \(characteristic.uuid.uuidString)")
+                if(characteristic.uuid.uuidString == CharacteristicUUIDs.dateTime().nr || characteristic.uuid.uuidString == CharacteristicUUIDs.dateTime().nr) {
+                    print("current time found")
+                    self.updateCurrentTimeOfDevice(characteristic:characteristic)
+                }
+                //self.updateCurrentTimeOfDevice(peripheral: peripheral)
                 print("found characteristic: \(characteristic.characteristic.description)")
                 if(characteristic.properties.contains(.notify) || characteristic.properties.contains(.indicate)) {
                     characteristic.observeValueUpdateAndSetNotification().catchError({
@@ -195,6 +173,7 @@ class RxTest : BleCentralInterface{
                     print("device discovered \(scannedPeripheral.peripheral)")
                     self.onDiscover(self.peripheralToDescription(peripheral: scannedPeripheral.peripheral))
                     self.discoveredDevices.append(scannedPeripheral.peripheral)
+                    print("id: \(scannedPeripheral.peripheral.identifier.uuidString)")
                 })
         }
     }
@@ -247,6 +226,8 @@ class ViewController: UIViewController {
     @IBAction func scan(_ sender: Any) {
         logger().debug(str: "scan pressed")
         deviceCentral.scanForDevices()
-        //rxtest.scan()
+    }
+    @IBAction func connectToTickr(_ sender: Any) {
+        deviceCentral.connectToDevice(device: PeripheralDescription(UUID: "1E2E02D0-7FD9-5AF3-5B7A-8C1ECD50277D", name: "tickr"))
     }
 }
