@@ -1,5 +1,6 @@
 package data
 
+import bledata.CurrentTime
 import iso.ISOValue
 
 sealed class DataRecord(val device: PeripheralDescription) {
@@ -7,6 +8,27 @@ sealed class DataRecord(val device: PeripheralDescription) {
 }
 
 class EmptyRecord(device : PeripheralDescription) : DataRecord(device)
+
+class DateTimeRecord(
+    val dateTime: ISOValue.DateTime,
+    device: PeripheralDescription
+) : DataRecord(device){
+    override fun toString(): String {
+        return dateTime.toString()
+    }
+}
+
+class CurrentTimeRecord(
+    val currentTime: CurrentTime,
+    device: PeripheralDescription
+) : DataRecord(device){
+
+    override fun toString(): String {
+        return currentTime.toString()
+    }
+
+}
+
 
 class PulseOximeterFeatures(
     val measurementStatus: Boolean,
@@ -837,10 +859,18 @@ class GlucoseRecord(
         device
     )
 
+    /** returns the correct amount if amount is valid, returns -1 if amount is not valid( ex. NaN, out of range, resterved for future use..)**/
+    val adjustedAmount : Float
+    get() {
+        if(amount !is ISOValue.SFloat.Value) return -1f
+        return if (unit == BloodGlucoseUnit.DL) amount.value * 100000 else amount.value * 1000
+    }
+
     override fun toString(): String = """
     Glucose Record ( 
     unit: $unit,
     amount: $amount,
+    adjustedAmount: $adjustedAmount,
     sequenceNr: $sequenceNumber,
     baseTime: $baseTime,
     timeOffset: $timeOffset

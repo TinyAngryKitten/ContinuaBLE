@@ -84,27 +84,22 @@ class RxTest : BleCentralInterface{
         let date = Date()
         let calendar = Calendar.current
         var comp = calendar.dateComponents([.day, .month, .year, .hour, .minute, .second, .weekday, .nanosecond], from: date)
-        let milisecond = comp.nanosecond!/1000000
-        let quiterValue = milisecond/256
-        let year_mso = (comp.year!) & 0xFF
-        let year_lso = ((comp.year!) >> 8) & 0xFF
-        let ajjust_reason = 1
         
-        let Year_MSO = Int8(bitPattern: UInt8(year_mso))
-        let Year_LSO = Int8(bitPattern: UInt8(year_lso))
-        let MONTH = Int8(bitPattern: UInt8(comp.month!+1))
-        let DAY = Int8(bitPattern: UInt8(comp.day!))
-        let HOUR = Int8(bitPattern: UInt8(comp.hour!))
-        let MINUTE = Int8(bitPattern: UInt8(comp.minute!))
-        let SECOND = Int8(bitPattern: UInt8(comp.second!))
-        let WEEKDAY = Int8(bitPattern: UInt8(comp.weekday!))
-        let QUITERVALUE = Int8(bitPattern: UInt8(0))
-        let AJRSON = Int8(bitPattern: UInt8(ajjust_reason))
+        let year1 = Int8(bitPattern: UInt8((comp.year!) & 0xFF))
+        let year2 = Int8(bitPattern: UInt8(((comp.year!) >> 8) & 0xFF))
+        let month = Int8(bitPattern: UInt8(comp.month!))
+        let day = Int8(bitPattern: UInt8(comp.day!))
+        let hour = Int8(bitPattern: UInt8(comp.hour!))
+        let min = Int8(bitPattern: UInt8(comp.minute!))
+        let sec = Int8(bitPattern: UInt8(comp.second!))
+        let weekday = Int8(bitPattern: UInt8(comp.weekday!))
+        let quiterval = Int8(bitPattern: UInt8(0))
+        let adjustReason = Int8(bitPattern: UInt8(1))
 
         let isCurrentTime = characteristic.uuid.uuidString == CharacteristicUUIDs.currentTime().nr
         
-        var data = [Year_MSO, Year_LSO, MONTH, DAY ,HOUR ,MINUTE ,SECOND]
-        let currentTimeArray = [WEEKDAY , QUITERVALUE , AJRSON];
+        var data = [year1, year2, month, day ,hour ,min ,sec]
+        let currentTimeArray = [weekday , quiterval , adjustReason];
         if(isCurrentTime) {data.append(contentsOf:currentTimeArray)}
         //return currentTimeArray//Data(bytes: currentTimeArray, count: currentTimeArray.count)
         //let charIdentifier = CharacteristicIdentifier(characteristic: CBUUID(string: characteristic.nr), service: CBUUID(string: service.nr))
@@ -218,9 +213,6 @@ class ViewController: UIViewController {
                 UUID: "552D7A89-7BB7-C25D-6936-5AF9C752CC03", name: "Bp A and D"
             )
         )
-        /*rxtest.connectToDevice(deviceDescription: PeripheralDescription(
-            UUID: "552D7A89-7BB7-C25D-6936-5AF9C752CC03", name: "Bp A and D"
-        ))*/
     }
     @IBOutlet weak var text: UITextView!
     @IBAction func scan(_ sender: Any) {
@@ -229,5 +221,9 @@ class ViewController: UIViewController {
     }
     @IBAction func connectToTickr(_ sender: Any) {
         deviceCentral.connectToDevice(device: PeripheralDescription(UUID: "1E2E02D0-7FD9-5AF3-5B7A-8C1ECD50277D", name: "tickr"))
+    }
+    
+    @IBAction func connectToThermometer(_ sender: Any) {
+        deviceCentral.connectToDevice(device: PeripheralDescription(UUID: "F5727898-9CB4-51EA-9554-DB7AA6304A24", name: "Thermometer"))
     }
 }

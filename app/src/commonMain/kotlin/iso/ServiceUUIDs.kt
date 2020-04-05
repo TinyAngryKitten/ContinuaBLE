@@ -66,6 +66,7 @@ sealed class ServiceUUID(val id : String) {
             battery,
             bloodPressure,
             heartRate,
+            thermometer,
             currentTime
         )
 

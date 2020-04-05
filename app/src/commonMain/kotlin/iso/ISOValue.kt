@@ -30,10 +30,59 @@ sealed class ISOValue {
         override fun toString(): String = "Nibble(signed: ${value.toInt()}, unsigned: $unsigned)"
     }
 
+    sealed class Year(val value : Int) {
+        class Value(value : Int) : Year(value) {
+            override fun toString(): String = "Year: $value"
+        }
+
+        object Unknown : Year(0){
+            override fun toString(): String {
+                return "Unknown Year"
+            }
+        }
+        object Invalid : Year(-1){
+            override fun toString(): String = "Invalid Year"
+        }
+
+        companion object {
+            fun fromInt(year: Int) = when(year) {
+                in 1582..9999 -> Value(year)
+                0 -> Unknown
+                else -> Invalid
+            }
+        }
+    }
+
+    sealed class Month(val value : Int) {
+        class Value(value : Int) : Month(value){
+            override fun toString(): String {
+                return "Month: $value"
+            }
+        }
+        object Unknown : Month(0){
+            override fun toString(): String {
+                return "Unknown month"
+            }
+        }
+        object Invalid : Month(-1) {
+            override fun toString(): String {
+                return "Invalid month"
+            }
+        }
+
+        companion object {
+            fun fromInt(month: Int) = when(month) {
+                in 1..12 -> Value(month)
+                0 -> Unknown
+                else -> Invalid
+            }
+        }
+    }
+
     //date and time representationf
     data class DateTime(
-        val year : Int,
-        val month : Int,
+        val year : Year,
+        val month : Month,
         val day : Int,
         val hours : Int,
         val minutes : Int,
@@ -48,8 +97,8 @@ sealed class ISOValue {
             minutes: UInt8,
             seconds: UInt8
         ) : this(
-            year.value,
-            month.value,
+            Year.fromInt(year.value),
+            Month.fromInt(month.value),
             day.value,
             hours.value,
             minutes.value,
@@ -73,10 +122,11 @@ sealed class ISOValue {
                 5 -> minutes
                 4 -> hours
                 3 -> day
-                2 -> month
-                1 -> (year xor Byte.MAX_VALUE.toInt())//second part of the year value
-                0 -> (year and Byte.MAX_VALUE.toInt())//first part of the year value
-                else -> seconds//TODO: does it start at 0 or 1?
+                2 -> month.value
+                0 -> (year.value and 255)//second part of the year value
+                1 -> 7//first part of the year value(valid until 2050)
+                //TODO: Find a better solution for second year bit
+                else -> seconds
             }.toByte()
         }
     }

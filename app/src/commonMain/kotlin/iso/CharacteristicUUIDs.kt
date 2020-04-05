@@ -51,8 +51,8 @@ sealed class CharacteristicUUIDs(val id : String,val service: ServiceUUID, val p
     //object plxFeatures : CharacteristicUUIDs("0x2A60",)
 
     //CURRENT TIME
-    object currentTime : CharacteristicUUIDs("0x2A2B",ServiceUUID.currentTime,{reading :BLEReading -> EmptyRecord(reading.device)})//::parseCurrentTime)
-    object dateTime : CharacteristicUUIDs("0x2A08",ServiceUUID.currentTime,{reading :BLEReading -> EmptyRecord(reading.device)})//::parseCurrentTime)
+    object currentTime : CharacteristicUUIDs("0x2A2B",ServiceUUID.currentTime,::parseCurrentTime)//::parseCurrentTime)
+    object dateTime : CharacteristicUUIDs("0x2A08",ServiceUUID.currentTime,::parseDateTime)//::parseCurrentTime)
 
     //BATTERY LEVEL
     object batteryLevel : CharacteristicUUIDs("0x2A19",ServiceUUID.battery,::parseBatteryLevel)

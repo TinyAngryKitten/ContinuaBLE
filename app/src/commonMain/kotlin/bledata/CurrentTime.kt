@@ -55,10 +55,10 @@ enum class DayOfWeekEnum {
 }
 
 data class AdjustReason(
-    val manualTimeUpdate : Boolean,
-    val externalReferenceTimeUpdate : Boolean,
-    val changeOfTimeZone : Boolean,
-    val changeOfDST : Boolean
+    val manualTimeUpdate : Boolean = false,
+    val externalReferenceTimeUpdate : Boolean = false,
+    val changeOfTimeZone : Boolean = false,
+    val changeOfDST : Boolean = false
 ){
     constructor(
         manualTimeUpdate: ISOValue.Flag,

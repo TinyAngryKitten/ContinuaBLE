@@ -42,7 +42,8 @@ class MainActivity : AppCompatActivity() {
             //gluco2: "F0:B5:D1:58:7D:56"
             //bp: 18:93:D7:7A:40:DC
             //ticker: C7:38:EE:BB:77:2C
-            deviceCentral.connectToDevice(PeripheralDescription("C7:38:EE:BB:77:2C"))
+            //thermometer: 6C:EC:EB:43:E0:65
+            deviceCentral.connectToDevice(PeripheralDescription("6C:EC:EB:43:E0:65"))
         }//("9A427AF2-7BC3-785F-471E-CF3AA62E0A5A") }
         scanBtn.setOnClickListener {
             controller.scan()
