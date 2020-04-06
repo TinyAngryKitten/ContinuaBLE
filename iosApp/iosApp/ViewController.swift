@@ -32,6 +32,10 @@ class RxTest : BleCentralInterface{
     var manager : CentralManager!
     let services = ServiceUUID.Companion().getAll().map({c in CBUUID(string: c.nr)})
     let characteristics = CharacteristicUUIDs.Companion().getAll().map({c in CBUUID(string: c.nr)})
+    let timeCharacteristics = [
+        CharacteristicUUIDs.dateTime(),
+        CharacteristicUUIDs.currentTime()
+    ].map({c in CBUUID(string: c.nr)})
     
     var discoveredDevices : [Peripheral] = []
     let messageParser = BleMessageParser()
@@ -85,9 +89,11 @@ class RxTest : BleCentralInterface{
         let calendar = Calendar.current
         var comp = calendar.dateComponents([.day, .month, .year, .hour, .minute, .second, .weekday, .nanosecond], from: date)
         
+        let monthVal = comp.month!
+        
         let year1 = Int8(bitPattern: UInt8((comp.year!) & 0xFF))
         let year2 = Int8(bitPattern: UInt8(((comp.year!) >> 8) & 0xFF))
-        let month = Int8(bitPattern: UInt8(comp.month!))
+        let month = Int8(bitPattern: UInt8(monthVal))
         let day = Int8(bitPattern: UInt8(comp.day!))
         let hour = Int8(bitPattern: UInt8(comp.hour!))
         let min = Int8(bitPattern: UInt8(comp.minute!))
@@ -103,27 +109,38 @@ class RxTest : BleCentralInterface{
         if(isCurrentTime) {data.append(contentsOf:currentTimeArray)}
         //return currentTimeArray//Data(bytes: currentTimeArray, count: currentTimeArray.count)
         //let charIdentifier = CharacteristicIdentifier(characteristic: CBUUID(string: characteristic.nr), service: CBUUID(string: service.nr))
-        characteristic.writeValue(Data(bytes: data, count:data.count), type: .withResponse).asObservable().subscribe(onNext:{c in print("Write success! \(c)")}, onError: {e in print("write failed!\(e)")}, onCompleted: {print("write completed")}, onDisposed: {print("write disposed")})
+        characteristic.writeValue(Data(bytes: data, count:data.count), type: .withResponse).asObservable().subscribe(onNext:{c in print("Write success! \(c.value)")}, onError: {e in print("write failed!\(e)")}, onCompleted: {print("write completed")}, onDisposed: {print("write disposed")})
         //peripheral.writeValue(data:data, for: peripheral.characteristic(with: TimeCharacteristic()), type: .withResponse)
+    }
+    
+    func findTimeCharacteristicsFromPeripheral(peripheral: Peripheral) {
+        peripheral.discoverServices(self.services)
+        .asObservable()
+        .flatMap { Observable.from($0) }
+        .flatMap { $0.discoverCharacteristics(self.characteristics)}.asObservable()
+        .flatMap { Observable.from($0) }
+        .subscribe(onNext: { characteristic in
+            self.updateCurrentTimeOfDevice(characteristic:characteristic)
+        })
     }
     
     func connectToDevice(deviceDescription: PeripheralDescription) {
         print("connecting to \(deviceDescription.description())")
         let device = discoveredDevices.first(where: {p in p.identifier.uuidString == deviceDescription.UUID})
         if(device != nil) {
-            device?.establishConnection().flatMap { peripheral -> Single<[Service]> in
+            device?.establishConnection().flatMap {
+                peripheral -> Single<[Service]> in
+                
+                self.findTimeCharacteristicsFromPeripheral(peripheral: peripheral)
+                sleep(2)
+                
                 return peripheral.discoverServices(self.services)
+                
             }.asObservable()
             .flatMap { Observable.from($0) }
             .flatMap { $0.discoverCharacteristics(self.characteristics)}.asObservable()
             .flatMap { Observable.from($0) }
             .subscribe(onNext: { characteristic in
-                print("CHARACTERISTIC DISCOVERED: \(characteristic.uuid.uuidString)")
-                if(characteristic.uuid.uuidString == CharacteristicUUIDs.dateTime().nr || characteristic.uuid.uuidString == CharacteristicUUIDs.dateTime().nr) {
-                    print("current time found")
-                    self.updateCurrentTimeOfDevice(characteristic:characteristic)
-                }
-                //self.updateCurrentTimeOfDevice(peripheral: peripheral)
                 print("found characteristic: \(characteristic.characteristic.description)")
                 if(characteristic.properties.contains(.notify) || characteristic.properties.contains(.indicate)) {
                     characteristic.observeValueUpdateAndSetNotification().catchError({
