@@ -29,7 +29,6 @@ class CurrentTimeRecord(
 
 }
 
-
 class PulseOximeterFeatures(
     val measurementStatus: Boolean,
     val deviceAndSensorStatus: Boolean,
@@ -55,7 +54,6 @@ class PulseOximeterFeatures(
         """.trimIndent()
     }
 }
-
 
 class PLXSpotCheck(
     val spo2: ISOValue.SFloat,

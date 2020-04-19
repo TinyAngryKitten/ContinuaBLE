@@ -4,9 +4,12 @@ import android.bluetooth.*
 import android.bluetooth.BluetoothGatt.GATT_SUCCESS
 import android.bluetooth.BluetoothGattCharacteristic.*
 import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
+import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.os.Handler
+import android.os.ParcelUuid
 import android.support.v4.content.ContextCompat.getSystemService
 import bledata.*
 import data.PeripheralDescription
@@ -30,9 +33,6 @@ class BluetoothController(
     private var commandQueueBusy = false
     private val bleHandler = Handler()
 
-    private val CLIENT_CHARACTERISTIC_CONFIG_DESCRIPTOR_UUID: UUID =
-        UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
-
     companion object {
         fun create(context: Context): BluetoothController? {
             val manager = getSystemService(context, BluetoothManager::class.java)
@@ -53,22 +53,31 @@ class BluetoothController(
         if (!adapter.isEnabled) throw RuntimeException("Bluetooth disabled")
     }
 
+    fun stopScan() {
+        adapter.bluetoothLeScanner.stopScan(scanCallback)
+        logger.info("Scan ended")
+    }
+
     fun scan() {
         logger.debug("Scan starting")
 
         bleHandler.postDelayed({
             adapter.bluetoothLeScanner.stopScan(scanCallback)
+            logger.info("Scan ended")
         }, 60000)//stop scan after 1 minute
 
-        adapter.bluetoothLeScanner.startScan(scanCallback)
-        /*
-        logger.debug("IS DISCOVERING: "+adapter.isDiscovering)
-        val device = adapter.bondedDevices.find { it.address == "34:03:DE:0D:51:16" }
-        logger.debug("DEVICE: $device")
-        //val device = adapter.getRemoteDevice(address)
-        val bleGatt = device?.connectGatt(context, false, gattCallback)
-        //bleGatt.discoverServices()
-        logger.debug("connecting: ${device?.name}")*/
+        adapter.bluetoothLeScanner.startScan(
+            ServiceUUID.getDiscoverable().map {
+                ScanFilter
+                    .Builder()
+                    .setServiceUuid(
+                        ParcelUuid(UUID.fromString(it.toAndroidUUID()))
+                    )
+                    .build()
+            },
+            ScanSettings.Builder().build(),
+            scanCallback
+        )
     }
 
     val scanCallback = object : ScanCallback() {
@@ -94,7 +103,10 @@ class BluetoothController(
         }
 
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
-            if (result != null && result.device != null && !discoveredDevices.contains(result.device)) {
+            if (
+                result != null &&
+                result.device != null &&
+                !discoveredDevices.contains(result.device)) {
                 logger.debug("discovered. ${result.device.address}")
                 logger.debug("discovered. ${result.device.name}")
 
@@ -108,22 +120,23 @@ class BluetoothController(
             }
         }
         override fun onScanFailed(errorCode: Int) {
-            logger.debug("scan error")
+            logger.error("scan failed")
         }
     }
 
     fun connectToDevice(address: String) {
-        logger.debug("connecting..")
+        logger.info("connecting...")
         val device = adapter.bondedDevices.find { it.address == address } ?: adapter.getRemoteDevice(address)
-
-        //val device = adapter.getRemoteDevice(address)
-        val bleGatt = device?.connectGatt(context, true, gattCallback)
-        //bleGatt.discoverServices()
-        logger.debug("connecting: ${device?.name}")
+        if(device == null) {
+            logger.info("Device $address has not been discovered yet")
+        } else {
+            //val device = adapter.getRemoteDevice(address)
+            val bleGatt = device.connectGatt(context, true, gattCallback)
+        }
     }
 
     fun disconnectFromDevice(address: String) {
-        val device = adapter.getRemoteDevice(address)
+        //val device = adapter.getRemoteDevice(address)
     }
 
     private val gattCallback = object : BluetoothGattCallback() {
@@ -131,8 +144,6 @@ class BluetoothController(
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
             if (gatt != null && status == BluetoothGatt.GATT_SUCCESS && newState == BluetoothProfile.STATE_CONNECTED) {
-                logger.debug("device connected successfully: ${gatt.device?.name} ")
-
                 bleHandler.post {
 
                     connectedDevices.add(gatt.device)
@@ -191,7 +202,7 @@ class BluetoothController(
                         ).toByteArray()
                     else dateTime.toByteArray()
 
-                    logger.info("Time updated to: $dateTime")
+                    logger.info("Time updated")
                     logger.debug("Time bytes:")
                     dateTime.toByteArray().forEach {
                         logger.debug(it.strRepresentation())
@@ -299,10 +310,10 @@ class BluetoothController(
             characteristic: BluetoothGattCharacteristic,
             gatt: BluetoothGatt
         ): Boolean {
-            logger.info("writing characteristic: ${characteristic.uuid.identifier}")
+            logger.debug("writing characteristic: ${characteristic.uuid.identifier}")
             val result = commandQueue.add(Runnable {
                 if (gatt.writeCharacteristic(characteristic)) {
-                    logger.info("characteristic written: ${characteristic.uuid}")
+                    logger.debug("characteristic written: ${characteristic.uuid}")
                 } else {
                     logger.error("unable to write characteristic ${characteristic.uuid}")
                     completedCommand()

@@ -28,6 +28,7 @@ fun parse(reading: BLEReading, fn : ISOParser.()->DataRecord) : DataRecord = try
 class ISOParser(var bytes : ByteArray) {
     private var flagBytes : ByteArray = byteArrayOf()
 
+
     //when left or right nibble is called, take 1 byte and store it in nibble byte,
     //register which side has been viewed, if both sides has been viewed or one side is viewed twice, drop nibble byte
     private var nibbleByte : Byte? = null
@@ -174,6 +175,12 @@ class ISOParser(var bytes : ByteArray) {
         ISOValue.Flag(bool)
     }
 
+    fun <T: ISOValue?>requirement(function : Requirement<T>.() -> Unit ) : T? {
+        val requirement = Requirement<T>().apply(function)
+        return if(flag(requirement.flag)) requirement.format()
+        else null
+    }
+
     val dateTime : () -> ISOValue.DateTime = {
         ISOValue.DateTime(
             year = uint16(),
@@ -213,4 +220,9 @@ class ISOParser(var bytes : ByteArray) {
         bytes = if(range.first >0) bytes.sliceArray(0 until range.first) + bytes.sliceArray(range.last+1 until bytes.size)
         else bytes.sliceArray(range.last+1 until bytes.size)
     }
+
+    fun flags(nrOfBits : Int) = flags(0 until (nrOfBits/8) )
+
 }
+
+class Requirement<T : ISOValue?>(var flag : Int = 0, var format : ()->T? = {null})

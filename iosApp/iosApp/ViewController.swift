@@ -109,7 +109,12 @@ class RxTest : BleCentralInterface{
         if(isCurrentTime) {data.append(contentsOf:currentTimeArray)}
         //return currentTimeArray//Data(bytes: currentTimeArray, count: currentTimeArray.count)
         //let charIdentifier = CharacteristicIdentifier(characteristic: CBUUID(string: characteristic.nr), service: CBUUID(string: service.nr))
-        characteristic.writeValue(Data(bytes: data, count:data.count), type: .withResponse).asObservable().subscribe(onNext:{c in print("Write success! \(c.value)")}, onError: {e in print("write failed!\(e)")}, onCompleted: {print("write completed")}, onDisposed: {print("write disposed")})
+        characteristic.writeValue(Data(bytes: data, count:data.count), type: .withResponse).asObservable().subscribe(onNext:{c in print("Write success! \(c.value)")
+            logger().info(str: "Time updated successfully")
+        }, onError: {
+            e in print("write failed!\(e)")
+            logger().info(str: "Time update failed")
+        }, onCompleted: {print("write completed")}, onDisposed: {print("write disposed")})
         //peripheral.writeValue(data:data, for: peripheral.characteristic(with: TimeCharacteristic()), type: .withResponse)
     }
     
@@ -125,11 +130,13 @@ class RxTest : BleCentralInterface{
     }
     
     func connectToDevice(deviceDescription: PeripheralDescription) {
-        print("connecting to \(deviceDescription.description())")
+        logger().info(str: ("connecting to \(deviceDescription.description())"))
         let device = discoveredDevices.first(where: {p in p.identifier.uuidString == deviceDescription.UUID})
         if(device != nil) {
             device?.establishConnection().flatMap {
                 peripheral -> Single<[Service]> in
+                
+                logger().info(str: ("connected to \(deviceDescription.name)"))
                 
                 self.findTimeCharacteristicsFromPeripheral(peripheral: peripheral)
                 sleep(2)
@@ -175,10 +182,10 @@ class RxTest : BleCentralInterface{
     
     func scanForDevices() {
         self.discoveredDevices = []
-        print("scanning for devices")
         if(manager.state != .poweredOn) {
             print("not powered on")
         } else {
+            logger().info(str: "Scanning for devices")
             currentDiscovery?.dispose()
             currentDiscovery = manager.scanForPeripherals(withServices: services)
                 .subscribe(onNext: { scannedPeripheral in
@@ -186,7 +193,7 @@ class RxTest : BleCentralInterface{
                     self.onDiscover(self.peripheralToDescription(peripheral: scannedPeripheral.peripheral))
                     self.discoveredDevices.append(scannedPeripheral.peripheral)
                     print("id: \(scannedPeripheral.peripheral.identifier.uuidString)")
-                })
+                }, onDisposed: {logger().info(str: "Stopping scan")})
         }
     }
     

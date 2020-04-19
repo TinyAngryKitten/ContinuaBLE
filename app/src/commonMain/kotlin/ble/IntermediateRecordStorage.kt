@@ -1,15 +1,19 @@
 package ble
 
+import bledata.DeviceCapability
 import co.touchlab.stately.collections.frozenCopyOnWriteList
 import co.touchlab.stately.collections.frozenHashMap
+import co.touchlab.stately.collections.frozenLinkedList
 import co.touchlab.stately.concurrency.AtomicReference
 import co.touchlab.stately.freeze
 import data.*
+import iso.CharacteristicUUIDs
+import iso.ServiceUUID
 import sample.logger
 import kotlin.native.concurrent.ThreadLocal
 
 class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
-    //val deviceCapabilities: MutableMap<String, DeviceCapabilities.DeviceServices> = frozenHashMap()
+    val deviceCapabilities = frozenLinkedList<DeviceCapability>()
 
     val glucoseRecords = frozenHashMap<String,GlucoseRecord>()
     val glucoseContextRecords = frozenHashMap<String,GlucoseRecordContext>()
@@ -19,16 +23,11 @@ class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
     val bodyCompositionFeatureMap = frozenHashMap<String,BodyCompositionFeature>()
     val weightFeateatureMap = frozenHashMap<String,WeightFeatures>()
 
-    /*
-    fun addDeviceCapabilities(capability : DeviceCapabilities) = when(capability) {
-        is DeviceCapabilities.DeviceServices -> deviceCapabilities[capability.device.UUID] = capability
-        is DeviceCapabilities.ServiceCharacteristics -> {
-            deviceCapabilities[capability.device.UUID]?.services?.add(capability)
-            Unit
-        }
-        if
-    }*/
-
+    fun addDeviceCapability(
+        device: PeripheralDescription,
+        characteristic: CharacteristicUUIDs,
+        service: ServiceUUID = characteristic.service
+    ) = deviceCapabilities.find { it.device == device }?.addCharacteristic(characteristic,service)
 
     fun addRecord(record : DataRecord): Unit =
         when(record) {
@@ -119,10 +118,16 @@ class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
         if(!deviceInfoRecords.containsKey(record.device.UUID)) deviceInfoRecords[record.device.UUID] = DeviceInfoBuilder(record.device)
 
         deviceInfoRecords[record.device.UUID]?.addComponent(record)
-        val deviceInfo = deviceInfoRecords[record.device.UUID]?.build()
+        val deviceInfo = deviceInfoRecords[record.device.UUID]
+            ?.build(
+                deviceCapabilities
+                    .find { it.device == record.device }
+                    ?.capabilities?.get(ServiceUUID.deviceInformation)
+                    ?: listOf()
+            )
 
         if(deviceInfo != null) {
-            //deviceInfo shouldnt be changing, so just keep it in memory
+            deviceInfoRecords.remove(record.device.UUID)
             completeRecordCallback(deviceInfo)
         }
     }
@@ -142,7 +147,6 @@ class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
     }
 }
 
-//TODO: Deal with the fact that some fields might not be sendt?
 @ThreadLocal
 class DeviceInfoBuilder(val device : PeripheralDescription) {
     val modelNumber = AtomicReference(null as String?)
@@ -151,38 +155,42 @@ class DeviceInfoBuilder(val device : PeripheralDescription) {
     val hardwareRevision = AtomicReference(null as String?)
     val softwareRevision = AtomicReference(null as String?)
     val manufacturerName = AtomicReference(null as String?)
-    val changedFields = frozenCopyOnWriteList(listOf(false,false,false,false))
+
+    //remember which characteristics has been recorded, for comparison against which characteristics
+    //the device supports to determine when all the data is complete
+    val characteristicsRecorded = frozenCopyOnWriteList<CharacteristicUUIDs>()
 
     fun addComponent(record : DeviceInfoComponent) = when(record) {
         is DeviceInfoComponent.ModelNumber -> {
+            characteristicsRecorded.add(CharacteristicUUIDs.modelNumber)
             modelNumber.set(record.value)
-            changedFields[0] = true
         }
         is DeviceInfoComponent.SerialNumber -> {
+            characteristicsRecorded.add(CharacteristicUUIDs.serialNumber)
             serialNumber.set(record.value)
-            changedFields[1] = true
         }
         is DeviceInfoComponent.FirmwareRevision -> {
+            characteristicsRecorded.add(CharacteristicUUIDs.firmwareRevision)
             firmwareRevision.set(record.value)
-            changedFields[3] = true
         }
         is DeviceInfoComponent.HardwareRevision -> {
+            characteristicsRecorded.add(CharacteristicUUIDs.hardwareRevision)
             hardwareRevision.set(record.value)
             //changedFields[4] = true
         }
         is DeviceInfoComponent.SoftwareRevision -> {
+            characteristicsRecorded.add(CharacteristicUUIDs.softwareRevision)
             softwareRevision.set(record.value)
-            //changedFields[5] = true
         }
         is DeviceInfoComponent.ManufacturerName -> {
+            characteristicsRecorded.add(CharacteristicUUIDs.manufacturerName)
             manufacturerName.set(record.value)
-            changedFields[2] = true
         }
     }
 
     //build deviceInfoRecord if all fields are set, there is a chance that only one or no fields are present
     // this ignores hardware firmware and software revision  because it might never be sent
-    fun build() = if(changedFields.all { it }) {
+    fun build(expectedFields: List<CharacteristicUUIDs>) = if(expectedFields.contains(characteristicsRecorded)) {
         DeviceInfoRecord(
             modelNumber.get()?:"",//
             serialNumber.get()?:"",//

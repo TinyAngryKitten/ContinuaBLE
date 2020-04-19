@@ -1,7 +1,10 @@
 package bledata
 
+import data.DataRecord
 import data.PeripheralDescription
 import iso.CharacteristicUUIDs
+import iso.ISOParser
+import iso.parse
 import util.strRepresentation
 
 data class BLEReading(
@@ -17,4 +20,8 @@ data class BLEReading(
     data = ${data.strRepresentation()}
     )
     """.trimIndent()
+
+    fun parse(function : ISOParser.() -> DataRecord) : DataRecord{
+        return parse(this,function)
+    }
 }

@@ -19,9 +19,9 @@ actual class BLECentral(val controller : BluetoothController ) : BleCentralInter
 
     override fun connectToDevice(deviceDescription: PeripheralDescription) {
         val device = controller.discoveredDevices
-            .find { it.address.equals(deviceDescription.UUID,ignoreCase = true) }
+            .find { it.address.equals(deviceDescription.UUID,ignoreCase = true) } ?: return
 
-        controller.connectToDevice(device?.address ?: "")
+        controller.connectToDevice(device.address)
     }
 
 
@@ -47,7 +47,7 @@ actual class BLECentral(val controller : BluetoothController ) : BleCentralInter
     }
 
     override fun changeStateChangeCallback(callback: (BLEState) -> Unit) {
-        //TODO: NOT IMPLEMENTED
+        controller.stateChangedCallback.set(callback)
     }
 
 

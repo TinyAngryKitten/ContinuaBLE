@@ -70,6 +70,14 @@ sealed class ServiceUUID(val id : String) {
             currentTime
         )
 
+        //get services that should be scanned for
+        fun getDiscoverable() = getAll().minus(listOf(
+            deviceInformation,
+            battery,
+            currentTime
+        ))
+
+
         fun fromNr(nr : String) = getAll().find { it.nr.equals(nr,ignoreCase = true) }
         fun fromId(id : String) = getAll().find { it.id.equals(id,ignoreCase = true) }
 

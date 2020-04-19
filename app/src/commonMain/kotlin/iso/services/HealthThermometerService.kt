@@ -2,19 +2,25 @@ package iso.services
 
 import bledata.BLEReading
 import data.*
-import iso.parse
+import iso.ISOValue
 
 fun parseTemperatureMeasurement(reading : BLEReading) =
-    parse(reading) {
-        flags(0..0)
+    reading.parse {
+        flags(8)
 
         ThermometerMeasurement(
             measurementValue = float(),
-            timeStamp = onCondition(flag(1), dateTime),
-            measurementUnit = if(flag(0)) TemperatureUnit.Fahrenheit else TemperatureUnit.Celsius,
-            temperatureType = onCondition(flag(2),sint8)?.let {
-                TemperatureType.fromInt(it.value)
+            timeStamp = requirement {
+                flag = 1
+                format = dateTime
             },
+            measurementUnit = if(flag(0)) TemperatureUnit.Fahrenheit
+                                else TemperatureUnit.Celsius,
+            temperatureType = requirement<ISOValue.SInt8> {
+                flag = 2
+                format  = sint8
+            }?.let{ TemperatureType.fromInt(it.value)},
+
             device = reading.device
         )
     }

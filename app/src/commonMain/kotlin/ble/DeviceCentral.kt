@@ -17,6 +17,7 @@ class DeviceCentral(val bleCentral : BleCentralInterface){
     val onDeviceDiscovered = AtomicReference({_ : PeripheralDescription -> }.freeze())
     val onDeviceConnected = AtomicReference({_ : PeripheralDescription -> }.freeze())
     val onStateChanged = AtomicReference({_: BLEState -> }.freeze())
+    val onCharacteristicDiscovered = AtomicReference({_: BLEState -> }.freeze())
     //val onDeviceCapabilitiesDiscovered = AtomicReference({record: DataRecord->recordCentral.addDeviceCapabilities }.freeze())
 
 
@@ -24,7 +25,8 @@ class DeviceCentral(val bleCentral : BleCentralInterface){
 
     private val recordCentral = IntermediateRecordStorage {
             record: DataRecord ->
-        logger.info("Record received: $record")
+        logger.info("Record received:")
+        logger.info("$record")
         onRecordReceived.get()(record).freeze()
     }
 
@@ -45,11 +47,11 @@ class DeviceCentral(val bleCentral : BleCentralInterface){
             onDeviceConnected.get()(device)
         }.freeze())
         bleCentral.changeOnDiscoverCallback({device : PeripheralDescription ->
-            logger.info("discovered: ${device.name}")
+            logger.info("discovered: ${device.name} (${device.UUID})")
             onDeviceDiscovered.get()(device)
         }.freeze())
         bleCentral.changeStateChangeCallback({state : BLEState ->
-            logger.info("state changed: $state")
+            logger.info("Bluetooth state changed: $state")
             onStateChanged.get()(state)
         }.freeze())
     }

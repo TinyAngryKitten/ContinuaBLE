@@ -7,43 +7,81 @@
     tools:context=".MainActivity">
 
     <Button
+            android:id="@+id/thermometer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="161dp"
+            android:layout_marginEnd="122dp"
+            android:layout_marginBottom="10dp"
+            android:text="Thermometer"
+            app:layout_constraintBottom_toTopOf="@+id/bp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+            android:id="@+id/tickr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="64dp"
+            android:layout_marginBottom="10dp"
+            android:text="Tickr"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/glucose"
+            app:layout_constraintTop_toBottomOf="@+id/scan"
+            app:layout_constraintVertical_bias="0.982" />
+
+    <Button
+            android:id="@+id/bp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="64dp"
+            android:layout_marginBottom="10dp"
+            android:text="BP"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/scan"
+            app:layout_constraintTop_toBottomOf="@+id/scan"
+            app:layout_constraintVertical_bias="1.0" />
+
+    <Button
             android:id="@+id/scan"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="39dp"
+            android:layout_marginStart="10dp"
             android:layout_marginEnd="20dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="8dp"
             android:text="scan"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/connect"
+            app:layout_constraintEnd_toStartOf="@+id/glucose"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             tools:text="Scan" />
 
     <Button
-            android:id="@+id/connect"
+            android:id="@+id/glucose"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="156dp"
+            android:layout_marginStart="10dp"
             android:layout_marginTop="64dp"
-            android:layout_marginEnd="47dp"
             android:layout_marginBottom="10dp"
-            android:text="Connect to Glucosemeter"
+            android:text="glucose"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/bp"
             app:layout_constraintTop_toBottomOf="@+id/scan"
-            app:layout_constraintVertical_bias="1.0" />
+            app:layout_constraintVertical_bias="0.982" />
 
     <ScrollView
+            android:id="@+id/scrollView2"
             android:layout_width="0dp"
             android:layout_height="550dp"
             android:layout_marginStart="30dp"
             android:layout_marginTop="50dp"
             android:layout_marginEnd="30dp"
-            android:layout_marginBottom="10dp"
-            app:layout_constraintBottom_toTopOf="@+id/connect"
+            android:layout_marginBottom="5dp"
+            app:layout_constraintBottom_toTopOf="@+id/thermometer"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
