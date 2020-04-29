@@ -175,7 +175,7 @@ class ISOParser(var bytes : ByteArray) {
         ISOValue.Flag(bool)
     }
 
-    fun <T: ISOValue?>requirement(function : Requirement<T>.() -> Unit ) : T? {
+    fun <T>requirement(function : Requirement<T>.() -> Unit ) : T? {
         val requirement = Requirement<T>().apply(function)
         return if(flag(requirement.flag) || requirement.condition) requirement.format()
         else null
@@ -226,4 +226,4 @@ class ISOParser(var bytes : ByteArray) {
 
 }
 
-class Requirement<T : ISOValue?>(var flag : Int = -1, var condition: Boolean = false, var format : ()->T? = {null})
+class Requirement<T>(var flag : Int = -1, var condition: Boolean = false, var format : ()->T? = {null})

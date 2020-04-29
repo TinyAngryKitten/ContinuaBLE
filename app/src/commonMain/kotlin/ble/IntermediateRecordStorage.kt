@@ -146,6 +146,7 @@ class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
                 glucoseContextRecords.remove(record.device.UUID)
                 glucoseRecords.remove(record.device.UUID)
             }
+
             onCompleteRecord(record.freeze())
         }
     }

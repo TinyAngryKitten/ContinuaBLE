@@ -119,7 +119,7 @@ class RxTest : BleCentralInterface{
         }, onError: {
             e in print("write failed!\(e)")
             logger().info(str: "Time update failed")
-        }, onCompleted: {print("write completed")}, onDisposed: {print("write disposed")})
+        }, onCompleted: {print("write completed") }, onDisposed: {print("write disposed")})
         //peripheral.writeValue(data:data, for: peripheral.characteristic(with: TimeCharacteristic()), type: .withResponse)
     }
     
@@ -127,11 +127,11 @@ class RxTest : BleCentralInterface{
         peripheral.discoverServices(self.services)
         .asObservable()
         .flatMap { Observable.from($0) }
-        .flatMap { $0.discoverCharacteristics(self.characteristics)}.asObservable()
+        .flatMap { $0.discoverCharacteristics(self.timeCharacteristics)}.asObservable()
         .flatMap { Observable.from($0) }
         .subscribe(onNext: { characteristic in
             self.updateCurrentTimeOfDevice(characteristic:characteristic)
-        })
+            })
     }
     
     func connectToDevice(deviceDescription: PeripheralDescription) {
@@ -147,8 +147,7 @@ class RxTest : BleCentralInterface{
                 
                 logger().info(str: ("connected to \(deviceDescription.name)"))
                 
-                self.findTimeCharacteristicsFromPeripheral(peripheral: peripheral)
-                sleep(2)
+                //self.findTimeCharacteristicsFromPeripheral(peripheral: peripheral)
                 
                 return peripheral.discoverServices(self.services)
                 
@@ -156,9 +155,13 @@ class RxTest : BleCentralInterface{
             .flatMap { Observable.from($0) }
             .flatMap { $0.discoverCharacteristics(self.characteristics)}.asObservable()
             .flatMap { Observable.from($0) }
-            .subscribe(onNext: { characteristic in
+                .subscribe(onNext: { characteristic in
                 print("found characteristic: \(characteristic.characteristic.description)")
                 
+                    if(characteristic.uuid.uuidString == CharacteristicUUIDs.dateTime().nr || characteristic.uuid.uuidString == CharacteristicUUIDs.currentTime().nr) {
+                        self.updateCurrentTimeOfDevice(characteristic: characteristic)
+                    }
+                    
                 self.onCharacteristicDiscovered(
                     peripheralDescription,
                     CharacteristicUUIDs.Companion().fromNr(nr: characteristic.uuid.uuidString),
@@ -166,10 +169,8 @@ class RxTest : BleCentralInterface{
                 )
                 
                 if(characteristic.properties.contains(.notify) || characteristic.properties.contains(.indicate)) {
-                    characteristic.observeValueUpdateAndSetNotification().catchError({
-                        e in print("ERROR: \(e.localizedDescription)")
-                        return Observable.from(characteristic)
-                    })
+                    characteristic.observeValueUpdateAndSetNotification()
+                        .delaySubscription(RxTimeInterval.seconds(2), scheduler: MainScheduler.instance)
                     .subscribe(onNext: {
                         let newValue = $0.value ?? Data(capacity: 0)
                          print("characteristic update: \(newValue)")
@@ -192,7 +193,7 @@ class RxTest : BleCentralInterface{
                         )
                     })
                 }
-            })
+                })
         }
     }
     

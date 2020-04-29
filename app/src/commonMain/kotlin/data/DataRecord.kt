@@ -96,7 +96,7 @@ class PLXSpotCheck(
     val measurementStatus: PLXSpotCheckMeasurementStatus?,
     val sensorStatus: PLXSpotCheckSensorStatus?,
     val pulseAmplitudeIndex : ISOValue.SFloat?,
-    device: PeripheralDescription
+    device : PeripheralDescription
 ): DataRecord(device) {
     override fun toString(): String {
         return """
@@ -364,7 +364,7 @@ class DeviceInfoRecord (
 
 class BatteryLevelRecord(
     val level : Int,
-    device : PeripheralDescription
+    device: PeripheralDescription
 ) : DataRecord(device) {
     override fun toString(): String {
         return "BatteryLevel: $level"
@@ -401,8 +401,9 @@ sealed class BloodPressureRecord(
     val bpm : ISOValue.SFloat?,
     val userId : Int?,
     val status : MeasurementStatus?,
-    device: PeripheralDescription
+    device : PeripheralDescription
 ) : DataRecord(device){
+
 
     override fun toString(): String {
         return """
