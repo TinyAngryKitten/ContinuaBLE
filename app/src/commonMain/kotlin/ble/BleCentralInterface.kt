@@ -3,6 +3,8 @@ package ble
 import bledata.BLEReading
 import bledata.BLEState
 import data.PeripheralDescription
+import iso.CharacteristicUUIDs
+import iso.ServiceUUID
 
 interface BleCentralInterface {
     fun scanForDevices()
@@ -18,4 +20,6 @@ interface BleCentralInterface {
     fun changeOnDiscoverCallback(callback: (PeripheralDescription)->Unit)
 
     fun changeOnConnectCallback(callback : (PeripheralDescription)->Unit)
+
+    fun changeOnCharacteristicDiscovered(callback: (PeripheralDescription,CharacteristicUUIDs,ServiceUUID)-> Unit)
 }

@@ -29,7 +29,7 @@ class CurrentTimeRecord(
 
 }
 
-class PulseOximeterFeatures(
+data class PulseOximeterSupportedFeatures(
     val measurementStatus: Boolean,
     val deviceAndSensorStatus: Boolean,
     val measurementStoreForSpotCheck : Boolean,
@@ -37,19 +37,53 @@ class PulseOximeterFeatures(
     val spo2PRFast : Boolean,
     val spo2PRSlow : Boolean,
     val pulseAmplitudeIndexField: Boolean,
-    val multipleBonds: Boolean,
+    val multipleBonds: Boolean
+)
+
+data class PulseOximeterMeasurementStatusSupport(
+    val measurementOngoing : Boolean,
+    val earlyEstimatedData : Boolean,
+    val validatedData : Boolean,
+    val fullyQualifiedData : Boolean,
+    val dataFromMeasurementStorage : Boolean,
+    val dataForDemonstration : Boolean,
+    val dataForTesting : Boolean,
+    val calibrationOngoing : Boolean,
+    val measurementUnavailable: Boolean,
+    val questionableMeasurementDetected : Boolean,
+    val invalidMeasurementDetected : Boolean
+)
+
+data class PulseOximeterDeviceAndSensorStatusSupport(
+    val extendedDisplayUpdateOngoing : Boolean,
+    val equipmentMalfunctionDetected : Boolean,
+    val signalProcessingIrregularityDetected : Boolean,
+    val inadequateSignalDetected : Boolean,
+    val poorSignalDetected : Boolean,
+    val lowPerfusionDetected : Boolean,
+    val erraticSignalDetected : Boolean,
+    val nonPulseatileSignalDetected : Boolean,
+    val questionablePulseDetected : Boolean,
+    val signalAnalysisOngoing : Boolean,
+    val sensorInterfaceDetected : Boolean,
+    val sensorUnconnectedToUser : Boolean,
+    val unknownSensorConnected : Boolean,
+    val sensorDisplaced : Boolean,
+    val sensorMalfunction : Boolean,
+    val sensorDisconnected : Boolean
+)
+
+class PulseOximeterFeatures(
+    val supportedFeatures: PulseOximeterSupportedFeatures,
+    val measurementStatusSupport: PulseOximeterMeasurementStatusSupport?,
+    val deviceAndSensorStatusSupport: PulseOximeterDeviceAndSensorStatusSupport?,
     device: PeripheralDescription
 ): DataRecord(device) {
     override fun toString(): String {
         return """PulseOximeterFeatures(
-            measurementStatus: $measurementStatus,
-            deviceAndSensorStatus: $deviceAndSensorStatus,
-            measurementStoreForSpotCheck: $measurementStoreForSpotCheck,
-            timestampForSpotCheck: $timestampForSpotCheck,
-            spo2PRFast: $spo2PRFast,
-            spo2PRSlow: $spo2PRSlow,
-            pulseAmplitudeIndexField: $pulseAmplitudeIndexField,
-            multipleBonds: $multipleBonds
+            supportedFeatures: $supportedFeatures,
+            measurementStatusSupport: ${measurementStatusSupport ?: "not supported"},
+            deviceAndSensorStatusSupport: ${deviceAndSensorStatusSupport ?: "not supported"}
             )
         """.trimIndent()
     }

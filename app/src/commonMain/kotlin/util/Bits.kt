@@ -6,6 +6,11 @@ import kotlin.math.pow
 
 fun toByteArray(list: List<String>) = list.map { it.toInt(16).toByte() }.toByteArray().reversedArray()
 
+fun ByteArray.positiveBitAt(i : Int) =
+    if(i==0) get(0).positiveBitAt(0)
+    else get(i/8).positiveBitAt(i%8)
+
+
 fun ByteArray.strRepresentation() : String = foldRight("") {
         it:Byte, acc:String ->
     acc + it.strRepresentation()

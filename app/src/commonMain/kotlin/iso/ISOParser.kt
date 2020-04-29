@@ -177,7 +177,7 @@ class ISOParser(var bytes : ByteArray) {
 
     fun <T: ISOValue?>requirement(function : Requirement<T>.() -> Unit ) : T? {
         val requirement = Requirement<T>().apply(function)
-        return if(flag(requirement.flag)) requirement.format()
+        return if(flag(requirement.flag) || requirement.condition) requirement.format()
         else null
     }
 
@@ -206,7 +206,8 @@ class ISOParser(var bytes : ByteArray) {
      * will throw index out of bounds
      */
     fun flag(index : Int) : Boolean =
-        if(index == 0) flagBytes[0].positiveBitAt(0)
+        if(index > flagBytes.size*8 ||index < 0) false
+        else if(index == 0) flagBytes[0].positiveBitAt(0)
         else flagBytes[
             floor(index.toFloat().div(8f)).toInt()
         ].positiveBitAt(index % 8)
@@ -225,4 +226,4 @@ class ISOParser(var bytes : ByteArray) {
 
 }
 
-class Requirement<T : ISOValue?>(var flag : Int = 0, var format : ()->T? = {null})
+class Requirement<T : ISOValue?>(var flag : Int = -1, var condition: Boolean = false, var format : ()->T? = {null})

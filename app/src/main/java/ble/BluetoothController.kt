@@ -28,6 +28,7 @@ class BluetoothController(
     val discoverCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
     val connectCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
     val stateChangedCallback = AtomicReference<(BLEState) -> Unit> {}//TODO: implement statechangedCallbacks
+    val characteristicDiscoveredCallback = AtomicReference<(PeripheralDescription,CharacteristicUUIDs,ServiceUUID) -> Unit> {_,_,_->}
 
     private val commandQueue: Queue<Runnable> = ArrayDeque()
     private var commandQueueBusy = false
@@ -211,12 +212,21 @@ class BluetoothController(
                     writeCharacteristic(it, gatt)
                 }
 
+                val peripheralDescription = PeripheralDescription(gatt?.device?.address ?: "")
+
                 //delay subsribing to measurements for a few seconds
                 //to time update takes effect
                 Handler().postDelayed( {
                     gatt?.services?.filter { ServiceUUID.fromNr(it.uuid.identifier) != null }
                         ?.forEach { service ->
+
                             service.characteristics.forEach {
+                                characteristicDiscoveredCallback.get()(
+                                    peripheralDescription,
+                                    CharacteristicUUIDs.fromNr(it.uuid.identifier),
+                                    ServiceUUID.fromNr(service.uuid.identifier) ?: ServiceUUID.unknown
+                                )
+
                                 if (it?.properties?.and(PROPERTY_READ) ?: 0 > 0) {//if only readable, read once
                                     logger.debug(
                                         "attempting to read to characteristic: ${ServiceUUID.fromNr(

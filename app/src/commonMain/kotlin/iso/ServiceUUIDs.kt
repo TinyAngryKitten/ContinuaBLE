@@ -9,6 +9,10 @@ sealed class ServiceUUID(val id : String) {
     val nr = id.substring(2)
     abstract val name : String
 
+    override fun toString(): String {
+        return name
+    }
+
     object glucose : ServiceUUID("0x1808") {
         override val name = "Glucose Service"
     }

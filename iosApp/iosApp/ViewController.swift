@@ -28,6 +28,7 @@ class RxTest : BleCentralInterface{
     var onDiscover : (PeripheralDescription) -> Void = {_ in print("onDiscover callback not changed")}
     var onResult : (BLEReading) -> Void = {_ in print("on result callback not changed")}
     var stateChanged : (BLEState) -> Void = {_ in print("state changed callback not changed")}
+    var onCharacteristicDiscovered: (PeripheralDescription,CharacteristicUUIDs,ServiceUUID) -> Void = {_,_,_ in print("discovered characteristic callback not changed")}
     
     var manager : CentralManager!
     let services = ServiceUUID.Companion().getAll().map({c in CBUUID(string: c.nr)})
@@ -84,6 +85,10 @@ class RxTest : BleCentralInterface{
         stateChanged = callback
     }
     
+    func changeOnCharacteristicDiscovered(callback: @escaping (PeripheralDescription,CharacteristicUUIDs,ServiceUUID) -> Void) {
+        onCharacteristicDiscovered = callback
+    }
+    
     func updateCurrentTimeOfDevice(characteristic: Characteristic){
         let date = Date()
         let calendar = Calendar.current
@@ -133,6 +138,10 @@ class RxTest : BleCentralInterface{
         logger().info(str: ("connecting to \(deviceDescription.description())"))
         let device = discoveredDevices.first(where: {p in p.identifier.uuidString == deviceDescription.UUID})
         if(device != nil) {
+            
+            let peripheralDescription = PeripheralDescription(
+                UUID: device?.identifier.uuidString ?? "", name: device?.name ?? "unknown")
+            
             device?.establishConnection().flatMap {
                 peripheral -> Single<[Service]> in
                 
@@ -149,6 +158,13 @@ class RxTest : BleCentralInterface{
             .flatMap { Observable.from($0) }
             .subscribe(onNext: { characteristic in
                 print("found characteristic: \(characteristic.characteristic.description)")
+                
+                self.onCharacteristicDiscovered(
+                    peripheralDescription,
+                    CharacteristicUUIDs.Companion().fromNr(nr: characteristic.uuid.uuidString),
+                    ServiceUUID.Companion().fromNr(nr: characteristic.service.uuid.uuidString) ?? ServiceUUID.unknown()
+                )
+                
                 if(characteristic.properties.contains(.notify) || characteristic.properties.contains(.indicate)) {
                     characteristic.observeValueUpdateAndSetNotification().catchError({
                         e in print("ERROR: \(e.localizedDescription)")
@@ -185,8 +201,8 @@ class RxTest : BleCentralInterface{
         if(manager.state != .poweredOn) {
             print("not powered on")
         } else {
-            logger().info(str: "Scanning for devices")
             currentDiscovery?.dispose()
+            logger().info(str: "Scanning for devices")
             currentDiscovery = manager.scanForPeripherals(withServices: services)
                 .subscribe(onNext: { scannedPeripheral in
                     print("device discovered \(scannedPeripheral.peripheral)")

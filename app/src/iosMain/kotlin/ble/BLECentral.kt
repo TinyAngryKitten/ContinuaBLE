@@ -2,21 +2,11 @@ package ble
 
 import bledata.BLEReading
 import bledata.BLEState
-import co.touchlab.stately.freeze
 import data.PeripheralDescription
 import iso.CharacteristicUUIDs
 import iso.ServiceUUID
-import kotlinx.cinterop.*
-import kotlinx.cinterop.nativeHeap.alloc
-import platform.CoreBluetooth.*
-import platform.Foundation.NSData
-import platform.Foundation.create
-import platform.darwin.UInt8
-import platform.posix.int32_t
-import platform.posix.int32_tVar
-import sample.GlobalSingleton
-import sample.GlobalSingleton.nsdata
-import sample.logger
+
+//required by the kotlin compiler
 
 actual class BLECentral : BleCentralInterface {
     /*val controller = BluetoothController()
@@ -93,19 +83,16 @@ actual class BLECentral : BleCentralInterface {
     }
 
     override fun bleState(): BLEState {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return BLEState.UnknownErrorState
     }
 
-    override fun changeStateChangeCallback(callback: (BLEState) -> Unit) {
-    }
+    override fun changeStateChangeCallback(callback: (BLEState) -> Unit) {}
 
-    override fun changeResultCallback(callback: (BLEReading) -> Unit) {
-    }
+    override fun changeResultCallback(callback: (BLEReading) -> Unit) {}
 
-    override fun changeOnDiscoverCallback(callback: (PeripheralDescription) -> Unit) {
-    }
+    override fun changeOnDiscoverCallback(callback: (PeripheralDescription) -> Unit) {}
 
-    override fun changeOnConnectCallback(callback: (PeripheralDescription) -> Unit) {
-    }
+    override fun changeOnConnectCallback(callback: (PeripheralDescription) -> Unit) {}
 
+    override fun changeOnCharacteristicDiscovered(callback: (PeripheralDescription, CharacteristicUUIDs, ServiceUUID) -> Unit) {}
 }

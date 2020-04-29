@@ -7,6 +7,8 @@ import co.touchlab.stately.concurrency.AtomicReference
 import co.touchlab.stately.freeze
 import data.DataRecord
 import data.PeripheralDescription
+import iso.CharacteristicUUIDs
+import iso.ServiceUUID
 import iso.parseBLEReading
 import sample.logger
 import kotlin.native.concurrent.SharedImmutable
@@ -17,7 +19,7 @@ class DeviceCentral(val bleCentral : BleCentralInterface){
     val onDeviceDiscovered = AtomicReference({_ : PeripheralDescription -> }.freeze())
     val onDeviceConnected = AtomicReference({_ : PeripheralDescription -> }.freeze())
     val onStateChanged = AtomicReference({_: BLEState -> }.freeze())
-    val onCharacteristicDiscovered = AtomicReference({_: BLEState -> }.freeze())
+    //val onCharacteristicDiscovered = AtomicReference({_:PeripheralDescription,_: CharacteristicUUIDs, _:ServiceUUID-> }.freeze())
     //val onDeviceCapabilitiesDiscovered = AtomicReference({record: DataRecord->recordCentral.addDeviceCapabilities }.freeze())
 
 
@@ -53,6 +55,11 @@ class DeviceCentral(val bleCentral : BleCentralInterface){
         bleCentral.changeStateChangeCallback({state : BLEState ->
             logger.info("Bluetooth state changed: $state")
             onStateChanged.get()(state)
+        }.freeze())
+        bleCentral.changeOnCharacteristicDiscovered({
+            device: PeripheralDescription, characteristicUUID: CharacteristicUUIDs, serviceUUID : ServiceUUID->
+            recordCentral.addDeviceCapability(device,characteristicUUID,serviceUUID)
+            logger.info("Characteristic discovered: $characteristicUUID")
         }.freeze())
     }
 

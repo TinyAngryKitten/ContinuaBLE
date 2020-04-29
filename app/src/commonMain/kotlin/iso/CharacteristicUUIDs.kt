@@ -16,6 +16,10 @@ import parseWeightScaleFeature
 sealed class CharacteristicUUIDs(val id : String,val service: ServiceUUID, val parse : (BLEReading) -> DataRecord) {
     val nr = id.substring(2)
 
+    override fun toString(): String {
+        return this::class.simpleName ?: "Unknown characteristic"
+    }
+
     //GLUCOSE
     object glucoseFeature : CharacteristicUUIDs("0x2A51", ServiceUUID.glucose, ::parseGlucoseFeatures)
     object glucoseMeasurement : CharacteristicUUIDs("0x2A18", ServiceUUID.glucose,::parseGlucoseReading)

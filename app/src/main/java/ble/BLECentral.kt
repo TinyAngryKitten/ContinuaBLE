@@ -4,6 +4,8 @@ import android.bluetooth.BluetoothAdapter
 import bledata.BLEReading
 import bledata.BLEState
 import data.PeripheralDescription
+import iso.CharacteristicUUIDs
+import iso.ServiceUUID
 
 actual class BLECentral(val controller : BluetoothController ) : BleCentralInterface{
 
@@ -44,6 +46,10 @@ actual class BLECentral(val controller : BluetoothController ) : BleCentralInter
 
     override fun changeOnConnectCallback(callback: (PeripheralDescription) -> Unit) {
         controller.connectCallback.set(callback)
+    }
+
+    override fun changeOnCharacteristicDiscovered(callback: (PeripheralDescription, CharacteristicUUIDs, ServiceUUID) -> Unit) {
+        controller.characteristicDiscoveredCallback.set(callback)
     }
 
     override fun changeStateChangeCallback(callback: (BLEState) -> Unit) {
