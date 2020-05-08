@@ -551,8 +551,8 @@ class BodyCompositionRecord(
    val bodyWaterMass : Int?,
    val impedance: Int?,
    device: PeripheralDescription,
-   val heightMeasurementResolution: HeightMeasurementResolution = HeightMeasurementResolution.HighRes,
-   val weightMeasurementResolution: WeightMeasurementResolution = WeightMeasurementResolution.Res7
+   val heightMeasurementResolution: HeightMeasurementResolution = HeightMeasurementResolution.NotSpecified,
+   val weightMeasurementResolution: WeightMeasurementResolution = WeightMeasurementResolution.NotSpecified
    //val weight : UInt,
    //val height : UInt
 ) : DataRecord(device) {
@@ -790,7 +790,7 @@ enum class RecordControlPointResponse {
     ProcedureNotCompleted,
     OperandNotSupported;
 
-    override fun toString(): String = this::class.simpleName ?: ""
+    override fun toString(): String ="RecordControlPointResponse: "+this::class.simpleName
 
     companion object{
         fun fromInt(i : Int) = when(i) {

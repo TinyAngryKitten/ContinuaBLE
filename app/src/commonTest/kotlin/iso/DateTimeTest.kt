@@ -32,7 +32,7 @@ class DateTimeTest {
         assertEquals(result.minutes,minutes.toInt(16))
         assertEquals(result.hours,hours.toInt(16))
         assertEquals(result.day,days.toInt(16))
-        assertEquals(result.month,month.toInt(16))
-        assertEquals(result.year,year.toInt(16))
+        assertEquals(result.month.value,month.toInt(16))
+        assertEquals(result.year.value,year.toInt(16))
     }
 }

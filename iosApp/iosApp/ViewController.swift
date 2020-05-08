@@ -150,7 +150,6 @@ class RxTest : BleCentralInterface{
                 //self.findTimeCharacteristicsFromPeripheral(peripheral: peripheral)
                 
                 return peripheral.discoverServices(self.services)
-                
             }.asObservable()
             .flatMap { Observable.from($0) }
             .flatMap { $0.discoverCharacteristics(self.characteristics)}.asObservable()

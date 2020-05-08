@@ -55,8 +55,8 @@ sealed class CharacteristicUUIDs(val id : String,val service: ServiceUUID, val p
     //object plxFeatures : CharacteristicUUIDs("0x2A60",)
 
     //CURRENT TIME
-    object currentTime : CharacteristicUUIDs("0x2A2B",ServiceUUID.currentTime,::parseCurrentTime)//::parseCurrentTime)
-    object dateTime : CharacteristicUUIDs("0x2A08",ServiceUUID.currentTime,::parseDateTime)//::parseCurrentTime)
+    object currentTime : CharacteristicUUIDs("0x2A2B",ServiceUUID.currentTime,::parseCurrentTime)
+    object dateTime : CharacteristicUUIDs("0x2A08",ServiceUUID.currentTime,::parseDateTime)
 
     //BATTERY LEVEL
     object batteryLevel : CharacteristicUUIDs("0x2A19",ServiceUUID.battery,::parseBatteryLevel)
@@ -81,7 +81,7 @@ sealed class CharacteristicUUIDs(val id : String,val service: ServiceUUID, val p
                 glucoseFeature,
                 glucoseMeasurement,
                 glucoseMeasurementContext,
-                //recordControlPoint,
+                recordControlPoint,
 
                 heartRateMeasurement,
                 bodySensorLocation,
@@ -113,10 +113,8 @@ sealed class CharacteristicUUIDs(val id : String,val service: ServiceUUID, val p
             unsupportedCharacteristicName(id),PeripheralDescription(""))
 
         fun unsupportedCharacteristicName(id : String) = when(id.toUpperCase()){
-            "0X2A2B" -> "$id (Current time)"
             "0X2A23" -> "$id (System ID)"
             "0X2A50" -> "$id (PnP ID)"
-            "0X2A08" -> "$id (Date Time)"
             "0X2A2A" -> "$id (Regulatory Certificate Lists)"
             else -> id
         }
