@@ -18,15 +18,10 @@ class DeviceCentral(val bleCentral : BleCentralInterface){
     val onDeviceDiscovered = AtomicReference({_ : PeripheralDescription -> }.freeze())
     val onDeviceConnected = AtomicReference({_ : PeripheralDescription -> }.freeze())
     val onStateChanged = AtomicReference({_: BLEState -> }.freeze())
-    //val onCharacteristicDiscovered = AtomicReference({_:PeripheralDescription,_: CharacteristicUUIDs, _:ServiceUUID-> }.freeze())
-    //val onDeviceCapabilitiesDiscovered = AtomicReference({record: DataRecord->recordCentral.addDeviceCapabilities }.freeze())
-
-
-    //val deviceCapabilities : Map<String, DeviceCapabilities.DeviceServices> = frozenHashMap()
 
     private val recordCentral = IntermediateRecordStorage {
             record: DataRecord ->
-        logger.info("Record received:")
+        logger.info("\n\nRecord received:")
         logger.info("$record")
         onRecordReceived.get()(record).freeze()
     }
@@ -44,7 +39,7 @@ class DeviceCentral(val bleCentral : BleCentralInterface){
         }.freeze())
 
         bleCentral.changeOnConnectCallback({device : PeripheralDescription ->
-            logger.info("connected to: ${device.name}")
+            logger.info("\nconnected to: ${device.name}\n")
             onDeviceConnected.get()(device)
         }.freeze())
         bleCentral.changeOnDiscoverCallback({device : PeripheralDescription ->

@@ -6,12 +6,19 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.widget.Button
 import android.widget.TextView
-import ble.BLECentral
+import ble.AndroidBLECentral
 import ble.BluetoothController
 import ble.DeviceCentral
 import data.PeripheralDescription
 import util.logger
 
+//weight: B4:99:4C:5B:FA:0F
+//weight main: 10:CE:A9:C9:78:64
+//glucosemeter: "34:03:DE:0D:51:16"
+//gluco2: "F0:B5:D1:58:7D:56"
+//bp: 18:93:D7:7A:40:DC
+//ticker: C7:38:EE:BB:77:2C
+//thermometer: 6C:EC:EB:43:E0:65
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,7 +32,7 @@ class MainActivity : AppCompatActivity() {
 
 
         val controller = BluetoothController.create(this)
-        val deviceCentral = DeviceCentral(BLECentral(controller!!))
+        val deviceCentral = DeviceCentral(AndroidBLECentral(controller!!))
 
         //controller?.adapter?.bluetoothLeScanner.startScan()
         //initiate the bluetooth controller
@@ -39,13 +46,6 @@ class MainActivity : AppCompatActivity() {
         logger.additionalAction = { str-> textfield.append(str)}
 
         glucoBtn.setOnClickListener {
-            //weight: B4:99:4C:5B:FA:0F
-            //weight main: 10:CE:A9:C9:78:64
-            //glucosemeter: "34:03:DE:0D:51:16"
-            //gluco2: "F0:B5:D1:58:7D:56"
-            //bp: 18:93:D7:7A:40:DC
-            //ticker: C7:38:EE:BB:77:2C
-            //thermometer: 6C:EC:EB:43:E0:65
             deviceCentral.connectToDevice(PeripheralDescription("6C:EC:EB:43:E0:65"))
         }//("9A427AF2-7BC3-785F-471E-CF3AA62E0A5A") }
         tickrBtn.setOnClickListener {
