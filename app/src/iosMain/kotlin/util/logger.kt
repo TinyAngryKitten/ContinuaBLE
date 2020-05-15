@@ -1,14 +1,14 @@
-/*package sample
-
-import platform.darwin.dispatch_queue_t
-import sample.GlobalSingleton.additionalAction
-import util.LogLevel
+package util
 import util.LogLevel.*
 import kotlin.native.concurrent.AtomicReference
 import kotlin.native.concurrent.SharedImmutable
 import kotlin.native.concurrent.freeze
 
 actual object logger {
+
+    @SharedImmutable
+    val additionalAction : AtomicReference<(String) -> Unit> = AtomicReference({ _:String-> }.freeze())
+
     actual fun printLine(str: String) {
         println(str)
         //additionalAction.value(str)
@@ -25,4 +25,4 @@ actual object logger {
 
     actual val logLevel: LogLevel
         get() = INFO
-}*/
+}

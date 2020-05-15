@@ -9,7 +9,7 @@ import co.touchlab.stately.freeze
 import data.*
 import iso.CharacteristicUUIDs
 import iso.ServiceUUID
-import sample.logger
+import util.logger
 import kotlin.native.concurrent.ThreadLocal
 
 class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {

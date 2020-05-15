@@ -1,5 +1,10 @@
 package sample
 
+import data.BloodPressureRecord
+import data.BloodPressureUnit
+import data.MeasurementStatus
+import data.PeripheralDescription
+import iso.ISOValue
 import kotlin.test.Test
 import kotlin.test.assertTrue
 

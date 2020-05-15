@@ -3,10 +3,6 @@ package iso
 import bledata.BLEReading
 import data.DataRecord
 import data.EmptyRecord
-import iso.services.parseBatteryLevel
-import iso.services.parseGlucoseFeatures
-import iso.services.parseGlucoseReading
-import sample.logger
 
 //look for a supported characteristic with the same nr(hex id without the leading 0x) as the reading have
 //if found, use the assosiated parse method to parse the reading, if not found return empty reading

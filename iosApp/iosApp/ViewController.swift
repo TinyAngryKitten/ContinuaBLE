@@ -226,9 +226,6 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         text.isScrollEnabled = true
         text.isUserInteractionEnabled = true
-        //addToTextView(txt: "test")
-        Sample().checkMe(fn: addToTextView)
-        //logger().nsdata.compareAndSet(expected:logger().additionalAction.value, new: NSData(bytes:[0,1,1] as [UInt8], length: 1))
         GlobalSingleton().initializeGlobals(printToScreen: addToTextView, nsdData: NSData(bytes:[1,1] as [UInt8], length: 2), queue: DispatchQueue(label: "tiny.angry.kitten.concurrentQUeueueueue", attributes: .concurrent))
         deviceCentral =  DeviceCentral(bleCentral: rxtest)
     }

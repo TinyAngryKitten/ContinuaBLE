@@ -10,6 +10,7 @@ import ble.BLECentral
 import ble.BluetoothController
 import ble.DeviceCentral
 import data.PeripheralDescription
+import util.logger
 
 
 class MainActivity : AppCompatActivity() {
@@ -35,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         val BPBtn = findViewById<Button>(R.id.bp)
         val tickrBtn = findViewById<Button>(R.id.tickr)
         val textfield = findViewById<TextView>(R.id.text)
-        logger.additionalAction = {str-> textfield.append(str)}
+        logger.additionalAction = { str-> textfield.append(str)}
 
         glucoBtn.setOnClickListener {
             //weight: B4:99:4C:5B:FA:0F

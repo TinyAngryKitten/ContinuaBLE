@@ -1,6 +1,7 @@
 package sample
 
 import platform.darwin.dispatch_queue_t
+import util.logger
 import kotlin.native.concurrent.AtomicReference
 import kotlin.native.concurrent.SharedImmutable
 import kotlin.native.concurrent.freeze

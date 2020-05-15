@@ -4,7 +4,6 @@ import util.*
 import kotlin.experimental.or
 import kotlin.math.pow
 
-
 sealed class ISOValue {
     data class SInt8(val byte : Byte) : ISOValue() {
         val value = byte.toInt()
@@ -106,14 +105,14 @@ sealed class ISOValue {
         )
 
         override fun toString(): String {
-            return """
-                year: $year,
-                month: $month,
-                day: $day,
-                hour: $hours,
-                minute: $minutes,
-                second: $seconds,
-            """.trimIndent()
+            return "DateTime(\n"+
+                "\t\t\t\t\tyear: ${year.value},\n"+
+                "\t\t\t\t\tmonth: ${month.value},\n"+
+                "\t\t\t\t\tday: $day,\n"+
+                "\t\t\t\t\thour: $hours,\n"+
+                "\t\t\t\t\tminute: $minutes,\n"+
+                "\t\t\t\t\tsecond: $seconds\n"+
+                "\t\t\t)"
         }
 
         fun toByteArray() = ByteArray(7) {
@@ -125,7 +124,6 @@ sealed class ISOValue {
                 2 -> month.value
                 0 -> (year.value and 255)//second part of the year value
                 1 -> 7//first part of the year value(valid until 2050)
-                //TODO: Find a better solution for second year bit
                 else -> seconds
             }.toByte()
         }

@@ -1,4 +1,4 @@
-package sample
+package util
 
 expect object logger {
     val logLevel : LogLevel

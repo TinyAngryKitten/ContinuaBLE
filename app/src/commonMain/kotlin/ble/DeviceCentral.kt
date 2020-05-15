@@ -2,7 +2,6 @@ package ble
 
 import bledata.BLEReading
 import bledata.BLEState
-import co.touchlab.stately.collections.frozenHashMap
 import co.touchlab.stately.concurrency.AtomicReference
 import co.touchlab.stately.freeze
 import data.DataRecord
@@ -10,7 +9,7 @@ import data.PeripheralDescription
 import iso.CharacteristicUUIDs
 import iso.ServiceUUID
 import iso.parseBLEReading
-import sample.logger
+import util.logger
 import kotlin.native.concurrent.SharedImmutable
 
 class DeviceCentral(val bleCentral : BleCentralInterface){

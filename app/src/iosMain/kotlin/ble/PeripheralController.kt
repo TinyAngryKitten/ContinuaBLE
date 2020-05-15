@@ -4,7 +4,7 @@ import bledata.BLEReading
 import platform.CoreBluetooth.*
 import platform.Foundation.NSError
 import platform.darwin.NSObject
-import sample.logger
+import util.logger
 import kotlin.native.concurrent.AtomicReference
 import kotlin.native.concurrent.freeze
 

@@ -1,4 +1,4 @@
-/*package sample
+package util
 
 import android.util.Log
 import util.LogLevel
@@ -25,4 +25,4 @@ actual object logger {
         Log.e("",str)
     }
 
-}*/
+}

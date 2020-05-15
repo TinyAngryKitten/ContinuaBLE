@@ -14,7 +14,7 @@ import android.support.v4.content.ContextCompat.getSystemService
 import bledata.*
 import data.PeripheralDescription
 import iso.*
-import sample.logger
+import util.logger
 import util.strRepresentation
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference

@@ -11,8 +11,7 @@ import platform.darwin.NSObject
 import platform.darwin.OS_dispatch_queue_mainProtocol
 import platform.darwin.dispatch_queue_main_t
 import sample.GlobalSingleton.dispatchQueue
-import sample.GlobalSingleton.nsdata
-import sample.logger
+import util.logger
 import kotlin.native.concurrent.AtomicReference
 
 
