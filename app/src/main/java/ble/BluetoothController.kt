@@ -27,7 +27,7 @@ class BluetoothController(
     val resultCallback = AtomicReference<(BLEReading) -> Unit> {_->}
     val discoverCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
     val connectCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
-    val stateChangedCallback = AtomicReference<(BLEState) -> Unit> {}//TODO: implement statechangedCallbacks
+    val stateChangedCallback = AtomicReference<(BLEState) -> Unit> {TODO("Android does not have a way of notifying the application of changes in state")}
     val characteristicDiscoveredCallback = AtomicReference<(PeripheralDescription,CharacteristicUUIDs,ServiceUUID) -> Unit> {_,_,_->}
 
     private val commandQueue: Queue<Runnable> = ArrayDeque()
@@ -37,7 +37,7 @@ class BluetoothController(
     companion object {
         fun create(context: Context): BluetoothController? {
             val manager = getSystemService(context, BluetoothManager::class.java)
-            val adapter = manager?.adapter//BluetoothAdapter.getDefaultAdapter()
+            val adapter = manager?.adapter
             return if (manager == null || adapter == null) {
                 error("manager = $manager and adapter = $adapter")
                 null
@@ -134,10 +134,6 @@ class BluetoothController(
             //val device = adapter.getRemoteDevice(address)
             val bleGatt = device.connectGatt(context, true, gattCallback)
         }
-    }
-
-    fun disconnectFromDevice(address: String) {
-        //val device = adapter.getRemoteDevice(address)
     }
 
     private val gattCallback = object : BluetoothGattCallback() {

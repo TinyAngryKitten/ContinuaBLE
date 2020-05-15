@@ -7,7 +7,8 @@ import kotlin.native.concurrent.freeze
 actual object logger {
 
     @SharedImmutable
-    val additionalAction : AtomicReference<(String) -> Unit> = AtomicReference({ _:String-> }.freeze())
+    private val addToView : AtomicReference<(String) -> Unit> = AtomicReference({ _:String-> }.freeze())
+    fun setAddToView(fn: (String)-> Unit) = addToView.compareAndSet(addToView.value, fn)
 
     actual fun printLine(str: String) {
         println(str)
@@ -15,14 +16,11 @@ actual object logger {
     }
 
     actual fun info(str: String) {
-        additionalAction.value(str+"\n")
+        addToView.value(str+"\n")
         printLine(str)
     }
 
     actual fun debug(str: String) = printLine(str)
 
     actual fun error(str: String) =printLine(str)
-
-    actual val logLevel: LogLevel
-        get() = INFO
 }

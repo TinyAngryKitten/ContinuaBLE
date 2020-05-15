@@ -7,7 +7,7 @@ import data.PeripheralDescription
 import iso.CharacteristicUUIDs
 import iso.ServiceUUID
 
-actual class BLECentral(val controller : BluetoothController ) : BleCentralInterface{
+class AndroidBLECentral(val controller : BluetoothController ) : BleCentralInterface{
 
     val discoveredDevices : List<PeripheralDescription>
         get() = controller.discoveredDevices.map { PeripheralDescription(it.address,it.name) }
@@ -55,6 +55,4 @@ actual class BLECentral(val controller : BluetoothController ) : BleCentralInter
     override fun changeStateChangeCallback(callback: (BLEState) -> Unit) {
         controller.stateChangedCallback.set(callback)
     }
-
-
 }

@@ -1,11 +1,9 @@
 package iso.services
 
 import bledata.BLEReading
-import data.BloodPressureFeatures
-import data.BloodPressureRecord
-import data.BloodPressureUnit
-import data.EmptyRecord
+import data.*
 import iso.parse
+import util.positiveBitAt
 
 
 fun parseBloodPressureFeature(reading : BLEReading) =
@@ -33,9 +31,28 @@ fun parseBloodPressureMeasurement(reading : BLEReading) =
             meanArtieralPressure = sfloat(),
             timeStamp = onCondition( flag(1), dateTime),
             unit = if(flag(0)) BloodPressureUnit.kPa else BloodPressureUnit.mmHg,
-            bpm = onCondition(flag(2), sfloat),
-            userId = onCondition(flag(3),uint8),
-            status = null,//onCondition(flag(4), ISOValue.Flags())
+            bpm = requirement {
+                flag = 2
+                format = sfloat
+            },
+            userId = requirement {
+                flag = 3
+                format = uint8
+            },
+            status = requirement<MeasurementStatus> {
+                flag=4
+                format = {
+                    val flags = sint16().byte1//only the first bit contains any value (guidelines 2019)
+                    MeasurementStatus(
+                        flags.positiveBitAt(0),
+                        flags.positiveBitAt(1),
+                        flags.positiveBitAt(2),
+                        flags.positiveBitAt(3),//01
+                        flags.positiveBitAt(4),//10
+                        flags.positiveBitAt(5)
+                    )
+                }
+            },
             device = reading.device
         ) ?: EmptyRecord(reading.device)
     }
@@ -44,11 +61,20 @@ fun intermediateCuffPressureParser(reading : BLEReading) =
     parse(reading) {
         BloodPressureRecord.intermediateFromISO(
             systolic = sfloat(),
-            timeStamp = onCondition( flag(1), dateTime),
+            timeStamp = requirement {
+                flag =1
+                format = dateTime
+            },
             unit = if(flag(0)) BloodPressureUnit.kPa else BloodPressureUnit.mmHg,
-            bpm = onCondition(flag(2), sfloat),
-            userId = onCondition(flag(3),uint8),
+            bpm = requirement {
+                flag = 2
+               format = sfloat
+            },
+            userId = requirement{
+                flag = 3
+                format= uint8
+            },
             status = null,//onCondition(flag(4), ISOValue.Flags())
             device = reading.device
-        ) ?: EmptyRecord(reading.device)
-    }
+            ) ?: EmptyRecord(reading.device)
+        }

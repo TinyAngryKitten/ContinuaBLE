@@ -1,8 +1,6 @@
 package util
 
 expect object logger {
-    val logLevel : LogLevel
-
     fun info(str : String)
     fun debug(str : String)
     fun error(str : String)
