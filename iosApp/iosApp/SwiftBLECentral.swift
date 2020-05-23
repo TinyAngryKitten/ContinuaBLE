@@ -74,7 +74,7 @@ class SwiftBLECentral : BleCentralInterface{
     func updateCurrentTimeOfDevice(characteristic: Characteristic){
         let date = Date()
         let calendar = Calendar.current
-        var comp = calendar.dateComponents([.day, .month, .year, .hour, .minute, .second, .weekday, .nanosecond], from: date)
+        let comp = calendar.dateComponents([.day, .month, .year, .hour, .minute, .second, .weekday, .nanosecond], from: date)
         
         let monthVal = comp.month!
         
@@ -97,10 +97,10 @@ class SwiftBLECentral : BleCentralInterface{
         //return currentTimeArray//Data(bytes: currentTimeArray, count: currentTimeArray.count)
         //let charIdentifier = CharacteristicIdentifier(characteristic: CBUUID(string: characteristic.nr), service: CBUUID(string: service.nr))
         characteristic.writeValue(Data(bytes: data, count:data.count), type: .withResponse).asObservable().subscribe(onNext:{c in print("Write success! \(c.value)")
-            logger().info(str: "Time updated successfully")
+            logger().info(str: "\nTime updated successfully")
         }, onError: {
             e in print("write failed!\(e)")
-            logger().info(str: "Time update failed")
+            logger().info(str: "\nTime update failed")
         }, onCompleted: {print("write completed") }, onDisposed: {print("write disposed")})
         //peripheral.writeValue(data:data, for: peripheral.characteristic(with: TimeCharacteristic()), type: .withResponse)
     }

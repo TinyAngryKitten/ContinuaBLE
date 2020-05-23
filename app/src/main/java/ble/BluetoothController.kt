@@ -400,6 +400,7 @@ class BluetoothController(
             if(gatt == null || characteristic == null) return logger.error("gatt(${gatt?.device}) or characteristic(${characteristic?.uuid}) is null on changed events")
             logger.debug("characteristic change received ${characteristic.value.strRepresentation()}")
             bleHandler.post {
+
                 val result =
                     packageBleReading(
                         characteristic.value,
