@@ -6,7 +6,7 @@ The kotlin project produces a library that each native app uses to interact with
 Interactions with the library happen through the DeviceCentral which requires an implementation of
 BleCentralInterface, which interfaces with each platforms Bluetooth libraries.
 
-#Running
+# Running
 ## iOS
 to start this project open iosApp/iosApp.xcworkspace in xcode and run the app on a physical device.
 
