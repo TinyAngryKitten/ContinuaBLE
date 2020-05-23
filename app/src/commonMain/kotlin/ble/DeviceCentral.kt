@@ -42,14 +42,17 @@ class DeviceCentral(val bleCentral : BleCentralInterface){
             logger.info("\nconnected to: ${device.name}\n")
             onDeviceConnected.get()(device)
         }.freeze())
+
         bleCentral.changeOnDiscoverCallback({device : PeripheralDescription ->
             logger.info("discovered: ${device.name} (${device.UUID})")
             onDeviceDiscovered.get()(device)
         }.freeze())
+
         bleCentral.changeStateChangeCallback({state : BLEState ->
             logger.info("Bluetooth state changed: $state")
             onStateChanged.get()(state)
         }.freeze())
+
         bleCentral.changeOnCharacteristicDiscovered({
             device: PeripheralDescription, characteristicUUID: CharacteristicUUIDs, serviceUUID : ServiceUUID->
             recordCentral.addDeviceCapability(device,characteristicUUID,serviceUUID)

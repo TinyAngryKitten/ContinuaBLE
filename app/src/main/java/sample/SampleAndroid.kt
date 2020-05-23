@@ -25,6 +25,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        supportActionBar?.hide()
+
         val turnOn = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
         startActivityForResult(turnOn, 0)
         /*val turnDiscoverable = Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE)

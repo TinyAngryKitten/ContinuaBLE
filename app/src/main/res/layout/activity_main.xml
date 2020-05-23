@@ -12,16 +12,16 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="161dp"
             android:layout_marginEnd="122dp"
-            android:layout_marginBottom="10dp"
             android:text="Thermometer"
             app:layout_constraintBottom_toTopOf="@+id/bp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent" />
 
     <Button
             android:id="@+id/tickr"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="79dp"
+            android:layout_height="50dp"
             android:layout_marginStart="10dp"
             android:layout_marginTop="64dp"
             android:layout_marginBottom="10dp"
@@ -33,8 +33,8 @@
 
     <Button
             android:id="@+id/bp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="58dp"
+            android:layout_height="48dp"
             android:layout_marginStart="5dp"
             android:layout_marginTop="64dp"
             android:layout_marginBottom="10dp"
@@ -46,8 +46,8 @@
 
     <Button
             android:id="@+id/scan"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="76dp"
+            android:layout_height="44dp"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="20dp"
             android:layout_marginBottom="8dp"
@@ -60,8 +60,8 @@
 
     <Button
             android:id="@+id/glucose"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="95dp"
+            android:layout_height="48dp"
             android:layout_marginStart="10dp"
             android:layout_marginTop="64dp"
             android:layout_marginBottom="10dp"
@@ -78,7 +78,7 @@
             android:layout_marginStart="30dp"
             android:layout_marginTop="50dp"
             android:layout_marginEnd="30dp"
-            android:layout_marginBottom="5dp"
+            android:layout_marginBottom="30dp"
             app:layout_constraintBottom_toTopOf="@+id/thermometer"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
