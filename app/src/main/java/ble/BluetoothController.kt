@@ -30,8 +30,8 @@ class BluetoothController(
     val stateChangedCallback = AtomicReference<(BLEState) -> Unit> {TODO("Android does not have a way of notifying the application of changes in state")}
     val characteristicDiscoveredCallback = AtomicReference<(PeripheralDescription,CharacteristicUUIDs,ServiceUUID) -> Unit> {_,_,_->}
 
-    private val commandQueue: Queue<Runnable> = ArrayDeque()
-    private var commandQueueBusy = false
+    private val queue: Queue<Runnable> = ArrayDeque()
+    private var queueBusy = false
     private val bleHandler = Handler()
 
     companion object {
@@ -65,7 +65,7 @@ class BluetoothController(
         bleHandler.postDelayed({
             adapter.bluetoothLeScanner.stopScan(scanCallback)
             logger.info("Scan ended")
-        }, 60000)//stop scan after 1 minute
+        }, 60000)
 
         adapter.bluetoothLeScanner.startScan(
             ServiceUUID.getDiscoverable().map {
@@ -237,7 +237,7 @@ class BluetoothController(
                                             it.uuid.identifier
                                         )?.name ?: it.uuid.identifier}, properties. ${it.properties}"
                                     )
-                                    setNotify(gatt, it, true)
+                                    subscribeToCharacteristic(gatt, it, true)
                                 }//
                             }
                         }
@@ -246,56 +246,49 @@ class BluetoothController(
         }
 
         private val descriptorUUID = "00002902-0000-1000-8000-00805f9b34fb"
-        fun setNotify(
+        fun subscribeToCharacteristic(
             gatt: BluetoothGatt,
             characteristic: BluetoothGattCharacteristic,
             enable: Boolean
         ): Boolean {
             logger.debug("setting notify")
 
-            // Get the CCC Descriptor for the characteristic
             val descriptor = characteristic.getDescriptor(UUID.fromString(descriptorUUID));
             if (descriptor == null) {
                 logger.error("Could not get CCC for: ${characteristic.uuid}")
                 return false
             }
 
-            // Check if characteristic has NOTIFY or INDICATE properties and set the correct byte value to be written
             val props = characteristic.properties
-            val desciptorValue = if ((props and PROPERTY_NOTIFY) > 0) {
-                BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-            } else if ((props and PROPERTY_INDICATE) > 0) {
-                BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
-            } else if (!enable) {
-                BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE
-            } else {
-                logger.error("Characteristic ${characteristic.getUuid()} does not support indicate or notify")
-                return false
+            val desciptorValue = when {
+                props and PROPERTY_NOTIFY > 0 -> BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                props and PROPERTY_INDICATE > 0 -> BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
+                !enable -> BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE
+                else -> {
+                    logger.error("Cannot subscribe to ${characteristic.getUuid()}")
+                    return false
+                }
             }
 
-            val result = commandQueue.add(Runnable {
-                // First set notification for Gatt object
+            val success = queue.add(Runnable {
                 if (!gatt.setCharacteristicNotification(descriptor.characteristic, enable)) {
-                    logger.error("setCharacteristicNotification failed for descriptor: ${descriptor.uuid}")
+                    logger.error("cant set notify for: ${descriptor.uuid}")
                     completedCommand()
                 } else {
 
-                descriptor.setValue(desciptorValue);
+                    descriptor.value = desciptorValue;
                 val result = gatt.writeDescriptor(descriptor);
                 if (!result) {
-                    logger.error("unable to write to descriptor of characteristic: ${characteristic.uuid}")
+                    logger.error("cant write to descriptor for characteristic: ${characteristic.uuid}")
                     completedCommand()
-                }//if it didnt fail complete command will be called in onWriteDescriptor
+                }
                 else gatt.readCharacteristic(characteristic)
             }})
 
-            if (result) {
-                nextCommand()
-            } else {
-                logger.error("unable to queue notify command")
-            }
+            if (success) nextCommand()
+            else logger.error("unable to queue subscribtion")
 
-            return result
+            return success
         }
 
         override fun onDescriptorWrite(
@@ -304,11 +297,8 @@ class BluetoothController(
             status: Int
         ) {
             logger.debug("descriptor written: ${descriptor.uuid.identifier}")
-            // Do some checks first
             val parentCharacteristic = descriptor.characteristic
-            if (status != GATT_SUCCESS) {
-                logger.error("failed to write to descriptor on device ${gatt.device?.name} on characteristic ${parentCharacteristic.uuid}")
-            }
+            if (status != GATT_SUCCESS) logger.error("failed to write to descriptor on device ${gatt.device?.name} on characteristic ${parentCharacteristic.uuid}")
             completedCommand()
         }
 
@@ -317,7 +307,7 @@ class BluetoothController(
             gatt: BluetoothGatt
         ): Boolean {
             logger.debug("writing characteristic: ${characteristic.uuid.identifier}")
-            val result = commandQueue.add(Runnable {
+            val result = queue.add(Runnable {
                 if (gatt.writeCharacteristic(characteristic)) {
                     logger.debug("characteristic written: ${characteristic.uuid}")
                 } else {
@@ -335,7 +325,7 @@ class BluetoothController(
             gatt: BluetoothGatt
         ): Boolean {
             logger.debug("reading characteristic: ${characteristic.uuid.identifier}")
-            val result = commandQueue.add(Runnable {
+            val result = queue.add(Runnable {
                 if (gatt.readCharacteristic(characteristic)) {
                     logger.debug("characteristic read: ${characteristic.uuid}")
                 } else {
@@ -349,20 +339,16 @@ class BluetoothController(
         }
 
         private fun nextCommand() {
-            // stop if queue is still bussy
-            if (commandQueueBusy) {
-                return
-            }
-            // Execute the next command in the queue
-            if (commandQueue.size > 0) {
-                val bluetoothCommand = commandQueue.peek()
-                commandQueueBusy = true
-                bleHandler.post {
-                    try {
-                        bluetoothCommand.run()
-                    } catch (ex: Exception) {
+            if (queueBusy) return
+            if (queue.isNotEmpty()) {
 
-                    }
+                val next = queue.peek()
+                queueBusy = true
+                bleHandler.post {
+
+                    try {
+                        next.run()
+                    } catch (ex: Exception) {}
                 }
             }
         }
@@ -391,8 +377,8 @@ class BluetoothController(
         }
 
         private fun completedCommand() {
-            commandQueueBusy = false
-            commandQueue.poll()
+            queueBusy = false
+            queue.poll()
             nextCommand()
         }
 
