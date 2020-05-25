@@ -1,14 +1,16 @@
 package ble
 
 import bledata.DeviceCapabilities
+import bledata.PeripheralDescription
 import co.touchlab.stately.collections.frozenCopyOnWriteList
 import co.touchlab.stately.collections.frozenHashMap
 import co.touchlab.stately.collections.frozenLinkedList
 import co.touchlab.stately.concurrency.AtomicReference
 import co.touchlab.stately.freeze
 import data.*
-import iso.CharacteristicUUIDs
-import iso.ServiceUUID
+import data.glucose.HasGlucoseContext
+import gatt.CharacteristicUUIDs
+import gatt.ServiceUUID
 import util.logger
 import kotlin.native.concurrent.ThreadLocal
 
@@ -34,7 +36,7 @@ class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
 
     fun addRecord(record : DataRecord): Unit =
         when(record) {
-            is EmptyRecord -> logger.debug("empty record added to record central")
+            is EmptyRecord -> logger.debug("empty record added to intermediate storage")
 
             is GlucoseRecord -> when(record.context) {
                 is HasGlucoseContext.NotReceivedYet-> {
@@ -152,6 +154,8 @@ class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
     }
 }
 
+
+//Holds components of device info until all parts are present
 @ThreadLocal
 class DeviceInfoBuilder(val device : PeripheralDescription) {
     val modelNumber = AtomicReference(null as String?)
@@ -193,18 +197,16 @@ class DeviceInfoBuilder(val device : PeripheralDescription) {
         }
     }
 
-    //build deviceInfoRecord if all fields are set, there is a chance that only one or no fields are present
-    // this ignores hardware firmware and software revision  because it might never be sent
     fun build(expectedFields: List<CharacteristicUUIDs>) : DeviceInfoRecord?{
 
         return if (characteristicsRecorded.containsAll(expectedFields)) {
             DeviceInfoRecord(
-                modelNumber.get() ?: "",//
-                serialNumber.get() ?: "",//
-                firmwareRevision.get() ?: "",//
+                modelNumber.get() ?: "",
+                serialNumber.get() ?: "",
+                firmwareRevision.get() ?: "",
                 hardwareRevision.get() ?: "",
                 softwareRevision.get() ?: "",
-                manufacturerName.get() ?: "",//
+                manufacturerName.get() ?: "",
                 device
             )
         } else null

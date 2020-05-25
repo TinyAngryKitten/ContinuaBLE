@@ -2,9 +2,9 @@ package ble
 
 import bledata.BLEReading
 import bledata.BLEState
-import data.PeripheralDescription
-import iso.CharacteristicUUIDs
-import iso.ServiceUUID
+import bledata.PeripheralDescription
+import gatt.CharacteristicUUIDs
+import gatt.ServiceUUID
 
 interface BleCentralInterface {
     /**
@@ -33,5 +33,5 @@ interface BleCentralInterface {
 
     fun changeOnConnectCallback(callback : (PeripheralDescription)->Unit)
 
-    fun changeOnCharacteristicDiscovered(callback: (PeripheralDescription,CharacteristicUUIDs,ServiceUUID)-> Unit)
+    fun changeOnCharacteristicDiscovered(callback: (PeripheralDescription, CharacteristicUUIDs, ServiceUUID)-> Unit)
 }

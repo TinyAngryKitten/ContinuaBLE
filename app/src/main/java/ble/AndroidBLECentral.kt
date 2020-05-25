@@ -3,9 +3,9 @@ package ble
 import android.bluetooth.BluetoothAdapter
 import bledata.BLEReading
 import bledata.BLEState
-import data.PeripheralDescription
-import iso.CharacteristicUUIDs
-import iso.ServiceUUID
+import bledata.PeripheralDescription
+import gatt.CharacteristicUUIDs
+import gatt.ServiceUUID
 
 class AndroidBLECentral(val controller : BluetoothController ) : BleCentralInterface{
 

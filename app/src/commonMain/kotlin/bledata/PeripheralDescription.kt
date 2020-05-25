@@ -1,4 +1,4 @@
-package data
+package bledata
 
 data class PeripheralDescription(
     val UUID : String,
@@ -9,7 +9,7 @@ data class PeripheralDescription(
         else false
     }
     companion object {
-        fun fromNullable(id : String, name : String?) : PeripheralDescription{
+        fun fromNullable(id : String, name : String?) : PeripheralDescription {
             return if(name == null) PeripheralDescription(id)
             else PeripheralDescription(id,name)
         }

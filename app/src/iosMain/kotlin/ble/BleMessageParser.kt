@@ -1,9 +1,8 @@
 package ble
 
 import bledata.BLEReading
-import data.EmptyRecord
-import data.PeripheralDescription
-import iso.CharacteristicUUIDs
+import bledata.PeripheralDescription
+import gatt.CharacteristicUUIDs
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.readBytes
 import kotlinx.cinterop.reinterpret
@@ -11,7 +10,7 @@ import platform.CoreBluetooth.CBCharacteristic
 import platform.CoreBluetooth.CBPeripheral
 import platform.Foundation.NSData
 import platform.Foundation.base64Encoding
-import util.toHexString
+
 class BleMessageParser {
     fun packageBleReading(data : NSData?, device: CBPeripheral?,characteristic: CBCharacteristic?) : BLEReading =
         BLEReading(

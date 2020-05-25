@@ -1,10 +1,9 @@
 package bledata
 
 import data.DataRecord
-import data.PeripheralDescription
-import iso.CharacteristicUUIDs
-import iso.ISOParser
-import iso.parse
+import gatt.CharacteristicUUIDs
+import gatt.ISOParser
+import gatt.parse
 import util.strRepresentation
 
 data class BLEReading(

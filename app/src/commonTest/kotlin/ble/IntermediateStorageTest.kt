@@ -1,7 +1,8 @@
 package ble
 
+import bledata.PeripheralDescription
 import data.*
-import iso.CharacteristicUUIDs
+import gatt.CharacteristicUUIDs
 import kotlin.test.*
 
 class IntermediateStorageTest {

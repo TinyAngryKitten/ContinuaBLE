@@ -5,10 +5,10 @@ import bledata.BLEState
 import co.touchlab.stately.concurrency.AtomicReference
 import co.touchlab.stately.freeze
 import data.DataRecord
-import data.PeripheralDescription
-import iso.CharacteristicUUIDs
-import iso.ServiceUUID
-import iso.parseBLEReading
+import bledata.PeripheralDescription
+import gatt.CharacteristicUUIDs
+import gatt.ServiceUUID
+import gatt.parseBLEReading
 import util.logger
 import kotlin.native.concurrent.SharedImmutable
 
@@ -26,7 +26,7 @@ class DeviceCentral(val bleCentral : BleCentralInterface){
         onRecordReceived.get()(record).freeze()
     }
 
-    //subscribe to changes in bluetooth connection
+    //subscribe to new events and add logging
     init {
         bleCentral.changeResultCallback({
             reading : BLEReading->
@@ -54,7 +54,7 @@ class DeviceCentral(val bleCentral : BleCentralInterface){
         }.freeze())
 
         bleCentral.changeOnCharacteristicDiscovered({
-            device: PeripheralDescription, characteristicUUID: CharacteristicUUIDs, serviceUUID : ServiceUUID->
+                device: PeripheralDescription, characteristicUUID: CharacteristicUUIDs, serviceUUID : ServiceUUID->
             recordCentral.addDeviceCapability(device,characteristicUUID,serviceUUID)
             logger.info("Characteristic discovered: $characteristicUUID")
         }.freeze())

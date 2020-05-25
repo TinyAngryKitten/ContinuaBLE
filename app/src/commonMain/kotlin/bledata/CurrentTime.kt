@@ -1,7 +1,6 @@
 package bledata
 
-import iso.ISOValue
-import kotlin.time.Clock
+import gatt.GATTValue
 
 data class CurrentTime(
     val exactTime: ExactTime,
@@ -16,14 +15,14 @@ data class ExactTime(
 ) {
     constructor(
         dayDateTime: DayDateTime,
-        fractions: ISOValue.UInt8
+        fractions: GATTValue.UInt8
     ) : this(dayDateTime,fractions.value)
 
     fun toByteArray() = dayDateTime.toByteArray() + fractions.toByte()
 }
 
 data class DayDateTime(
-    val dateTime : ISOValue.DateTime,
+    val dateTime : GATTValue.DateTime,
     val dayOfWeek : DayOfWeekEnum
 ) {
     fun toByteArray() = dateTime.toByteArray() + (dayOfWeek.ordinal + 1).toByte()
@@ -50,7 +49,7 @@ enum class DayOfWeekEnum {
             6->Sunday
             else->ValueOutOfRange
         }
-        fun fromUInt8(v : ISOValue.UInt8) = fromValue(v.value.toInt())
+        fun fromUInt8(v : GATTValue.UInt8) = fromValue(v.value.toInt())
     }
 }
 
@@ -61,10 +60,10 @@ data class AdjustReason(
     val changeOfDST : Boolean = false
 ){
     constructor(
-        manualTimeUpdate: ISOValue.Flag,
-        externalReferenceTimeUpdate: ISOValue.Flag,
-        changeOfTimeZone: ISOValue.Flag,
-        changeOfDST: ISOValue.Flag
+        manualTimeUpdate: GATTValue.Flag,
+        externalReferenceTimeUpdate: GATTValue.Flag,
+        changeOfTimeZone: GATTValue.Flag,
+        changeOfDST: GATTValue.Flag
     ) : this(
         manualTimeUpdate.value,
         externalReferenceTimeUpdate.value,

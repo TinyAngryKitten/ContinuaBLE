@@ -12,8 +12,8 @@ import android.os.Handler
 import android.os.ParcelUuid
 import android.support.v4.content.ContextCompat.getSystemService
 import bledata.*
-import data.PeripheralDescription
-import iso.*
+import bledata.PeripheralDescription
+import gatt.*
 import util.logger
 import util.strRepresentation
 import java.util.*
@@ -28,11 +28,13 @@ class BluetoothController(
     val discoverCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
     val connectCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
     val stateChangedCallback = AtomicReference<(BLEState) -> Unit> {TODO("Android does not have a way of notifying the application of changes in state")}
-    val characteristicDiscoveredCallback = AtomicReference<(PeripheralDescription,CharacteristicUUIDs,ServiceUUID) -> Unit> {_,_,_->}
+    val characteristicDiscoveredCallback = AtomicReference<(PeripheralDescription, CharacteristicUUIDs, ServiceUUID) -> Unit> { _, _, _->}
 
     private val queue: Queue<Runnable> = ArrayDeque()
     private var queueBusy = false
     private val bleHandler = Handler()
+
+    private val descriptorUUID = "00002902-0000-1000-8000-00805f9b34fb"
 
     companion object {
         fun create(context: Context): BluetoothController? {
@@ -178,9 +180,9 @@ class BluetoothController(
 
                     val isCurrentTime = CharacteristicUUIDs.currentTime.equalsAndroidUUID(it.uuid)
                     val currentTime = Calendar.getInstance();
-                    val dateTime = ISOValue.DateTime(
-                        ISOValue.Year.fromInt(currentTime.get(Calendar.YEAR)),
-                        ISOValue.Month.fromInt(currentTime.get(Calendar.MONTH) + 1),
+                    val dateTime = GATTValue.DateTime(
+                        GATTValue.Year.fromInt(currentTime.get(Calendar.YEAR)),
+                        GATTValue.Month.fromInt(currentTime.get(Calendar.MONTH) + 1),
                         currentTime.get(Calendar.DAY_OF_MONTH),
                         currentTime.get(Calendar.HOUR_OF_DAY),
                         currentTime.get(Calendar.MINUTE),
@@ -193,7 +195,7 @@ class BluetoothController(
                                 DayDateTime(
                                     dateTime, getDayOfWeek()
                                 ),
-                                ISOValue.UInt8(0)
+                                GATTValue.UInt8(0)
                             ),
                             AdjustReason(externalReferenceTimeUpdate = true)
                         ).toByteArray()
@@ -245,7 +247,6 @@ class BluetoothController(
             }
         }
 
-        private val descriptorUUID = "00002902-0000-1000-8000-00805f9b34fb"
         fun subscribeToCharacteristic(
             gatt: BluetoothGatt,
             characteristic: BluetoothGattCharacteristic,
@@ -285,7 +286,7 @@ class BluetoothController(
                 else gatt.readCharacteristic(characteristic)
             }})
 
-            if (success) nextCommand()
+            if (success) nextBTAction()
             else logger.error("unable to queue subscribtion")
 
             return success
@@ -316,7 +317,7 @@ class BluetoothController(
                 }
             })
             //attempt to run command
-            nextCommand()
+            nextBTAction()
             return result
         }
 
@@ -334,18 +335,17 @@ class BluetoothController(
                 }
             })
             //attempt to run command
-            nextCommand()
+            nextBTAction()
             return result
         }
 
-        private fun nextCommand() {
+        private fun nextBTAction() {
             if (queueBusy) return
             if (queue.isNotEmpty()) {
 
                 val next = queue.peek()
                 queueBusy = true
                 bleHandler.post {
-
                     try {
                         next.run()
                     } catch (ex: Exception) {}
@@ -379,7 +379,7 @@ class BluetoothController(
         private fun completedCommand() {
             queueBusy = false
             queue.poll()
-            nextCommand()
+            nextBTAction()
         }
 
         override fun onCharacteristicWrite(

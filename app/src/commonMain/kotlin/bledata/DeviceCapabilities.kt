@@ -2,9 +2,8 @@ package bledata
 
 import co.touchlab.stately.collections.frozenHashMap
 import co.touchlab.stately.collections.frozenLinkedList
-import data.PeripheralDescription
-import iso.CharacteristicUUIDs
-import iso.ServiceUUID
+import gatt.CharacteristicUUIDs
+import gatt.ServiceUUID
 
 class DeviceCapabilities(val device : PeripheralDescription) {
     val capabilities : MutableMap<ServiceUUID,MutableList<CharacteristicUUIDs>> = frozenHashMap()
