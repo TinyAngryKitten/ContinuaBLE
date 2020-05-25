@@ -1,3 +1,5 @@
+package view
+
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
 import android.os.Bundle
@@ -8,7 +10,6 @@ import ble.AndroidBLECentral
 import ble.BluetoothController
 import ble.DeviceCentral
 import bledata.PeripheralDescription
-import sample.R
 import util.logger
 
 //weight: B4:99:4C:5B:FA:0F
