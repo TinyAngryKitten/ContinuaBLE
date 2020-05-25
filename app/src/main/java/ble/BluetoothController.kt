@@ -13,6 +13,7 @@ import android.os.ParcelUuid
 import android.support.v4.content.ContextCompat.getSystemService
 import bledata.*
 import bledata.PeripheralDescription
+import co.touchlab.stately.concurrency.value
 import gatt.*
 import util.logger
 import util.strRepresentation
@@ -23,7 +24,7 @@ class BluetoothController(
     val manager: BluetoothManager,
     val adapter: BluetoothAdapter,
     val context: Context
-) {
+) : BleCentralCallbackInterface {
     val resultCallback = AtomicReference<(BLEReading) -> Unit> {_->}
     val discoverCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
     val connectCallback = AtomicReference<(PeripheralDescription) -> Unit> {}
@@ -42,7 +43,6 @@ class BluetoothController(
             val adapter = manager?.adapter
             return if (manager == null || adapter == null) {
                 error("manager = $manager and adapter = $adapter")
-                null
             }
             else BluetoothController(manager, adapter, context)
         }
@@ -412,4 +412,10 @@ class BluetoothController(
             }
         }
     }
+
+    override fun changeStateChangeCallback(callback: (BLEState) -> Unit) { stateChangedCallback.compareAndSet(stateChangedCallback.value, callback) }
+    override fun changeResultCallback(callback: (BLEReading) -> Unit) { resultCallback.compareAndSet(resultCallback.value, callback)}
+    override fun changeOnDiscoverCallback(callback: (PeripheralDescription) -> Unit) { discoverCallback.compareAndSet(discoverCallback.value, callback) }
+    override fun changeOnConnectCallback(callback: (PeripheralDescription) -> Unit) { connectCallback.compareAndSet(connectCallback.value, callback) }
+    override fun changeOnCharacteristicDiscovered(callback: (PeripheralDescription, CharacteristicUUIDs, ServiceUUID) -> Unit) { characteristicDiscoveredCallback.compareAndSet(characteristicDiscoveredCallback.value, callback) }
 }

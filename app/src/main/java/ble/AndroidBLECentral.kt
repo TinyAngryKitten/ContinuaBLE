@@ -7,7 +7,7 @@ import bledata.PeripheralDescription
 import gatt.CharacteristicUUIDs
 import gatt.ServiceUUID
 
-class AndroidBLECentral(val controller : BluetoothController ) : BleCentralInterface{
+class AndroidBLECentral(val controller : BluetoothController ) : BleCentralInterface, BleCentralCallbackInterface by controller {
 
     val discoveredDevices : List<PeripheralDescription>
         get() = controller.discoveredDevices.map { PeripheralDescription(it.address,it.name) }
@@ -26,7 +26,6 @@ class AndroidBLECentral(val controller : BluetoothController ) : BleCentralInter
         controller.connectToDevice(device.address)
     }
 
-
     override fun bleState(): BLEState {
         if(!(controller.adapter).isEnabled) BLEState.NotAuthorized
         return when(controller.adapter.state) {
@@ -34,25 +33,5 @@ class AndroidBLECentral(val controller : BluetoothController ) : BleCentralInter
             BluetoothAdapter.STATE_OFF, BluetoothAdapter.STATE_TURNING_OFF,BluetoothAdapter.STATE_TURNING_ON-> BLEState.Off
             else -> BLEState.UnknownErrorState
         }
-    }
-
-    override fun changeResultCallback(callback: (BLEReading) -> Unit) {
-        controller.resultCallback.set(callback)
-    }
-
-    override fun changeOnDiscoverCallback(callback: (PeripheralDescription) -> Unit) {
-        controller.discoverCallback.set(callback)
-    }
-
-    override fun changeOnConnectCallback(callback: (PeripheralDescription) -> Unit) {
-        controller.connectCallback.set(callback)
-    }
-
-    override fun changeOnCharacteristicDiscovered(callback: (PeripheralDescription, CharacteristicUUIDs, ServiceUUID) -> Unit) {
-        controller.characteristicDiscoveredCallback.set(callback)
-    }
-
-    override fun changeStateChangeCallback(callback: (BLEState) -> Unit) {
-        controller.stateChangedCallback.set(callback)
     }
 }

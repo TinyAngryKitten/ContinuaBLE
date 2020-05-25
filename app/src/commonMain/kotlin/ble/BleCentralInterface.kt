@@ -6,7 +6,7 @@ import bledata.PeripheralDescription
 import gatt.CharacteristicUUIDs
 import gatt.ServiceUUID
 
-interface BleCentralInterface {
+interface BleCentralInterface : BleCentralCallbackInterface {
     /**
      * Start to scan for compatible devices in proximity,
      * Discovered devices are sendt to onDiscover callback in device central
@@ -23,7 +23,9 @@ interface BleCentralInterface {
      * returns the state of the Bluetooth adapter
      */
     fun bleState(): BLEState
+}
 
+interface BleCentralCallbackInterface {
     //Change the callbacks of events
     fun changeStateChangeCallback(callback : (BLEState) -> Unit)
 

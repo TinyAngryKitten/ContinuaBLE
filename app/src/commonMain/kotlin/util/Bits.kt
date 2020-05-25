@@ -4,6 +4,7 @@ import kotlin.experimental.and
 import kotlin.math.ceil
 import kotlin.math.pow
 
+//create byte array from array of string, reverse it to make it easier to visualizie the byte representation with least significant bit rightmost
 fun toByteArray(list: List<String>) = list.map { it.toInt(16).toByte() }.toByteArray().reversedArray()
 
 fun ByteArray.positiveBitAt(i : Int) =

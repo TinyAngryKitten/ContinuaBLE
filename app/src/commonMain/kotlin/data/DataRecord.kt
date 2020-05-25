@@ -303,7 +303,7 @@ sealed class BloodPressureRecord(
         device: PeripheralDescription
     ) : BloodPressureRecord(systolic,unit,timeStamp,bpm,userId,status,device) {
         override fun toString(): String {
-            return return """
+            return """
             FinalBloodPressureMeasurement: (
                 systolic: $systolic,
                 diastolic: $diastolic,

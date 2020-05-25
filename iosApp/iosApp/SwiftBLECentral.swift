@@ -77,7 +77,6 @@ class SwiftBLECentral : BleCentralInterface{
         let comp = calendar.dateComponents([.day, .month, .year, .hour, .minute, .second, .weekday, .nanosecond], from: date)
         
         let monthVal = comp.month!
-        
         let year1 = Int8(bitPattern: UInt8((comp.year!) & 0xFF))
         let year2 = Int8(bitPattern: UInt8(((comp.year!) >> 8) & 0xFF))
         let month = Int8(bitPattern: UInt8(monthVal))
@@ -94,15 +93,12 @@ class SwiftBLECentral : BleCentralInterface{
         var data = [year1, year2, month, day ,hour ,min ,sec]
         let currentTimeArray = [weekday , quiterval , adjustReason];
         if(isCurrentTime) {data.append(contentsOf:currentTimeArray)}
-        //return currentTimeArray//Data(bytes: currentTimeArray, count: currentTimeArray.count)
-        //let charIdentifier = CharacteristicIdentifier(characteristic: CBUUID(string: characteristic.nr), service: CBUUID(string: service.nr))
         characteristic.writeValue(Data(bytes: data, count:data.count), type: .withResponse).asObservable().subscribe(onNext:{c in print("Write success! \(c.value)")
             logger().info(str: "\nTime updated successfully")
         }, onError: {
             e in print("write failed!\(e)")
             logger().info(str: "\nTime update failed")
         }, onCompleted: {print("write completed") }, onDisposed: {print("write disposed")})
-        //peripheral.writeValue(data:data, for: peripheral.characteristic(with: TimeCharacteristic()), type: .withResponse)
     }
     
     func findTimeCharacteristicsFromPeripheral(peripheral: Peripheral) {
@@ -126,11 +122,7 @@ class SwiftBLECentral : BleCentralInterface{
             
             device?.establishConnection().flatMap {
                 peripheral -> Single<[Service]> in
-                
-                logger().info(str: ("connected to \(deviceDescription.name)"))
-                
-                //self.findTimeCharacteristicsFromPeripheral(peripheral: peripheral)
-                
+                                
                 return peripheral.discoverServices(self.services)
             }.asObservable()
             .flatMap { Observable.from($0) }
