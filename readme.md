@@ -8,7 +8,8 @@ BleCentralInterface, which interfaces with each platforms Bluetooth libraries.
 
 # Running
 ## iOS
-to start this project open iosApp/iosApp.xcworkspace in xcode and run the app on a physical device.
+To start this project open iosApp/iosApp.xcworkspace in xcode and run the app on a physical device.
+You will likely also need to sign the project yourself before it can be run.
 
 ## Android
 Open the project in android studio and run it on a physical device,
@@ -25,9 +26,9 @@ This package contains data classes which are used to describe information passed
 ## data
 The data package contains data classes which hold information about measurements, after parsing.
 
-## iso
-The iso package contains classes which handle data and operations related to the GATT specification and continua guidelines.
-UUIDS, Bluetooth Data formats (ISO Values) etc. The services package contains DSL's for parsing each GATT characteristic.
+## gatt
+The gatt package contains classes which handle data and operations related to the GATT specification and continua guidelines.
+UUIDS, Bluetooth Data formats (GATT Values) etc. The services package contains DSL's for parsing each GATT characteristic.
 
 ## util
 The util package contains utility functions, for instance, methods for working with bits.
