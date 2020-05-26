@@ -153,6 +153,20 @@ class ThermometerMeasurement(
     val temperatureType: TemperatureType?,
     device: PeripheralDescription
 ): DataRecord(device) {
+
+    constructor(
+        measurementValue: GATTValue.Float,
+        measurementUnit: TemperatureUnit,
+        timeStamp: GATTValue.DateTime?,
+        temperatureType: GATTValue.SInt8?,
+        device: PeripheralDescription) :
+            this(
+                measurementValue,
+                measurementUnit,
+                timeStamp,
+                if(temperatureType != null) TemperatureType.fromInt(temperatureType.value) else null,
+                device
+            )
     override fun toString(): String = """
         ThermometerMeasurement(
             measurementValue: $measurementValue,
