@@ -11,7 +11,7 @@ import util.rightMostNibble
 
 fun parseGlucoseReading(reading : BLEReading) : DataRecord =
     parse(reading) {
-        flags(0..0)
+        flags(8)
 
         GlucoseRecord.fromISOValues(
             unit = flag(flag(2)),

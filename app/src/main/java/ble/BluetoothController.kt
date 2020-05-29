@@ -133,8 +133,7 @@ class BluetoothController(
         if(device == null) {
             logger.info("Device $address has not been discovered yet")
         } else {
-            //val device = adapter.getRemoteDevice(address)
-            val bleGatt = device.connectGatt(context, true, gattCallback)
+            device.connectGatt(context, true, gattCallback)
         }
     }
 
@@ -179,14 +178,14 @@ class BluetoothController(
                     logger.debug("Writing time to device")
 
                     val isCurrentTime = CharacteristicUUIDs.currentTime.equalsAndroidUUID(it.uuid)
-                    val currentTime = Calendar.getInstance();
+                    val calendar = Calendar.getInstance()
                     val dateTime = GATTValue.DateTime(
-                        GATTValue.Year.fromInt(currentTime.get(Calendar.YEAR)),
-                        GATTValue.Month.fromInt(currentTime.get(Calendar.MONTH) + 1),
-                        currentTime.get(Calendar.DAY_OF_MONTH),
-                        currentTime.get(Calendar.HOUR_OF_DAY),
-                        currentTime.get(Calendar.MINUTE),
-                        currentTime.get(Calendar.SECOND)
+                        GATTValue.Year.fromInt(calendar.get(Calendar.YEAR)),
+                        GATTValue.Month.fromInt(calendar.get(Calendar.MONTH) + 1),
+                        calendar.get(Calendar.DAY_OF_MONTH),
+                        calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE),
+                        calendar.get(Calendar.SECOND)
                     )
 
                     it.value = if (isCurrentTime)
@@ -252,11 +251,11 @@ class BluetoothController(
             characteristic: BluetoothGattCharacteristic,
             enable: Boolean
         ): Boolean {
-            logger.debug("setting notify")
 
-            val descriptor = characteristic.getDescriptor(UUID.fromString(descriptorUUID));
+            val descriptor = characteristic.getDescriptor(UUID.fromString(descriptorUUID))
+
             if (descriptor == null) {
-                logger.error("Could not get CCC for: ${characteristic.uuid}")
+                logger.error("Cant get descriptor for characteristic: ${characteristic.uuid}")
                 return false
             }
 
@@ -266,30 +265,29 @@ class BluetoothController(
                 props and PROPERTY_INDICATE > 0 -> BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
                 !enable -> BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE
                 else -> {
-                    logger.error("Cannot subscribe to ${characteristic.getUuid()}")
+                    logger.error("Cannot subscribe to ${characteristic.uuid}")
                     return false
                 }
             }
 
-            val success = queue.add(Runnable {
+            val result = queue.add( Runnable {
                 if (!gatt.setCharacteristicNotification(descriptor.characteristic, enable)) {
                     logger.error("cant set notify for: ${descriptor.uuid}")
-                    completedCommand()
+                    completedBTAction()
                 } else {
+                    descriptor.value = desciptorValue
+                    val result = gatt.writeDescriptor(descriptor)
 
-                    descriptor.value = desciptorValue;
-                val result = gatt.writeDescriptor(descriptor);
-                if (!result) {
-                    logger.error("cant write to descriptor for characteristic: ${characteristic.uuid}")
-                    completedCommand()
-                }
-                else gatt.readCharacteristic(characteristic)
+                    if (!result) {
+                        logger.error("cant write to descriptor for characteristic: ${characteristic.uuid}")
+                        completedBTAction()
+                    } else gatt.readCharacteristic(characteristic)
             }})
 
-            if (success) nextBTAction()
+            if (result) nextBTAction()
             else logger.error("unable to queue subscribtion")
 
-            return success
+            return result
         }
 
         override fun onDescriptorWrite(
@@ -298,9 +296,9 @@ class BluetoothController(
             status: Int
         ) {
             logger.debug("descriptor written: ${descriptor.uuid.identifier}")
-            val parentCharacteristic = descriptor.characteristic
-            if (status != GATT_SUCCESS) logger.error("failed to write to descriptor on device ${gatt.device?.name} on characteristic ${parentCharacteristic.uuid}")
-            completedCommand()
+            val characteristic = descriptor.characteristic
+            if (status != GATT_SUCCESS) logger.error("could not write descriptor on ${gatt.device?.name}, characteristic ${characteristic.uuid}")
+            completedBTAction()
         }
 
         fun writeCharacteristic(
@@ -310,10 +308,10 @@ class BluetoothController(
             logger.debug("writing characteristic: ${characteristic.uuid.identifier}")
             val result = queue.add(Runnable {
                 if (gatt.writeCharacteristic(characteristic)) {
-                    logger.debug("characteristic written: ${characteristic.uuid}")
+                    logger.debug("Write success: ${characteristic.uuid}")
                 } else {
-                    logger.error("unable to write characteristic ${characteristic.uuid}")
-                    completedCommand()
+                    logger.error("Write failed: ${characteristic.uuid}")
+                    completedBTAction()
                 }
             })
             //attempt to run command
@@ -331,10 +329,9 @@ class BluetoothController(
                     logger.debug("characteristic read: ${characteristic.uuid}")
                 } else {
                     logger.error("unable to read characteristic ${characteristic.uuid}")
-                    completedCommand()
+                    completedBTAction()
                 }
             })
-            //attempt to run command
             nextBTAction()
             return result
         }
@@ -359,7 +356,7 @@ class BluetoothController(
             status: Int
         ) {
             logger.debug("characteristic read: ${characteristic?.uuid?.identifier}")
-            if (BluetoothGatt.GATT_SUCCESS == status) {
+            if (GATT_SUCCESS == status) {
                 if (gatt == null || characteristic == null) return logger.error("unable to read characteristic, gatt or characteristic is null")
                 logger.debug("read received: from ${gatt.device.name}, characteristic: ${characteristic.uuid}, values: ${characteristic.value.strRepresentation()}")
 
@@ -372,11 +369,11 @@ class BluetoothController(
                         )
                     resultCallback.get()(result)
                 }
-            } else logger.error("GATT ERROR STATUS: $status (${characteristic?.uuid?.identifier})")
-            completedCommand()
+            } else logger.error("GATT err: $status characteristic: ${characteristic?.uuid?.identifier}")
+            completedBTAction()
         }
 
-        private fun completedCommand() {
+        private fun completedBTAction() {
             queueBusy = false
             queue.poll()
             nextBTAction()
@@ -387,9 +384,9 @@ class BluetoothController(
             characteristic: BluetoothGattCharacteristic?,
             status: Int
         ) {
-            logger.debug("Characteristic written for: ${characteristic?.uuid?.identifier}")
+            logger.debug("char written: ${characteristic?.uuid?.identifier}")
             logger.debug("write status: $status")
-            completedCommand()
+            completedBTAction()
         }
 
         override fun onCharacteristicChanged(
