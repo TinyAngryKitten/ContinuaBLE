@@ -1,5 +1,7 @@
 package util
 
+//simple logger, only prints data to console, except for info() which will also add data to the gui textfield
+//
 expect object logger {
     fun info(str : String)
     fun debug(str : String)

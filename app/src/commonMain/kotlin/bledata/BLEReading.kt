@@ -6,6 +6,7 @@ import gatt.ISOParser
 import gatt.parse
 import util.strRepresentation
 
+//represent bluetooth message from both platforms
 data class BLEReading(
     val device: PeripheralDescription,
     val characteristic :CharacteristicUUIDs,

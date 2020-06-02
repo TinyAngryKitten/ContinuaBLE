@@ -25,6 +25,7 @@ class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
     val bodyCompositionFeatureMap = frozenHashMap<String,BodyCompositionFeature>()
     val weightFeateatureMap = frozenHashMap<String,WeightFeatures>()
 
+    //register a capability to a device, useful to determine which information to expect
     fun addDeviceCapability(
         device: PeripheralDescription,
         characteristic: CharacteristicUUIDs,
@@ -34,6 +35,7 @@ class IntermediateRecordStorage(val onCompleteRecord : (DataRecord) -> Unit) {
         deviceCapabilities.find { it.device == device }?.addCharacteristic(characteristic, service)
     }
 
+    //add a record, which will be passed to onCompleteeRecord callback when data record is complete
     fun addRecord(record : DataRecord): Unit =
         when(record) {
             is EmptyRecord -> logger.debug("empty record added to intermediate storage")

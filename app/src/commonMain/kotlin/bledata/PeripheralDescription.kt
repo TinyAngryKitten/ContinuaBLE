@@ -1,5 +1,6 @@
 package bledata
 
+//describes a bluetooth device, UUID will vary between Android and iOS
 data class PeripheralDescription(
     val UUID : String,
     val name : String = "Unknown"

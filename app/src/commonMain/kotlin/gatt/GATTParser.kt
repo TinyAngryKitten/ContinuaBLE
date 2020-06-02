@@ -8,7 +8,7 @@ import kotlin.experimental.and
 import kotlin.experimental.or
 import kotlin.math.floor
 
-//
+//entrypoint for the parser DSL
 fun parse(reading: BLEReading, fn : ISOParser.()->DataRecord) : DataRecord = try {
     ISOParser(reading.data).run(fn)
 } catch (e : Exception) {

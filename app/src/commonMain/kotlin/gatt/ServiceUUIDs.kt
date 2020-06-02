@@ -82,6 +82,7 @@ sealed class ServiceUUID(val id : String) {
         ))
 
 
+        //nr is only the hexadecimal, if contains the 0x prefix
         fun fromNr(nr : String) = getAll().find { it.nr.equals(nr,ignoreCase = true) }
         fun fromId(id : String) = getAll().find { it.id.equals(id,ignoreCase = true) }
 

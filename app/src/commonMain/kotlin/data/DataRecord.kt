@@ -6,6 +6,12 @@ import data.glucose.*
 import data.pulseoximeter.*
 import gatt.GATTValue
 
+/*Collection of all data record classes,
+they have to be in the same file because they are sealed.
+This allows us to perform pattern matching and guarantee that
+a method that that handles records can create a when() which takes any possible outcome into account.
+ */
+
 sealed class DataRecord(val device: PeripheralDescription) {
     override fun toString(): String = this::class.simpleName ?: "DataRecord"
 }

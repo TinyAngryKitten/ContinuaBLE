@@ -108,6 +108,7 @@ sealed class CharacteristicUUIDs(val id : String,val service: ServiceUUID, val p
                 dateTime
             )
 
+        //nr is only the hexadecimal, if contains the 0x prefix
         fun fromNr(nr : String) = getAll().find { it.nr.equals(nr,ignoreCase = true) } ?: UnsupportedCharacteristic("${unsupportedCharacteristicName("0x$nr")}",
             PeripheralDescription("")
         )

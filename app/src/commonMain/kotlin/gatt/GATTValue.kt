@@ -3,6 +3,7 @@ package gatt
 import util.*
 import kotlin.math.pow
 
+//Collection of datatypes from Bluetooth specification
 sealed class GATTValue {
     data class SInt8(val byte : Byte) : GATTValue() {
         val value = byte.toInt()
@@ -132,7 +133,7 @@ sealed class GATTValue {
     class Float(val value : kotlin.Float) : GATTValue() {
         override fun toString(): String = value.toString()
         companion object {
-            //unable to find information about the FLOAT datatype, but there are likely NaN/Nres etc. values
+            //TODO: unable to find information about the FLOAT datatype, but there are likely NaN/Nres etc. values
             fun from(rightMostManitssa : SInt16, leftMostMantissa: SInt8, exponent: SInt8) : Float {
                 var mantissa = leftMostMantissa.value.shl(16)
                 for (i in 0..15) {
@@ -157,8 +158,6 @@ sealed class GATTValue {
         }
 
         companion object {
-            //fun fromBytes(byteArray : ByteArray) = fromBytes(byteArray[0],byteArray[1])
-
             fun fromBytes(mantissaByte: UInt8, mantissaNibble: Nibble, exponent: Nibble) : SFloat {
 
                 var mantissa = mantissaNibble.value.toInt().shl(8)
